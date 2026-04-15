@@ -473,6 +473,10 @@
           <label>Nom client / projet</label>
           <input type="text" id="nomClient" placeholder="Camping Les Palmiers…" oninput="calc()">
         </div>
+        <div>
+          <label>ID Axonaut <span style="color:var(--text3);font-weight:400;">(optionnel — trouvez-le dans l'URL du client)</span></label>
+          <input type="text" id="axonautClientId" placeholder="ex: 12345" style="font-family:var(--mono);">
+        </div>
         <div class="row">
           <div>
             <label>Hébergements</label>
@@ -1290,6 +1294,7 @@ function buildProjectData() {
     nom, date: new Date().toLocaleDateString('fr-FR'),
     inputs: {
       nomClient: nom,
+      axonautClientId: document.getElementById('axonautClientId').value || '',
       nbHeberg: document.getElementById('nbHeberg').value,
       distanceKm: document.getElementById('distanceKm').value,
       recurrentMensuel: document.getElementById('recurrentMensuel').value,
@@ -1354,6 +1359,7 @@ function loadProject(i) {
   const p = projects[i]; if (!p) return;
   const inp = p.inputs;
   document.getElementById('nomClient').value = inp.nomClient||'';
+  document.getElementById('axonautClientId').value = inp.axonautClientId||'';
   document.getElementById('nbHeberg').value  = inp.nbHeberg||100;
   document.getElementById('distanceKm').value= inp.distanceKm||60;
   document.getElementById('recurrentMensuel').value = inp.recurrentMensuel||450;
@@ -1485,6 +1491,7 @@ async function pushToAxonaut() {
     source: 'Sud Wifi Deviseur v4',
     date: r.date,
     client: r.nomClient,
+    axonaut_company_id: document.getElementById('axonautClientId').value || null,
     typologie: r.typoLabel,
     nb_hebergements: r.nbHeberg,
 
