@@ -838,6 +838,29 @@
         </div>
       </div>
 
+      <div class="card">
+        <div class="card-header"><span class="card-title">Tarifs matériel — Coût de revient / Prix de vente</span></div>
+        <div class="card-body">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">Modifiez CR et PV pour ajuster vos marges. La marge est recalculée instantanément.</div>
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding:4px 6px;text-align:left;border-bottom:1px solid var(--border);">Référence</th>
+                <th style="font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding:4px 6px;text-align:right;border-bottom:1px solid var(--border);">CR (€)</th>
+                <th style="font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding:4px 6px;text-align:right;border-bottom:1px solid var(--border);">PV (€)</th>
+                <th style="font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding:4px 6px;text-align:right;border-bottom:1px solid var(--border);">Marge</th>
+              </tr>
+            </thead>
+            <tbody id="mat-params-tbody"></tbody>
+          </table>
+          <div style="margin-top:8px;display:flex;gap:6px;">
+            <button onclick="saveMaterialSettings()" class="hbtn primary" style="font-size:11px;">💾 Sauvegarder les tarifs</button>
+            <button onclick="resetMaterialSettings()" class="hbtn secondary" style="font-size:11px;">↺ Réinitialiser</button>
+          </div>
+          <div id="mat-save-status" style="font-size:11px;color:var(--green);margin-top:4px;"></div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -953,6 +976,7 @@ function openTab(name) {
     }
   });
   if (name === 'projets') renderProjects();
+  if (name === 'settings') renderMaterialParams();
 }
 
 function setTypo(name, el) {
@@ -1592,10 +1616,112 @@ function toast(msg, type='info') {
   el._t=setTimeout(()=>{el.className='';},3200);
 }
 
+// ═══════════════════ TARIFS MATÉRIEL ═══════════════════
+const MAT_DEFAULTS = {
+  'EAP650-D120': { label:'AP outdoor directionnel EAP650-D120', cr:120,   pv:400 },
+  'EAP625-HD':   { label:'AP outdoor omni EAP625-HD',           cr:125,   pv:416 },
+  'EAP610':      { label:'AP indoor EAP610',                    cr:64.89, pv:216 },
+  'MAT4M':       { label:'Mât INF-MAT4M-02',                   cr:47.20, pv:157 },
+  'COFFRET':     { label:'Coffret étanche IP66',                cr:24,    pv:80  },
+  'ETANCH':      { label:'Étanchéité + disjoncteur',            cr:16,    pv:53  },
+  'SW10':        { label:'Switch TL-SG2210P',                  cr:88.89, pv:296 },
+  'OC200':       { label:'Contrôleur OC200',                   cr:64,    pv:192 },
+  'CPE710':      { label:'Pont radio CPE710',                   cr:56.40, pv:129 },
+  'CABLAGE':     { label:'Câblage forfait/AP',                  cr:10,    pv:10  },
+};
+
+function getMaterialSettings() {
+  const saved = JSON.parse(localStorage.getItem('sw_material') || '{}');
+  const result = {};
+  for (const [key, def] of Object.entries(MAT_DEFAULTS)) {
+    result[key] = {
+      label: def.label,
+      cr: saved[key]?.cr ?? def.cr,
+      pv: saved[key]?.pv ?? def.pv,
+    };
+  }
+  return result;
+}
+
+function renderMaterialParams() {
+  const mats = getMaterialSettings();
+  const tbody = document.getElementById('mat-params-tbody');
+  if (!tbody) return;
+  let html = '';
+  for (const [key, m] of Object.entries(mats)) {
+    const marge = m.pv > 0 ? Math.round((m.pv - m.cr) / m.pv * 100) : 0;
+    const color = marge >= 65 ? 'var(--green)' : marge >= 50 ? 'var(--blue-light)' : 'var(--yellow)';
+    html += `<tr>
+      <td style="padding:5px 6px;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);">${m.label}</td>
+      <td style="padding:5px 6px;border-bottom:1px solid var(--border);">
+        <input type="number" id="mat-cr-${key}" value="${m.cr}" step="0.01"
+          style="width:80px;background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:3px 6px;border-radius:3px;font-family:var(--mono);font-size:11px;text-align:right;"
+          oninput="updateMatMarge('${key}')">
+      </td>
+      <td style="padding:5px 6px;border-bottom:1px solid var(--border);">
+        <input type="number" id="mat-pv-${key}" value="${m.pv}" step="0.01"
+          style="width:80px;background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:3px 6px;border-radius:3px;font-family:var(--mono);font-size:11px;text-align:right;"
+          oninput="updateMatMarge('${key}')">
+      </td>
+      <td style="padding:5px 6px;border-bottom:1px solid var(--border);text-align:right;">
+        <span id="mat-marge-${key}" style="font-family:var(--mono);font-size:11px;font-weight:600;color:${color};">${marge}%</span>
+      </td>
+    </tr>`;
+  }
+  tbody.innerHTML = html;
+}
+
+function updateMatMarge(key) {
+  const cr = parseFloat(document.getElementById('mat-cr-'+key)?.value) || 0;
+  const pv = parseFloat(document.getElementById('mat-pv-'+key)?.value) || 0;
+  const marge = pv > 0 ? Math.round((pv - cr) / pv * 100) : 0;
+  const color = marge >= 65 ? 'var(--green)' : marge >= 50 ? 'var(--blue-light)' : 'var(--yellow)';
+  const el = document.getElementById('mat-marge-'+key);
+  if (el) { el.textContent = marge + '%'; el.style.color = color; }
+}
+
+function saveMaterialSettings() {
+  const saved = {};
+  for (const key of Object.keys(MAT_DEFAULTS)) {
+    const cr = parseFloat(document.getElementById('mat-cr-'+key)?.value);
+    const pv = parseFloat(document.getElementById('mat-pv-'+key)?.value);
+    if (!isNaN(cr) && !isNaN(pv)) saved[key] = { cr, pv };
+  }
+  localStorage.setItem('sw_material', JSON.stringify(saved));
+  // Update MAT live
+  for (const [key, vals] of Object.entries(saved)) {
+    if (MAT[key]) { MAT[key].cr = vals.cr; MAT[key].pv = vals.pv; }
+  }
+  calc();
+  const el = document.getElementById('mat-save-status');
+  if (el) { el.textContent = '✅ Tarifs sauvegardés et appliqués'; setTimeout(()=>el.textContent='', 3000); }
+}
+
+function resetMaterialSettings() {
+  if (!confirm('Réinitialiser tous les tarifs aux valeurs par défaut ?')) return;
+  localStorage.removeItem('sw_material');
+  for (const [key, def] of Object.entries(MAT_DEFAULTS)) {
+    if (MAT[key]) { MAT[key].cr = def.cr; MAT[key].pv = def.pv; }
+  }
+  renderMaterialParams();
+  calc();
+  const el = document.getElementById('mat-save-status');
+  if (el) { el.textContent = '↺ Tarifs réinitialisés'; setTimeout(()=>el.textContent='', 3000); }
+}
+
+function applyMaterialSettings() {
+  const mats = getMaterialSettings();
+  for (const [key, m] of Object.entries(mats)) {
+    if (MAT[key]) { MAT[key].cr = m.cr; MAT[key].pv = m.pv; }
+  }
+}
+
 // ═══════════════════ INIT ═══════════════════
 loadSettings();
+applyMaterialSettings();
 setRecurrent('saisonnier');
 calc();
+renderMaterialParams();
 renderProjects();
 </script>
 </body>
