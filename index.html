@@ -1486,66 +1486,42 @@ async function pushToAxonaut() {
   const r = lastResult;
   toast('⏳ Envoi vers Make → Axonaut…', 'info');
 
-  // Payload complet envoyé à Make, qui crée le devis dans Axonaut
+  // Payload simplifié — 3 lignes commerciales pour le devis Axonaut
+  const modeRecLabel = STATE.recurrentMode==='saisonnier' ? 'saisonnier avr–sept' : STATE.recurrentMode==='annuel' ? 'annuel' : '60 mois';
   const payload = {
     source: 'Sud Wifi Deviseur v4',
     date: r.date,
     client: r.nomClient,
-    axonaut_company_id: document.getElementById('axonautClientId').value || null,
-    typologie: r.typoLabel,
-    nb_hebergements: r.nbHeberg,
+    axonaut_company_id: document.getElementById('axonautClientId').value || '',
+    titre: 'Solution Wifi — ' + r.nomClient + ' — ' + r.nbHeberg + ' héb. ' + r.typoLabel,
 
-    // Dimensionnement
-    nb_ap_outdoor: r.nbAPOut,
-    nb_ap_indoor: r.nbAPIn,
-    nb_ap_total: r.nbAPTotal,
-    nb_switches: r.nbSwitches,
+    produit_1_ref: 'WIFI-DEPLOY',
+    produit_1_nom: 'Déploiement Wifi ' + r.typoLabel + ' — ' + r.nbAPTotal + ' points d'accès TP-Link Omada — Portail Adipsys Expert ' + r.adp.cnxTier + ' cnx',
+    produit_1_qte: 1,
+    produit_1_pu: Math.round(r.capexPV),
+    produit_1_tva: 20,
 
-    // Financier
-    capex_pv_ht: Math.round(r.capexPV),
-    capex_cr_ht: Math.round(r.capexCR),
-    marge_chantier: Math.round(r.capexPV - r.capexCR),
-    acompte_pct: STATE.acomptePct,
-    acompte_montant: Math.round(r.acompteMontant),
-    engagement_mois: STATE.engagement,
-    loyer_allinclusive: Math.round(r.loyerTotal),
-    recurrent_mensuel: r.recMensuel,
-    recurrent_mode: STATE.recurrentMode,
-    recurrent_capitalise: r.recCap,
-    adipsys_cnx: r.adp.cnxTier,
-    adipsys_duree: STATE.adipsysDuree,
-    adipsys_pv: Math.round(r.adipsysPV),
+    produit_2_ref: 'PACK-SERVICES',
+    produit_2_nom: 'Pack Services Wifi ' + modeRecLabel + ' — supervision · maintenance · support — sans engagement',
+    produit_2_qte: r.nbMoisRec,
+    produit_2_pu: r.recMensuel,
+    produit_2_tva: 20,
 
-    // Lignes devis
-    lignes: r.lignes.map(l => ({
-      reference: l.ref,
-      designation: l.label,
-      quantite: l.qty,
-      prix_unitaire_ht: Math.round(l.pv * 100) / 100,
-      tva: 20,
-    })),
-    ligne_adipsys: {
-      reference: `ADIPSYS-${r.adp.cnxTier}-${STATE.adipsysDuree}M-EXP`,
-      designation: `Portail Adipsys HM SaaS Expert ${r.adp.cnxTier} cnx — ${STATE.adipsysDuree} mois`,
-      quantite: 1,
-      prix_unitaire_ht: Math.round(r.adipsysPV * 100) / 100,
-      tva: 20,
-    },
-    ligne_recurrent: {
-      reference: 'PACK-SERVICES',
-      designation: `Pack Services Wifi ${STATE.recurrentMode==='saisonnier'?'saisonnier avr–sept':'annuel'} — sans engagement`,
-      quantite: STATE.recurrentMode==='saisonnier' ? 6 : 12,
-      prix_unitaire_ht: r.recMensuel,
-      tva: 20,
-    },
+    produit_3_ref: 'FINANCEMENT',
+    produit_3_nom: 'Financement leasing ' + STATE.engagement + ' mois — acompte ' + STATE.acomptePct + '% · loyer mensuel all-inclusive ' + Math.round(r.loyerTotal) + ' €/mois',
+    produit_3_qte: 1,
+    produit_3_pu: 0,
+    produit_3_tva: 0,
 
-    // Commentaire devis
-    commentaire: `Proposition Sud Wifi du ${r.date}
-CAPEX HT : ${Math.round(r.capexPV)} €
-Acompte (${STATE.acomptePct}%) : ${Math.round(r.acompteMontant)} €
-Loyer all-inclusive : ${Math.round(r.loyerTotal)} €/mois (${STATE.engagement} mois)
-Pack services : ${r.recMensuel} €/mois — ${STATE.recurrentMode}
-Adipsys Expert ${r.adp.cnxTier} cnx — ${STATE.adipsysDuree} mois`,
+    commentaire: 'Proposition Sud Wifi du ' + r.date + '\n'
+      + 'CAPEX total HT : ' + Math.round(r.capexPV) + ' €\n'
+      + 'Acompte (' + STATE.acomptePct + '%) : ' + Math.round(r.acompteMontant) + ' €\n'
+      + 'Loyer all-inclusive : ' + Math.round(r.loyerTotal) + ' €/mois (' + STATE.engagement + ' mois)\n'
+      + 'Pack services : ' + r.recMensuel + ' €/mois (' + modeRecLabel + ')\n'
+      + 'Portail Adipsys Expert ' + r.adp.cnxTier + ' cnx / ' + STATE.adipsysDuree + ' mois\n'
+      + (r.nbAPOut > 0 ? r.nbAPOut + ' AP outdoor · ' : '')
+      + (r.nbAPIn > 0 ? r.nbAPIn + ' AP indoor · ' : '')
+      + r.nbSwitches + ' switches',
   };
 
   try {
