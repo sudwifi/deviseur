@@ -412,28 +412,36 @@
 <div class="header">
   <div class="header-left">
     <!-- Logo SVG Sud Wifi (fidèle à la charte) -->
-    <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <!-- Fond transparent -->
-      <!-- Soleil : rayons -->
-      <g stroke="#fac420" stroke-width="4" stroke-linecap="round">
-        <line x1="50" y1="8"  x2="50" y2="18"/>
-        <line x1="72" y1="14" x2="66" y2="23"/>
-        <line x1="86" y1="30" x2="77" y2="35"/>
-        <line x1="28" y1="14" x2="34" y2="23"/>
-        <line x1="14" y1="30" x2="23" y2="35"/>
-        <line x1="8"  y1="52" x2="18" y2="50"/>
-        <line x1="92" y1="52" x2="82" y2="50"/>
+    <svg class="logo-svg" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
+      <!-- Rayons soleil - 9 rayons fidèles au vrai logo -->
+      <g stroke="#12aacc" stroke-width="3.2" stroke-linecap="round">
+        <!-- Centre haut -->
+        <line x1="50" y1="4"  x2="50" y2="16"/>
+        <!-- Diagonales proches centre -->
+        <line x1="64" y1="7"  x2="60" y2="18"/>
+        <line x1="36" y1="7"  x2="40" y2="18"/>
+        <!-- Diagonales moyennes -->
+        <line x1="76" y1="15" x2="69" y2="24"/>
+        <line x1="24" y1="15" x2="31" y2="24"/>
+        <!-- Côtés horizontaux -->
+        <line x1="86" y1="30" x2="75" y2="34"/>
+        <line x1="14" y1="30" x2="25" y2="34"/>
+        <!-- Côtés bas -->
+        <line x1="90" y1="46" x2="79" y2="46"/>
+        <line x1="10" y1="46" x2="21" y2="46"/>
       </g>
-      <!-- Demi-cercles wifi -->
-      <g fill="none" stroke="#fac420" stroke-width="4" stroke-linecap="round">
-        <path d="M 24 58 A 26 26 0 0 1 76 58"/>
-        <path d="M 32 58 A 18 18 0 0 1 68 58"/>
-        <path d="M 40 58 A 10 10 0 0 1 60 58"/>
-      </g>
-      <!-- Point central -->
-      <circle cx="50" cy="58" r="3" fill="#fac420"/>
       <!-- Ligne horizon -->
-      <line x1="18" y1="60" x2="82" y2="60" stroke="#fac420" stroke-width="4" stroke-linecap="round"/>
+      <line x1="16" y1="54" x2="84" y2="54" stroke="#12aacc" stroke-width="3.2" stroke-linecap="round"/>
+      <!-- Demi-cercles wifi - 3 arcs bien espacés -->
+      <g fill="none" stroke="#12aacc" stroke-width="3.2" stroke-linecap="round">
+        <path d="M 27 54 A 23 23 0 0 1 73 54"/>
+        <path d="M 34 54 A 16 16 0 0 1 66 54"/>
+        <path d="M 41 54 A 9 9 0 0 1 59 54"/>
+      </g>
+      <!-- Point central wifi -->
+      <circle cx="50" cy="54" r="2.5" fill="#12aacc"/>
+      <!-- Texte SUD WIFI -->
+      <text x="50" y="76" text-anchor="middle" font-family="Montserrat, Arial Rounded MT Bold, sans-serif" font-weight="800" font-size="14" fill="#12aacc" letter-spacing="1">SUD WIFI</text>
     </svg>
     <div class="brand-text">
       <div class="brand-name">Sud Wifi</div>
@@ -818,6 +826,20 @@
       </div>
 
       <div class="card">
+        <div class="card-header"><span class="card-title">Génération IA</span></div>
+        <div class="card-body">
+          <div>
+            <label>Clé API Anthropic</label>
+            <div style="display:flex;gap:6px;">
+              <input type="password" id="anthropicApiKey" placeholder="sk-ant-…" style="flex:1;" oninput="saveSettings()">
+              <button onclick="toggleAnthropicKeyVisibility()" class="hbtn secondary" style="white-space:nowrap;padding:6px 10px;font-size:11px;">👁 Voir</button>
+            </div>
+            <div style="font-size:10px;color:var(--text3);margin-top:4px;">console.anthropic.com → API Keys → Create Key. Stockée uniquement dans votre navigateur.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
         <div class="card-header"><span class="card-title">Informations société</span></div>
         <div class="card-body">
           <div><label>Raison sociale</label><input type="text" id="sRaison" value="Sud Wifi" oninput="saveSettings()"></div>
@@ -903,6 +925,7 @@ let lastResult = null;
 // ═══════════════════ SETTINGS ═══════════════════
 function loadSettings() {
   const s = JSON.parse(localStorage.getItem('sw_settings') || '{}');
+  if (s.anthropicApiKey) document.getElementById('anthropicApiKey').value = s.anthropicApiKey;
   if (s.axonautApiKey) document.getElementById('axonautApiKey').value = s.axonautApiKey;
   if (s.axonautUrl)   document.getElementById('axonautUrl').value   = s.axonautUrl;
   if (s.sRaison)  document.getElementById('sRaison').value  = s.sRaison;
@@ -917,6 +940,7 @@ function loadSettings() {
 }
 function saveSettings() {
   const s = {
+    anthropicApiKey: document.getElementById('anthropicApiKey').value,
     axonautApiKey: document.getElementById('axonautApiKey').value,
     axonautUrl:    document.getElementById('axonautUrl').value,
     sRaison:  document.getElementById('sRaison').value,
@@ -936,6 +960,10 @@ function getSettings() {
 }
 function toggleKeyVisibility() {
   const el = document.getElementById('axonautApiKey');
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+function toggleAnthropicKeyVisibility() {
+  const el = document.getElementById('anthropicApiKey');
   el.type = el.type === 'password' ? 'text' : 'password';
 }
 
@@ -1212,20 +1240,26 @@ function updateClientView(r) {
     <div class="cv-stripe"></div>
     <div class="cv-header">
       <div class="cv-logo-wrap">
-        <svg width="56" height="56" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <g stroke="#fac420" stroke-width="4" stroke-linecap="round">
-            <line x1="50" y1="8" x2="50" y2="18"/><line x1="72" y1="14" x2="66" y2="23"/>
-            <line x1="86" y1="30" x2="77" y2="35"/><line x1="28" y1="14" x2="34" y2="23"/>
-            <line x1="14" y1="30" x2="23" y2="35"/><line x1="8" y1="52" x2="18" y2="50"/>
-            <line x1="92" y1="52" x2="82" y2="50"/>
+        <svg width="64" height="70" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="#12aacc" stroke-width="3.2" stroke-linecap="round">
+            <line x1="50" y1="4"  x2="50" y2="16"/>
+            <line x1="64" y1="7"  x2="60" y2="18"/>
+            <line x1="36" y1="7"  x2="40" y2="18"/>
+            <line x1="76" y1="15" x2="69" y2="24"/>
+            <line x1="24" y1="15" x2="31" y2="24"/>
+            <line x1="86" y1="30" x2="75" y2="34"/>
+            <line x1="14" y1="30" x2="25" y2="34"/>
+            <line x1="90" y1="46" x2="79" y2="46"/>
+            <line x1="10" y1="46" x2="21" y2="46"/>
           </g>
-          <g fill="none" stroke="#fac420" stroke-width="4" stroke-linecap="round">
-            <path d="M 24 58 A 26 26 0 0 1 76 58"/>
-            <path d="M 32 58 A 18 18 0 0 1 68 58"/>
-            <path d="M 40 58 A 10 10 0 0 1 60 58"/>
+          <line x1="16" y1="54" x2="84" y2="54" stroke="#12aacc" stroke-width="3.2" stroke-linecap="round"/>
+          <g fill="none" stroke="#12aacc" stroke-width="3.2" stroke-linecap="round">
+            <path d="M 27 54 A 23 23 0 0 1 73 54"/>
+            <path d="M 34 54 A 16 16 0 0 1 66 54"/>
+            <path d="M 41 54 A 9 9 0 0 1 59 54"/>
           </g>
-          <circle cx="50" cy="58" r="3" fill="#fac420"/>
-          <line x1="18" y1="60" x2="82" y2="60" stroke="#fac420" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="50" cy="54" r="2.5" fill="#12aacc"/>
+          <text x="50" y="76" text-anchor="middle" font-family="Montserrat, Arial Rounded MT Bold, sans-serif" font-weight="800" font-size="14" fill="#12aacc" letter-spacing="1">SUD WIFI</text>
         </svg>
       </div>
       <div class="cv-brand">
@@ -1571,16 +1605,30 @@ CAPEX total: ${Math.round(r.capexPV)} € HT | Loyer all-inclusive: ${Math.round
 Pack services: ${r.recMensuel} €/mois (${STATE.recurrentMode}) | Acompte: ${Math.round(r.acompteMontant)} €
 Distance chantier: ${r.distKm} km`;
   try {
+    const s = getSettings();
+    const anthropicKey = s.anthropicApiKey || '';
+    if (!anthropicKey) {
+      document.getElementById('ia-chantier').textContent = '⚠ Clé API Anthropic manquante.\nAllez dans ⚙ Paramètres → Génération IA → saisissez votre clé API Anthropic (console.anthropic.com).';
+      document.getElementById('ia-commercial').textContent = '⚠ Clé API Anthropic manquante.';
+      btn.disabled=false; btn.innerHTML='<span>✨</span> Générer avec l\'IA';
+      return;
+    }
+    const iaHeaders = {
+      'Content-Type': 'application/json',
+      'x-api-key': anthropicKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    };
     const [res1, res2] = await Promise.all([
-      fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:'Tu es expert technique réseau Wifi pour Sud Wifi, intégrateur TP-Link Omada spécialisé HPA et camping. Rédige des listes techniques précises. Réponds uniquement en français.',messages:[{role:'user',content:`Génère une liste de chantier technique complète (phases: préparation, commande matériel, installation, mise en service, recette client):\n${ctx}`}]})}),
-      fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:'Tu es commercial senior chez Sud Wifi. Tu rédiges des synthèses commerciales percutantes, orientées bénéfices client. Argument ROI fort. Anti-Osmozis (liberté matériel). Sans engagement = argument clé camping. Français uniquement.',messages:[{role:'user',content:`Rédige un récapitulatif commercial pour cette proposition (300 mots max, avec ROI, différenciateurs, appel à l\'action):\n${ctx}`}]})}),
+      fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:iaHeaders,body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:'Tu es expert technique réseau Wifi pour Sud Wifi, intégrateur TP-Link Omada spécialisé HPA et camping. Rédige des listes techniques précises. Réponds uniquement en français.',messages:[{role:'user',content:`Génère une liste de chantier technique complète (phases: préparation, commande matériel, installation, mise en service, recette client):\n${ctx}`}]})}),
+      fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:iaHeaders,body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:'Tu es commercial senior chez Sud Wifi. Tu rédiges des synthèses commerciales percutantes, orientées bénéfices client. Argument ROI fort. Anti-Osmozis (liberté matériel). Sans engagement = argument clé camping. Français uniquement.',messages:[{role:'user',content:`Rédige un récapitulatif commercial pour cette proposition (300 mots max, avec ROI, différenciateurs, appel à l\'action):\n${ctx}`}]})}),
     ]);
     const d1=await res1.json(), d2=await res2.json();
     document.getElementById('ia-chantier').textContent = d1.content?.[0]?.text||'Erreur';
     document.getElementById('ia-commercial').textContent = d2.content?.[0]?.text||'Erreur';
     toast('Génération IA terminée ✨', 'success');
   } catch(e) {
-    const msg='Erreur API: '+e.message+'\n\nCet outil doit être hébergé sur GitHub Pages ou Netlify pour fonctionner (pas en local ni sur Google Sites).';
+    const msg='Erreur API: '+e.message+'\n\nVérifiez votre clé API Anthropic dans ⚙ Paramètres.';
     document.getElementById('ia-chantier').textContent=msg;
     document.getElementById('ia-commercial').textContent='Erreur API.';
     toast('Erreur API — voir onglet IA', 'error');
