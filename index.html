@@ -1270,7 +1270,7 @@ function updateClientView(r) {
 
     <div class="cv-pack">
       <div class="cv-pack-header">✦ Ce qui est inclus dans votre solution</div>
-      <div class="cv-pack-row"><span>Déploiement complet ${r.typoLabel} — ${r.nbAPTotal} points d'accès TP-Link Omada</span><span class="check">✓</span></div>
+      <div class="cv-pack-row"><span>Déploiement complet ${r.typoLabel} — ${r.nbAPTotal} points d’accès TP-Link Omada</span><span class="check">✓</span></div>
       <div class="cv-pack-row"><span>Portail captif Adipsys Expert ${r.adp.cnxTier} connexions (valeur publique ${fmt(r.adipsysPV)})</span><span class="check">✓</span></div>
       <div class="cv-pack-row"><span>Couverture 100% du site · signal garanti dans chaque hébergement</span><span class="check">✓</span></div>
       <div class="cv-pack-row"><span>Supervision réseau 24/7 · alertes proactives · maintenance incluse</span><span class="check">✓</span></div>
@@ -1496,19 +1496,19 @@ async function pushToAxonaut() {
     titre: 'Solution Wifi — ' + r.nomClient + ' — ' + r.nbHeberg + ' héb. ' + r.typoLabel,
 
     produit_1_ref: 'WIFI-DEPLOY',
-    produit_1_nom: 'Déploiement Wifi ' + r.typoLabel + ' — ' + r.nbAPTotal + ' points d'accès TP-Link Omada — Portail Adipsys Expert ' + r.adp.cnxTier + ' cnx',
+    produit_1_nom: "Déploiement Wifi " + r.typoLabel + " — " + r.nbAPTotal + " points d'accès TP-Link Omada — Portail Adipsys Expert " + r.adp.cnxTier + " cnx",
     produit_1_qte: 1,
     produit_1_pu: Math.round(r.capexPV),
     produit_1_tva: 20,
 
     produit_2_ref: 'PACK-SERVICES',
-    produit_2_nom: 'Pack Services Wifi ' + modeRecLabel + ' — supervision · maintenance · support — sans engagement',
+    produit_2_nom: "Pack Services Wifi " + modeRecLabel + " — supervision · maintenance · support — sans engagement",
     produit_2_qte: r.nbMoisRec,
     produit_2_pu: r.recMensuel,
     produit_2_tva: 20,
 
     produit_3_ref: 'FINANCEMENT',
-    produit_3_nom: 'Financement leasing ' + STATE.engagement + ' mois — acompte ' + STATE.acomptePct + '% · loyer mensuel all-inclusive ' + Math.round(r.loyerTotal) + ' €/mois',
+    produit_3_nom: "Financement leasing " + STATE.engagement + " mois — acompte " + STATE.acomptePct + "% · loyer mensuel all-inclusive " + Math.round(r.loyerTotal) + " €/mois",
     produit_3_qte: 1,
     produit_3_pu: 0,
     produit_3_tva: 0,
