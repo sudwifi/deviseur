@@ -412,36 +412,28 @@
 <div class="header">
   <div class="header-left">
     <!-- Logo SVG Sud Wifi (fidèle à la charte) -->
-    <svg class="logo-svg" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
-      <!-- Rayons soleil - 9 rayons fidèles au vrai logo -->
-      <g stroke="#12aacc" stroke-width="3.2" stroke-linecap="round">
-        <!-- Centre haut -->
-        <line x1="50" y1="4"  x2="50" y2="16"/>
-        <!-- Diagonales proches centre -->
-        <line x1="64" y1="7"  x2="60" y2="18"/>
-        <line x1="36" y1="7"  x2="40" y2="18"/>
-        <!-- Diagonales moyennes -->
-        <line x1="76" y1="15" x2="69" y2="24"/>
-        <line x1="24" y1="15" x2="31" y2="24"/>
-        <!-- Côtés horizontaux -->
-        <line x1="86" y1="30" x2="75" y2="34"/>
-        <line x1="14" y1="30" x2="25" y2="34"/>
-        <!-- Côtés bas -->
-        <line x1="90" y1="46" x2="79" y2="46"/>
-        <line x1="10" y1="46" x2="21" y2="46"/>
+    <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <!-- Fond transparent -->
+      <!-- Soleil : rayons -->
+      <g stroke="#fac420" stroke-width="4" stroke-linecap="round">
+        <line x1="50" y1="8"  x2="50" y2="18"/>
+        <line x1="72" y1="14" x2="66" y2="23"/>
+        <line x1="86" y1="30" x2="77" y2="35"/>
+        <line x1="28" y1="14" x2="34" y2="23"/>
+        <line x1="14" y1="30" x2="23" y2="35"/>
+        <line x1="8"  y1="52" x2="18" y2="50"/>
+        <line x1="92" y1="52" x2="82" y2="50"/>
       </g>
+      <!-- Demi-cercles wifi -->
+      <g fill="none" stroke="#fac420" stroke-width="4" stroke-linecap="round">
+        <path d="M 24 58 A 26 26 0 0 1 76 58"/>
+        <path d="M 32 58 A 18 18 0 0 1 68 58"/>
+        <path d="M 40 58 A 10 10 0 0 1 60 58"/>
+      </g>
+      <!-- Point central -->
+      <circle cx="50" cy="58" r="3" fill="#fac420"/>
       <!-- Ligne horizon -->
-      <line x1="16" y1="54" x2="84" y2="54" stroke="#12aacc" stroke-width="3.2" stroke-linecap="round"/>
-      <!-- Demi-cercles wifi - 3 arcs bien espacés -->
-      <g fill="none" stroke="#12aacc" stroke-width="3.2" stroke-linecap="round">
-        <path d="M 27 54 A 23 23 0 0 1 73 54"/>
-        <path d="M 34 54 A 16 16 0 0 1 66 54"/>
-        <path d="M 41 54 A 9 9 0 0 1 59 54"/>
-      </g>
-      <!-- Point central wifi -->
-      <circle cx="50" cy="54" r="2.5" fill="#12aacc"/>
-      <!-- Texte SUD WIFI -->
-      <text x="50" y="76" text-anchor="middle" font-family="Montserrat, Arial Rounded MT Bold, sans-serif" font-weight="800" font-size="14" fill="#12aacc" letter-spacing="1">SUD WIFI</text>
+      <line x1="18" y1="60" x2="82" y2="60" stroke="#fac420" stroke-width="4" stroke-linecap="round"/>
     </svg>
     <div class="brand-text">
       <div class="brand-name">Sud Wifi</div>
@@ -480,10 +472,6 @@
         <div>
           <label>Nom client / projet</label>
           <input type="text" id="nomClient" placeholder="Camping Les Palmiers…" oninput="calc()">
-        </div>
-        <div>
-          <label>ID Axonaut <span style="color:var(--text3);font-weight:400;">(optionnel — trouvez-le dans l'URL du client)</span></label>
-          <input type="text" id="axonautClientId" placeholder="ex: 12345" style="font-family:var(--mono);">
         </div>
         <div class="row">
           <div>
@@ -826,20 +814,6 @@
       </div>
 
       <div class="card">
-        <div class="card-header"><span class="card-title">Génération IA</span></div>
-        <div class="card-body">
-          <div>
-            <label>Clé API Anthropic</label>
-            <div style="display:flex;gap:6px;">
-              <input type="password" id="anthropicApiKey" placeholder="sk-ant-…" style="flex:1;" oninput="saveSettings()">
-              <button onclick="toggleAnthropicKeyVisibility()" class="hbtn secondary" style="white-space:nowrap;padding:6px 10px;font-size:11px;">👁 Voir</button>
-            </div>
-            <div style="font-size:10px;color:var(--text3);margin-top:4px;">console.anthropic.com → API Keys → Create Key. Stockée uniquement dans votre navigateur.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
         <div class="card-header"><span class="card-title">Informations société</span></div>
         <div class="card-body">
           <div><label>Raison sociale</label><input type="text" id="sRaison" value="Sud Wifi" oninput="saveSettings()"></div>
@@ -925,7 +899,6 @@ let lastResult = null;
 // ═══════════════════ SETTINGS ═══════════════════
 function loadSettings() {
   const s = JSON.parse(localStorage.getItem('sw_settings') || '{}');
-  if (s.anthropicApiKey) document.getElementById('anthropicApiKey').value = s.anthropicApiKey;
   if (s.axonautApiKey) document.getElementById('axonautApiKey').value = s.axonautApiKey;
   if (s.axonautUrl)   document.getElementById('axonautUrl').value   = s.axonautUrl;
   if (s.sRaison)  document.getElementById('sRaison').value  = s.sRaison;
@@ -940,7 +913,6 @@ function loadSettings() {
 }
 function saveSettings() {
   const s = {
-    anthropicApiKey: document.getElementById('anthropicApiKey').value,
     axonautApiKey: document.getElementById('axonautApiKey').value,
     axonautUrl:    document.getElementById('axonautUrl').value,
     sRaison:  document.getElementById('sRaison').value,
@@ -960,10 +932,6 @@ function getSettings() {
 }
 function toggleKeyVisibility() {
   const el = document.getElementById('axonautApiKey');
-  el.type = el.type === 'password' ? 'text' : 'password';
-}
-function toggleAnthropicKeyVisibility() {
-  const el = document.getElementById('anthropicApiKey');
   el.type = el.type === 'password' ? 'text' : 'password';
 }
 
@@ -1240,26 +1208,20 @@ function updateClientView(r) {
     <div class="cv-stripe"></div>
     <div class="cv-header">
       <div class="cv-logo-wrap">
-        <svg width="64" height="70" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
-          <g stroke="#12aacc" stroke-width="3.2" stroke-linecap="round">
-            <line x1="50" y1="4"  x2="50" y2="16"/>
-            <line x1="64" y1="7"  x2="60" y2="18"/>
-            <line x1="36" y1="7"  x2="40" y2="18"/>
-            <line x1="76" y1="15" x2="69" y2="24"/>
-            <line x1="24" y1="15" x2="31" y2="24"/>
-            <line x1="86" y1="30" x2="75" y2="34"/>
-            <line x1="14" y1="30" x2="25" y2="34"/>
-            <line x1="90" y1="46" x2="79" y2="46"/>
-            <line x1="10" y1="46" x2="21" y2="46"/>
+        <svg width="56" height="56" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="#fac420" stroke-width="4" stroke-linecap="round">
+            <line x1="50" y1="8" x2="50" y2="18"/><line x1="72" y1="14" x2="66" y2="23"/>
+            <line x1="86" y1="30" x2="77" y2="35"/><line x1="28" y1="14" x2="34" y2="23"/>
+            <line x1="14" y1="30" x2="23" y2="35"/><line x1="8" y1="52" x2="18" y2="50"/>
+            <line x1="92" y1="52" x2="82" y2="50"/>
           </g>
-          <line x1="16" y1="54" x2="84" y2="54" stroke="#12aacc" stroke-width="3.2" stroke-linecap="round"/>
-          <g fill="none" stroke="#12aacc" stroke-width="3.2" stroke-linecap="round">
-            <path d="M 27 54 A 23 23 0 0 1 73 54"/>
-            <path d="M 34 54 A 16 16 0 0 1 66 54"/>
-            <path d="M 41 54 A 9 9 0 0 1 59 54"/>
+          <g fill="none" stroke="#fac420" stroke-width="4" stroke-linecap="round">
+            <path d="M 24 58 A 26 26 0 0 1 76 58"/>
+            <path d="M 32 58 A 18 18 0 0 1 68 58"/>
+            <path d="M 40 58 A 10 10 0 0 1 60 58"/>
           </g>
-          <circle cx="50" cy="54" r="2.5" fill="#12aacc"/>
-          <text x="50" y="76" text-anchor="middle" font-family="Montserrat, Arial Rounded MT Bold, sans-serif" font-weight="800" font-size="14" fill="#12aacc" letter-spacing="1">SUD WIFI</text>
+          <circle cx="50" cy="58" r="3" fill="#fac420"/>
+          <line x1="18" y1="60" x2="82" y2="60" stroke="#fac420" stroke-width="4" stroke-linecap="round"/>
         </svg>
       </div>
       <div class="cv-brand">
@@ -1304,7 +1266,7 @@ function updateClientView(r) {
 
     <div class="cv-pack">
       <div class="cv-pack-header">✦ Ce qui est inclus dans votre solution</div>
-      <div class="cv-pack-row"><span>Déploiement complet ${r.typoLabel} — ${r.nbAPTotal} points d’accès TP-Link Omada</span><span class="check">✓</span></div>
+      <div class="cv-pack-row"><span>Déploiement complet ${r.typoLabel} — ${r.nbAPTotal} points d'accès TP-Link Omada</span><span class="check">✓</span></div>
       <div class="cv-pack-row"><span>Portail captif Adipsys Expert ${r.adp.cnxTier} connexions (valeur publique ${fmt(r.adipsysPV)})</span><span class="check">✓</span></div>
       <div class="cv-pack-row"><span>Couverture 100% du site · signal garanti dans chaque hébergement</span><span class="check">✓</span></div>
       <div class="cv-pack-row"><span>Supervision réseau 24/7 · alertes proactives · maintenance incluse</span><span class="check">✓</span></div>
@@ -1328,7 +1290,6 @@ function buildProjectData() {
     nom, date: new Date().toLocaleDateString('fr-FR'),
     inputs: {
       nomClient: nom,
-      axonautClientId: document.getElementById('axonautClientId').value || '',
       nbHeberg: document.getElementById('nbHeberg').value,
       distanceKm: document.getElementById('distanceKm').value,
       recurrentMensuel: document.getElementById('recurrentMensuel').value,
@@ -1393,7 +1354,6 @@ function loadProject(i) {
   const p = projects[i]; if (!p) return;
   const inp = p.inputs;
   document.getElementById('nomClient').value = inp.nomClient||'';
-  document.getElementById('axonautClientId').value = inp.axonautClientId||'';
   document.getElementById('nbHeberg').value  = inp.nbHeberg||100;
   document.getElementById('distanceKm').value= inp.distanceKm||60;
   document.getElementById('recurrentMensuel').value = inp.recurrentMensuel||450;
@@ -1492,85 +1452,87 @@ function loadJSONFile(e) {
   e.target.value = '';
 }
 
-// ═══════════════════ AXONAUT via Make webhook ═══════════════════
-const MAKE_WEBHOOK = 'https://hook.eu1.make.com/s8d9nh8p3kudqrybwlcy9yrl6tjbnmel';
-
+// ═══════════════════ AXONAUT ═══════════════════
 async function testAxonaut() {
+  const key = document.getElementById('axonautApiKey').value;
+  const url = document.getElementById('axonautUrl').value || 'https://app.axonaut.com';
   const el = document.getElementById('axonaut-status');
-  el.textContent = '⏳ Test du webhook Make en cours…'; el.style.color='var(--text3)';
+  if (!key) { el.textContent = '⚠ Veuillez saisir votre clé API.'; el.style.color='var(--orange)'; return; }
+  el.textContent = '⏳ Test en cours…'; el.style.color='var(--text3)';
   try {
-    const resp = await fetch(MAKE_WEBHOOK, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ test: true, source: 'Sud Wifi Deviseur', timestamp: new Date().toISOString() }),
+    const resp = await fetch(`${url}/api/v2/users`, {
+      headers: { 'userApiKey': key, 'Content-Type': 'application/json' }
     });
     if (resp.ok) {
-      el.textContent = '✅ Webhook Make OK — le scénario est actif'; el.style.color='var(--green)';
-      toast('Connexion Make → Axonaut OK !', 'success');
+      el.textContent = '✅ Connexion Axonaut OK'; el.style.color='var(--green)';
+      toast('Connexion Axonaut réussie !', 'success');
     } else {
-      el.textContent = `❌ Erreur webhook ${resp.status} — vérifiez que le scénario Make est activé`; el.style.color='var(--red)';
+      el.textContent = `❌ Erreur ${resp.status} — vérifiez votre clé API`; el.style.color='var(--red)';
     }
   } catch(e) {
-    el.textContent = '❌ Erreur réseau: ' + e.message; el.style.color='var(--red)';
+    el.textContent = '❌ Erreur réseau — vérifiez que vous utilisez cet outil via GitHub Pages ou Netlify (pas en local).';
+    el.style.color='var(--red)';
   }
 }
 
 async function pushToAxonaut() {
   if (!lastResult) { toast('Calculez d\'abord un projet.', 'error'); return; }
+  const s = getSettings();
+  const key = s.axonautApiKey || document.getElementById('axonautApiKey')?.value;
+  const baseUrl = s.axonautUrl || 'https://app.axonaut.com';
+  if (!key) {
+    toast('⚠ Configurez votre clé API Axonaut dans Paramètres', 'error');
+    openTab('settings'); return;
+  }
   const r = lastResult;
-  toast('⏳ Envoi vers Make → Axonaut…', 'info');
+  toast('⏳ Création du devis dans Axonaut…', 'info');
 
-  // Payload simplifié — 3 lignes commerciales pour le devis Axonaut
-  const modeRecLabel = STATE.recurrentMode==='saisonnier' ? 'saisonnier avr–sept' : STATE.recurrentMode==='annuel' ? 'annuel' : '60 mois';
-  const payload = {
-    source: 'Sud Wifi Deviseur v4',
-    date: r.date,
-    client: r.nomClient,
-    axonaut_company_id: document.getElementById('axonautClientId').value || '',
-    titre: 'Solution Wifi — ' + r.nomClient + ' — ' + r.nbHeberg + ' héb. ' + r.typoLabel,
+  // Construction du devis Axonaut
+  const lines = r.lignes.map(l => ({
+    title: l.label,
+    reference: l.ref,
+    quantity: l.qty,
+    unit_price_without_taxes: Math.round(l.pv * 100) / 100,
+    tax_rate: 20,
+  }));
+  lines.push({
+    title: `Portail Adipsys HM SaaS Expert ${r.adp.cnxTier} cnx — ${STATE.adipsysDuree} mois`,
+    reference: `ADIPSYS-${r.adp.cnxTier}-${STATE.adipsysDuree}M-EXP`,
+    quantity: 1,
+    unit_price_without_taxes: Math.round(r.adipsysPV * 100) / 100,
+    tax_rate: 20,
+  });
+  // Ligne récurrent (informatif)
+  lines.push({
+    title: `Pack Services Wifi ${STATE.recurrentMode==='saisonnier'?'saisonnier (avr–sept)':'annuel'} — sans engagement`,
+    reference: 'PACK-SERVICES',
+    quantity: STATE.recurrentMode==='saisonnier'?6:12,
+    unit_price_without_taxes: r.recMensuel,
+    tax_rate: 20,
+  });
 
-    produit_1_ref: 'WIFI-DEPLOY',
-    produit_1_nom: "Déploiement Wifi " + r.typoLabel + " — " + r.nbAPTotal + " points d'accès TP-Link Omada — Portail Adipsys Expert " + r.adp.cnxTier + " cnx",
-    produit_1_qte: 1,
-    produit_1_pu: Math.round(r.capexPV),
-    produit_1_tva: 20,
-
-    produit_2_ref: 'PACK-SERVICES',
-    produit_2_nom: "Pack Services Wifi " + modeRecLabel + " — supervision · maintenance · support — sans engagement",
-    produit_2_qte: r.nbMoisRec,
-    produit_2_pu: r.recMensuel,
-    produit_2_tva: 20,
-
-    produit_3_ref: 'FINANCEMENT',
-    produit_3_nom: "Financement leasing " + STATE.engagement + " mois — acompte " + STATE.acomptePct + "% · loyer mensuel all-inclusive " + Math.round(r.loyerTotal) + " €/mois",
-    produit_3_qte: 1,
-    produit_3_pu: 0,
-    produit_3_tva: 0,
-
-    commentaire: 'Proposition Sud Wifi du ' + r.date + '\n'
-      + 'CAPEX total HT : ' + Math.round(r.capexPV) + ' €\n'
-      + 'Acompte (' + STATE.acomptePct + '%) : ' + Math.round(r.acompteMontant) + ' €\n'
-      + 'Loyer all-inclusive : ' + Math.round(r.loyerTotal) + ' €/mois (' + STATE.engagement + ' mois)\n'
-      + 'Pack services : ' + r.recMensuel + ' €/mois (' + modeRecLabel + ')\n'
-      + 'Portail Adipsys Expert ' + r.adp.cnxTier + ' cnx / ' + STATE.adipsysDuree + ' mois\n'
-      + (r.nbAPOut > 0 ? r.nbAPOut + ' AP outdoor · ' : '')
-      + (r.nbAPIn > 0 ? r.nbAPIn + ' AP indoor · ' : '')
-      + r.nbSwitches + ' switches',
+  const quotePayload = {
+    title: `Solution Wifi — ${r.nomClient} — ${r.nbHeberg} héb. ${r.typoLabel}`,
+    comment: `Proposition Sud Wifi du ${r.date}\nCAPEX HT: ${Math.round(r.capexPV)} €\nAcompte (${STATE.acomptePct}%): ${Math.round(r.acompteMontant)} €\nLoyer all-inclusive: ${Math.round(r.loyerTotal)} €/mois (${STATE.engagement} mois)\nPack services: ${r.recMensuel} €/mois`,
+    quote_lines: lines,
+    status: 'draft',
   };
 
   try {
-    const resp = await fetch(MAKE_WEBHOOK, {
+    const resp = await fetch(`${baseUrl}/api/v2/quotes`, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload),
+      headers: { 'userApiKey': key, 'Content-Type': 'application/json' },
+      body: JSON.stringify(quotePayload),
     });
     if (resp.ok) {
-      toast('✅ Devis envoyé à Make → Axonaut !', 'success');
+      const data = await resp.json();
+      toast(`✅ Devis créé dans Axonaut ! Réf: ${data.id||'—'}`, 'success');
     } else {
-      toast(`❌ Erreur Make ${resp.status} — vérifiez que le scénario est activé`, 'error');
+      const err = await resp.text();
+      toast(`❌ Erreur Axonaut ${resp.status}: ${err.slice(0,80)}`, 'error');
     }
   } catch(e) {
-    toast(`❌ Erreur réseau : ${e.message}`, 'error');
+    toast(`❌ Erreur réseau: ${e.message}. Utilisez GitHub Pages ou Netlify.`, 'error');
   }
 }
 
@@ -1605,22 +1567,16 @@ CAPEX total: ${Math.round(r.capexPV)} € HT | Loyer all-inclusive: ${Math.round
 Pack services: ${r.recMensuel} €/mois (${STATE.recurrentMode}) | Acompte: ${Math.round(r.acompteMontant)} €
 Distance chantier: ${r.distKm} km`;
   try {
-    const iaHeaders = {
-      'Content-Type': 'application/json',
-      'x-api-key': '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',
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    };
     const [res1, res2] = await Promise.all([
-      fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:iaHeaders,body:JSON.stringify({model:'claude-3-5-sonnet-20241022',max_tokens:1000,system:'Tu es expert technique réseau Wifi pour Sud Wifi, intégrateur TP-Link Omada spécialisé HPA et camping. Rédige des listes techniques précises. Réponds uniquement en français.',messages:[{role:'user',content:`Génère une liste de chantier technique complète (phases: préparation, commande matériel, installation, mise en service, recette client):\n${ctx}`}]})}),
-      fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:iaHeaders,body:JSON.stringify({model:'claude-3-5-sonnet-20241022',max_tokens:1000,system:'Tu es commercial senior chez Sud Wifi. Tu rédiges des synthèses commerciales percutantes, orientées bénéfices client. Argument ROI fort. Anti-Osmozis (liberté matériel). Sans engagement = argument clé camping. Français uniquement.',messages:[{role:'user',content:`Rédige un récapitulatif commercial pour cette proposition (300 mots max, avec ROI, différenciateurs, appel à l\'action):\n${ctx}`}]})}),
+      fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':'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','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-3-5-sonnet-20241022',max_tokens:1000,system:'Tu es expert technique réseau Wifi pour Sud Wifi, intégrateur TP-Link Omada spécialisé HPA et camping. Rédige des listes techniques précises. Réponds uniquement en français.',messages:[{role:'user',content:`Génère une liste de chantier technique complète (phases: préparation, commande matériel, installation, mise en service, recette client):\n${ctx}`}]})}),
+      fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':'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','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-3-5-sonnet-20241022',max_tokens:1000,system:'Tu es commercial senior chez Sud Wifi. Tu rédiges des synthèses commerciales percutantes, orientées bénéfices client. Argument ROI fort. Anti-Osmozis (liberté matériel). Sans engagement = argument clé camping. Français uniquement.',messages:[{role:'user',content:`Rédige un récapitulatif commercial pour cette proposition (300 mots max, avec ROI, différenciateurs, appel à l'action):\n${ctx}`}]})}),
     ]);
     const d1=await res1.json(), d2=await res2.json();
     document.getElementById('ia-chantier').textContent = d1.content?.[0]?.text||'Erreur';
     document.getElementById('ia-commercial').textContent = d2.content?.[0]?.text||'Erreur';
     toast('Génération IA terminée ✨', 'success');
   } catch(e) {
-    const msg='Erreur API: '+e.message+'\n\nVérifiez votre clé API Anthropic dans ⚙ Paramètres.';
+    const msg='Erreur API: '+e.message+'\n\nVérifiez votre connexion internet et réessayez.';
     document.getElementById('ia-chantier').textContent=msg;
     document.getElementById('ia-commercial').textContent='Erreur API.';
     toast('Erreur API — voir onglet IA', 'error');
