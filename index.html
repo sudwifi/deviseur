@@ -1576,7 +1576,7 @@ Distance chantier: ${r.distKm} km`;
     document.getElementById('ia-commercial').textContent = d2.content?.[0]?.text||'Erreur';
     toast('Génération IA terminée ✨', 'success');
   } catch(e) {
-    const msg='Erreur API: '+e.message+'\n\nVérifiez votre connexion internet et réessayez.';
+    const msg='Erreur API: '+e.message+'\n\nCet outil doit être hébergé sur GitHub Pages ou Netlify pour fonctionner (pas en local ni sur Google Sites).';
     document.getElementById('ia-chantier').textContent=msg;
     document.getElementById('ia-commercial').textContent='Erreur API.';
     toast('Erreur API — voir onglet IA', 'error');
