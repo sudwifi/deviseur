@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sud Wifi — Planning V2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:      #080e1a;
+  --s1:      #0d1525;
+  --s2:      #111e33;
+  --s3:      #172240;
+  --s4:      #1c2a4a;
+  --border:  rgba(255,255,255,.07);
+  --border2: rgba(255,255,255,.13);
+  --border3: rgba(255,255,255,.22);
+  --text:    #dde6f8;
+  --muted:   #6b80a8;
+  --muted2:  #8fa3c8;
+  --blue:    #3b82f6;
+  --red:     #ef4444;
+  --purple:  #8b5cf6;
+  --green:   #22c55e;
+  --gray:    #64748b;
+  --yellow:  #f59e0b;
+  --orange:  #fb923c;
+  --teal:    #14b8a6;
+  --pink:    #ec4899;
+  --font:    'DM Sans', sans-serif;
+  --mono:    'DM Mono', monospace;
+  --r:       16px;
+  --r-sm:    10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+button,select,input,textarea{font:inherit}
+
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(59,130,246,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(59,130,246,.025) 1px,transparent 1px);
+  background-size:48px 48px;pointer-events:none;z-index:0
+}
+
+/* ─── TOPBAR ─── */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(8,14,26,.92);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 20px;height:58px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px
+}
+.back-btn{
+  display:flex;align-items:center;gap:8px;
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:999px;padding:6px 14px;
+  color:var(--muted2);font-size:13px;cursor:pointer;
+  text-decoration:none;transition:all .18s;flex-shrink:0
+}
+.back-btn:hover{border-color:var(--border2);color:var(--text)}
+.topbar-title{font-size:15px;font-weight:600;letter-spacing:-.3px}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.clock-sm{font-family:var(--mono);font-size:12px;color:var(--muted2)}
+
+/* Raccourcis rapides */
+.quick-btns{display:flex;gap:6px;flex-wrap:nowrap}
+.qb{
+  display:flex;align-items:center;gap:5px;
+  border-radius:999px;padding:6px 12px;
+  font-size:12px;font-weight:500;cursor:pointer;
+  border:1px solid;transition:all .15s;white-space:nowrap
+}
+.qb:hover{filter:brightness(1.2)}
+.qb-chantier{background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.4);color:#93c5fd}
+.qb-sav    {background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4);color:#fca5a5}
+.qb-absence{background:rgba(236,72,153,.15);border-color:rgba(236,72,153,.4);color:#f9a8d4}
+.qb-achat  {background:rgba(139,92,246,.15);border-color:rgba(139,92,246,.4);color:#c4b5fd}
+.qb-add    {background:rgba(255,255,255,.06);border-color:var(--border2);color:var(--muted2)}
+
+/* ─── VIEW TABS ─── */
+.view-tabs{
+  position:sticky;top:58px;z-index:90;
+  background:rgba(8,14,26,.88);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+  padding:0 20px;display:flex;align-items:center;gap:0
+}
+.view-tab{
+  padding:13px 18px;font-size:13px;font-weight:500;
+  color:var(--muted);border-bottom:2px solid transparent;
+  cursor:pointer;transition:all .18s;white-space:nowrap;
+  background:none;border-top:none;border-left:none;border-right:none
+}
+.view-tab:hover{color:var(--text)}
+.view-tab.active{color:var(--text);border-bottom-color:var(--blue)}
+.view-tab-spacer{flex:1}
+.sync-pill{
+  font-size:11px;font-family:var(--mono);
+  padding:4px 10px;border-radius:999px;cursor:pointer;
+  background:transparent;border:1px solid rgba(20,184,166,.3);
+  color:var(--teal);transition:all .15s
+}
+.sync-pill:hover{background:rgba(20,184,166,.1)}
+.sync-pill.syncing{color:var(--yellow);border-color:rgba(245,158,11,.3);animation:blink .8s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ─── FILTERS ─── */
+.filters-strip{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:8px 20px;border-bottom:1px solid var(--border);
+  background:rgba(8,14,26,.7);
+  position:sticky;top:106px;z-index:80
+}
+.filter-label{font-size:11px;color:var(--muted);font-family:var(--mono);margin-right:2px;flex-shrink:0}
+.f-pill{
+  background:transparent;border:1px solid var(--border);
+  color:var(--muted);border-radius:999px;
+  padding:4px 12px;font-size:11px;cursor:pointer;
+  white-space:nowrap;transition:all .15s;flex-shrink:0
+}
+.f-pill:hover{border-color:var(--border2);color:var(--text)}
+.f-pill.active{background:rgba(59,130,246,.18);border-color:rgba(59,130,246,.45);color:#93c5fd}
+.f-divider{width:1px;height:18px;background:var(--border);margin:0 2px;flex-shrink:0}
+
+/* ─── MAIN ─── */
+.main{position:relative;z-index:1;padding:18px 20px;max-width:1600px;margin:0 auto}
+
+/* ─── WEEK GRID ─── */
+.week-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.week-nav{display:flex;align-items:center;gap:8px}
+.nav-btn{
+  width:30px;height:30px;border-radius:8px;
+  background:var(--s2);border:1px solid var(--border);
+  color:var(--muted2);cursor:pointer;font-size:16px;
+  display:grid;place-items:center;transition:all .15s
+}
+.nav-btn:hover{border-color:var(--border2);color:var(--text)}
+.week-label{font-size:14px;font-weight:600;padding:0 6px}
+.today-btn{
+  background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);
+  color:#93c5fd;border-radius:999px;padding:5px 14px;
+  font-size:12px;cursor:pointer;transition:all .15s
+}
+.today-btn:hover{background:rgba(59,130,246,.25)}
+
+.week-grid{
+  display:grid;
+  grid-template-columns:120px repeat(7,minmax(0,1fr));
+  gap:6px;margin-bottom:16px
+}
+.wg-corner{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:8px;
+  display:flex;align-items:flex-end;
+  font-size:10px;color:var(--muted);font-family:var(--mono)
+}
+.wg-day-header{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:8px 10px;
+  cursor:pointer;transition:all .18s;text-align:center
+}
+.wg-day-header:hover{border-color:var(--border2)}
+.wg-day-header.today{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.35)}
+.wg-day-header.selected{background:rgba(59,130,246,.2);border-color:rgba(59,130,246,.6)}
+.wg-day-name{font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em}
+.wg-day-num{font-size:18px;font-weight:600;letter-spacing:-.5px;margin:1px 0}
+.wg-day-count{font-size:9px;color:var(--muted)}
+.wg-day-header.today .wg-day-num{color:#93c5fd}
+
+.wg-team-label{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:8px 10px;
+  display:flex;align-items:center;
+  font-size:11px;font-weight:500;line-height:1.3;min-height:80px
+}
+.wg-cell{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:5px;
+  min-height:80px;display:flex;flex-direction:column;gap:3px
+}
+
+/* Task chip */
+.task-chip{
+  border-radius:6px;padding:4px 6px;
+  font-size:10px;font-weight:500;line-height:1.3;
+  border-left:3px solid;cursor:pointer;
+  transition:transform .12s;position:relative
+}
+.task-chip:hover{transform:translateY(-1px)}
+.task-chip.selected{outline:2px solid rgba(255,255,255,.25);outline-offset:1px}
+.tc-title{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc-sub{font-size:9px;opacity:.8;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc-dates{font-size:9px;opacity:.7;margin-top:1px;font-family:var(--mono)}
+.urgency-dot{position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:50%}
+.urgency-critical .urgency-dot{background:#ef4444;box-shadow:0 0 4px rgba(239,68,68,.7)}
+.urgency-priority  .urgency-dot{background:#f97316}
+.urgency-normal    .urgency-dot{background:rgba(255,255,255,.15)}
+
+/* Multi-day spanning chip */
+.task-chip.span-start{border-radius:6px 0 0 6px;border-right:none}
+.task-chip.span-mid{border-radius:0;border-left-width:1px;border-right:none;opacity:.85}
+.task-chip.span-end{border-radius:0 6px 6px 0;border-left-width:1px;opacity:.9}
+
+/* Absence chip */
+.chip-absence{
+  background:rgba(236,72,153,.12);border-color:var(--pink);color:#f9a8d4;
+  border-left:3px solid var(--pink)
+}
+
+.chip-blue  {background:rgba(59,130,246,.16);border-color:#3b82f6;color:#93c5fd}
+.chip-red   {background:rgba(239,68,68,.16);border-color:#ef4444;color:#fca5a5}
+.chip-purple{background:rgba(139,92,246,.16);border-color:#8b5cf6;color:#c4b5fd}
+.chip-green {background:rgba(34,197,94,.16);border-color:#22c55e;color:#86efac}
+.chip-gray  {background:rgba(100,116,139,.18);border-color:#64748b;color:#94a3b8}
+.chip-yellow{background:rgba(245,158,11,.16);border-color:#f59e0b;color:#fcd34d}
+.chip-orange{background:rgba(251,146,60,.16);border-color:#fb923c;color:#fed7aa}
+
+/* ─── LAYOUT SIDE PANEL ─── */
+.view-layout{display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start}
+.side-panel{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;
+  position:sticky;top:165px
+}
+.sp-header{
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:10px
+}
+.sp-title{font-size:14px;font-weight:600}
+.sp-badge{padding:3px 9px;border-radius:999px;font-size:10px;font-family:var(--mono);border:1px solid var(--border);color:var(--muted2)}
+.sp-body{padding:14px}
+
+.day-progress{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:10px 14px;margin-bottom:12px;
+  display:flex;align-items:center;gap:12px
+}
+.dp-label{font-size:11px;color:var(--muted);min-width:70px}
+.dp-bar-bg{flex:1;height:4px;border-radius:99px;background:var(--s3)}
+.dp-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--teal));transition:width .5s ease}
+.dp-count{font-size:11px;font-family:var(--mono);color:var(--muted2);min-width:36px;text-align:right}
+
+.day-sections{display:grid;gap:8px}
+.day-section{background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden}
+.day-section-header{
+  padding:7px 11px;font-size:11px;font-weight:600;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:5px
+}
+.day-section-body{padding:6px}
+.day-task-row{
+  display:flex;align-items:flex-start;gap:7px;
+  padding:6px 7px;border-radius:6px;
+  font-size:11px;cursor:pointer;transition:background .15s
+}
+.day-task-row:hover{background:rgba(255,255,255,.04)}
+.dtr-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.dtr-main{flex:1;min-width:0}
+.dtr-title{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dtr-sub{font-size:9px;color:var(--muted);margin-top:1px}
+.dtr-tag{padding:2px 6px;border-radius:4px;font-size:9px;font-family:var(--mono);flex-shrink:0}
+.empty-msg{font-size:11px;color:var(--muted);padding:5px 7px}
+
+/* Task detail */
+.td-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px}
+.td-block{background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 11px}
+.td-k{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-family:var(--mono);margin-bottom:2px}
+.td-v{font-size:12px;font-weight:500}
+.td-desc{background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;font-size:12px;line-height:1.6;color:var(--muted2)}
+.td-actions{display:flex;gap:7px;margin-top:9px}
+.td-btn{
+  flex:1;padding:7px;border-radius:7px;font-size:11px;font-weight:500;
+  cursor:pointer;border:1px solid var(--border);
+  background:var(--s3);color:var(--text);transition:all .15s
+}
+.td-btn:hover{background:var(--s4);border-color:var(--border2)}
+.td-btn.primary{background:rgba(59,130,246,.2);border-color:rgba(59,130,246,.4);color:#93c5fd}
+.td-btn.primary:hover{background:rgba(59,130,246,.3)}
+
+/* ─── VUE JOUR ─── */
+.day-view-header{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.day-view-title{font-size:22px;font-weight:600;letter-spacing:-.5px}
+.day-view-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.day-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.day-col{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.day-col-header{
+  padding:12px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between
+}
+.day-col-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px}
+.day-col-count{
+  width:20px;height:20px;border-radius:50%;
+  background:var(--s3);border:1px solid var(--border);
+  font-size:10px;display:grid;place-items:center;font-family:var(--mono)
+}
+.day-col-body{padding:8px;display:grid;gap:5px}
+.day-task-card{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:9px 11px;
+  border-left:3px solid;cursor:pointer;transition:all .15s
+}
+.day-task-card:hover{transform:translateX(2px)}
+.dtc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:7px;margin-bottom:3px}
+.dtc-title{font-size:12px;font-weight:500}
+.dtc-urgency{padding:2px 6px;border-radius:4px;font-size:9px;font-family:var(--mono);flex-shrink:0}
+.dtc-meta{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dtc-dates{font-size:10px;color:var(--teal);font-family:var(--mono);margin-top:3px}
+.owner-dot{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font-size:8px;font-weight:700;flex-shrink:0}
+
+/* Absence card */
+.absence-card{
+  background:rgba(236,72,153,.08);border:1px solid rgba(236,72,153,.25);
+  border-radius:var(--r-sm);padding:9px 11px;font-size:12px
+}
+.absence-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.absence-person{display:flex;align-items:center;gap:7px;font-weight:500}
+.absence-type{padding:2px 7px;border-radius:4px;font-size:10px;background:rgba(236,72,153,.15);color:#f9a8d4;font-family:var(--mono)}
+.absence-dates{font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--mono)}
+
+/* ─── VUE SEMESTRE ─── */
+.semester-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:14px}
+.month-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.month-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.month-name{font-size:14px;font-weight:600}
+.month-year{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.month-body{padding:10px}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:3px}
+.cal-wd{text-align:center;font-size:9px;font-family:var(--mono);color:var(--muted);padding:3px 0;text-transform:uppercase}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-day{
+  aspect-ratio:1;border-radius:5px;
+  display:grid;place-items:center;font-size:10px;
+  color:var(--muted);position:relative;cursor:default;
+  background:rgba(255,255,255,.02);border:1px solid transparent;transition:all .12s
+}
+.cal-day:hover{background:rgba(255,255,255,.05);border-color:var(--border)}
+.cal-day.empty{visibility:hidden}
+.cal-day.today{background:rgba(59,130,246,.18);border-color:rgba(59,130,246,.4);color:#93c5fd;font-weight:600}
+.cal-day.absence-day{background:rgba(236,72,153,.12);border-color:rgba(236,72,153,.2)}
+.cal-day .cal-dot{position:absolute;bottom:2px;right:2px;width:4px;height:4px;border-radius:50%}
+.cal-day.has-critical .cal-dot{background:var(--red)}
+.cal-day.has-priority  .cal-dot{background:var(--yellow)}
+.cal-day.has-normal    .cal-dot{background:var(--blue)}
+.cal-day.clickable{cursor:pointer}
+.cal-day.clickable:hover{background:rgba(255,255,255,.06);border-color:var(--border2);color:var(--text)}
+.sem-legend{
+  display:flex;gap:12px;flex-wrap:wrap;
+  padding:10px 14px;background:var(--s1);border:1px solid var(--border);border-radius:var(--r-sm)
+}
+.sem-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted2)}
+.sem-dot{width:7px;height:7px;border-radius:50%}
+
+/* ─── MODAL ─── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);
+  backdrop-filter:blur(8px);z-index:200;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity .2s
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{
+  background:var(--s1);border:1px solid var(--border2);
+  border-radius:22px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;
+  transform:translateY(18px);transition:transform .25s
+}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-hdr{
+  padding:18px 22px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between
+}
+.modal-hdr-title{font-size:16px;font-weight:600}
+.modal-close{
+  width:28px;height:28px;border-radius:50%;background:var(--s2);
+  border:1px solid var(--border);color:var(--muted);
+  cursor:pointer;display:grid;place-items:center;transition:all .15s
+}
+.modal-close:hover{background:var(--s3);color:var(--text)}
+.modal-body{padding:16px 22px 22px}
+
+/* Type selector dans modal */
+.type-selector{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px
+}
+.type-opt{
+  padding:10px 8px;border-radius:10px;border:1px solid var(--border);
+  background:var(--s2);cursor:pointer;text-align:center;transition:all .15s
+}
+.type-opt:hover{border-color:var(--border2)}
+.type-opt.selected{border-color:rgba(59,130,246,.5);background:rgba(59,130,246,.12)}
+.type-opt .to-icon{font-size:16px;margin-bottom:4px}
+.type-opt .to-label{font-size:11px;font-weight:500}
+
+/* Absence type selector */
+.absence-types{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}
+.at-opt{
+  padding:8px 6px;border-radius:9px;border:1px solid var(--border);
+  background:var(--s2);cursor:pointer;text-align:center;transition:all .15s;font-size:11px
+}
+.at-opt:hover{border-color:var(--border2)}
+.at-opt.selected{border-color:rgba(236,72,153,.5);background:rgba(236,72,153,.12);color:#f9a8d4}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
+.form-row.full{grid-template-columns:1fr}
+.form-row.trio{grid-template-columns:1fr 1fr 1fr}
+.form-group label{
+  display:block;font-size:10px;font-family:var(--mono);
+  color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px
+}
+.form-input,.form-select,.form-textarea{
+  width:100%;background:var(--s2);border:1px solid var(--border);
+  border-radius:9px;padding:8px 11px;color:var(--text);
+  font-size:13px;outline:none;transition:border-color .15s;-webkit-appearance:none
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--border3)}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--muted)}
+.form-select option{background:var(--s2)}
+.form-textarea{resize:vertical;min-height:60px}
+.form-hint{font-size:10px;color:var(--muted);margin-top:3px}
+.form-actions{display:flex;gap:9px;margin-top:14px}
+.btn-cancel{flex:1;padding:9px;border-radius:9px;background:var(--s2);border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .15s}
+.btn-cancel:hover{border-color:var(--border2);color:var(--text)}
+.btn-save{flex:2;padding:9px;border-radius:9px;font-weight:500;cursor:pointer;transition:all .15s}
+.btn-save.blue{background:rgba(59,130,246,.2);border:1px solid rgba(59,130,246,.4);color:#93c5fd}
+.btn-save.blue:hover{background:rgba(59,130,246,.3)}
+.btn-save.red{background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);color:#fca5a5}
+.btn-save.pink{background:rgba(236,72,153,.2);border:1px solid rgba(236,72,153,.4);color:#f9a8d4}
+
+/* ─── SYNC BAR ─── */
+.sync-bar{
+  position:fixed;bottom:18px;right:20px;z-index:150;
+  display:flex;align-items:center;gap:7px;
+  background:var(--s2);border:1px solid var(--border2);
+  border-radius:999px;padding:7px 14px;font-size:12px;
+  opacity:0;transform:translateY(6px);transition:all .3s;pointer-events:none
+}
+.sync-bar.show{opacity:1;transform:translateY(0)}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+.sync-dot.loading{background:var(--yellow);animation:blink .8s ease-in-out infinite}
+.sync-dot.error{background:var(--red)}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:1100px){
+  .view-layout{grid-template-columns:1fr}
+  .side-panel{position:static}
+  .day-columns{grid-template-columns:1fr 1fr}
+  .semester-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:700px){
+  .main{padding:12px 14px}
+  .topbar{padding:0 14px}
+  .quick-btns{display:none}
+  .week-grid{grid-template-columns:80px repeat(5,minmax(0,1fr))}
+  .day-columns{grid-template-columns:1fr}
+  .semester-grid{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .form-row.trio{grid-template-columns:1fr 1fr}
+  .type-selector{grid-template-columns:repeat(3,1fr)}
+  .absence-types{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:480px){
+  .view-tabs{overflow-x:auto;scrollbar-width:none}
+  .view-tabs::-webkit-scrollbar{display:none}
+  .filters-strip{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}
+  .filters-strip::-webkit-scrollbar{display:none}
+}
+
+/* ─── ANIMATIONS ─── */
+.main>*{animation:fadeUp .35s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="back-btn" href="https://sudwifi.github.io/deviseur/sudwifi-dashboard.html">← Dashboard</a>
+  <div class="topbar-title">📅 Planning V2</div>
+  <div class="topbar-right">
+    <div class="quick-btns">
+      <button class="qb qb-chantier" onclick="quickAdd('chantier')">🔧 Chantier</button>
+      <button class="qb qb-sav"     onclick="quickAdd('sav')">🚨 SAV</button>
+      <button class="qb qb-absence" onclick="openAbsenceModal()">🏖 Absence</button>
+      <button class="qb qb-achat"   onclick="quickAdd('achats')">📦 Achat</button>
+      <button class="qb qb-add"     onclick="openAddModal()">+ Autre</button>
+    </div>
+    <div class="clock-sm" id="clock"></div>
+  </div>
+</header>
+
+<div class="view-tabs">
+  <button class="view-tab active" onclick="setView('semaine',this)">Semaine</button>
+  <button class="view-tab" onclick="setView('jour',this)">Jour</button>
+  <button class="view-tab" onclick="setView('semestre',this)">Semestre</button>
+  <div class="view-tab-spacer"></div>
+  <button class="sync-pill" id="syncBtn" onclick="syncFromSheets()">⟳ Sync</button>
+</div>
+
+<div class="filters-strip">
+  <span class="filter-label">rôle</span>
+  <button class="f-pill active" data-role="direction" onclick="setRole(this)">Direction</button>
+  <button class="f-pill" data-role="tech" onclick="setRole(this)">Techs</button>
+  <button class="f-pill" data-role="adv" onclick="setRole(this)">ADV</button>
+  <button class="f-pill" data-role="business" onclick="setRole(this)">Business</button>
+  <button class="f-pill" data-role="marketing" onclick="setRole(this)">Com</button>
+  <div class="f-divider"></div>
+  <span class="filter-label">type</span>
+  <button class="f-pill" data-type="chantier" onclick="toggleType(this)">Chantier</button>
+  <button class="f-pill" data-type="sav" onclick="toggleType(this)">SAV</button>
+  <button class="f-pill" data-type="achats" onclick="toggleType(this)">Achats</button>
+  <button class="f-pill" data-type="business" onclick="toggleType(this)">Business</button>
+  <button class="f-pill" data-type="admin" onclick="toggleType(this)">Admin</button>
+  <button class="f-pill" data-type="marketing" onclick="toggleType(this)">Com</button>
+  <button class="f-pill" data-type="absence" onclick="toggleType(this)" style="color:#f9a8d4;border-color:rgba(236,72,153,.3)">Absences</button>
+</div>
+
+<main class="main" id="mainContent"></main>
+
+<!-- MODAL TÂCHE -->
+<div class="modal-overlay" id="modalTask" onclick="closeModalOutside(event,'modalTask')">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-hdr-title" id="modalTaskTitle">Nouvelle tâche</div>
+      <button class="modal-close" onclick="closeModal('modalTask')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId"/>
+
+      <!-- Type selector -->
+      <div class="type-selector" id="typeSelector">
+        <div class="type-opt" data-type="chantier" onclick="selectType('chantier')"><div class="to-icon">🔧</div><div class="to-label">Chantier</div></div>
+        <div class="type-opt" data-type="sav" onclick="selectType('sav')"><div class="to-icon">🚨</div><div class="to-label">SAV</div></div>
+        <div class="type-opt" data-type="achats" onclick="selectType('achats')"><div class="to-icon">📦</div><div class="to-label">Achats</div></div>
+        <div class="type-opt" data-type="business" onclick="selectType('business')"><div class="to-icon">💼</div><div class="to-label">Business</div></div>
+        <div class="type-opt" data-type="admin" onclick="selectType('admin')"><div class="to-icon">🗂️</div><div class="to-label">Admin</div></div>
+        <div class="type-opt" data-type="marketing" onclick="selectType('marketing')"><div class="to-icon">📣</div><div class="to-label">Com</div></div>
+      </div>
+      <input type="hidden" id="fType" value="chantier"/>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Titre *</label>
+          <input class="form-input" id="fTitle" placeholder="Ex: SAV Miremer"/>
+        </div>
+        <div class="form-group">
+          <label>Site / client</label>
+          <input class="form-input" id="fSite" placeholder="Ex: Camping Miremer"/>
+        </div>
+      </div>
+
+      <!-- Plage de dates -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date début *</label>
+          <input class="form-input" id="fDateStart" type="date"/>
+        </div>
+        <div class="form-group">
+          <label>Date fin</label>
+          <input class="form-input" id="fDateEnd" type="date"/>
+          <div class="form-hint">Laisser vide = 1 jour</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Responsable</label>
+          <select class="form-select" id="fOwner">
+            <option>Virginie</option><option>Stéphane</option>
+            <option>Anthony</option><option>Fabian</option>
+            <option>Ambre</option><option>Amanda</option>
+            <option>Carla</option><option>Jonovan</option><option>Frédéric</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Urgence</label>
+          <select class="form-select" id="fUrgency">
+            <option value="normal">Normal</option>
+            <option value="priority">Prioritaire</option>
+            <option value="critical">Critique</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Statut</label>
+          <select class="form-select" id="fStatus">
+            <option>À faire</option><option>Planifié</option>
+            <option>En cours</option><option>Bloqué</option><option>Terminé</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Équipe</label>
+          <select class="form-select" id="fTeam">
+            <option value="tech">Techs</option>
+            <option value="adv">ADV</option>
+            <option value="biz">Business</option>
+            <option value="mkt">Com</option>
+            <option value="direction">Direction</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row full">
+        <div class="form-group">
+          <label>Description</label>
+          <textarea class="form-textarea" id="fDesc" placeholder="Détails, consignes, contexte…"></textarea>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label>Lien utile</label>
+          <input class="form-input" id="fLink" placeholder="Axonaut, Omada, Crisp…"/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="closeModal('modalTask')">Annuler</button>
+        <button class="btn-save blue" onclick="saveTask()">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ABSENCE -->
+<div class="modal-overlay" id="modalAbsence" onclick="closeModalOutside(event,'modalAbsence')">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-hdr-title">🏖 Déclarer une absence</div>
+      <button class="modal-close" onclick="closeModal('modalAbsence')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="absEditId"/>
+
+      <div class="absence-types" id="absenceTypes">
+        <div class="at-opt selected" data-atype="conge" onclick="selectAbsType('conge')">🏖 Congés</div>
+        <div class="at-opt" data-atype="maladie" onclick="selectAbsType('maladie')">🤒 Maladie</div>
+        <div class="at-opt" data-atype="formation" onclick="selectAbsType('formation')">📚 Formation</div>
+        <div class="at-opt" data-atype="autre" onclick="selectAbsType('autre')">📌 Autre</div>
+      </div>
+      <input type="hidden" id="absType" value="conge"/>
+
+      <div class="form-row full">
+        <div class="form-group">
+          <label>Personne concernée *</label>
+          <select class="form-select" id="absPerson">
+            <option>Virginie</option><option>Stéphane</option>
+            <option>Anthony</option><option>Fabian</option>
+            <option>Ambre</option><option>Amanda</option>
+            <option>Carla</option><option>Jonovan</option><option>Frédéric</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Du *</label>
+          <input class="form-input" id="absStart" type="date"/>
+        </div>
+        <div class="form-group">
+          <label>Au *</label>
+          <input class="form-input" id="absEnd" type="date"/>
+        </div>
+      </div>
+
+      <div class="form-row full">
+        <div class="form-group">
+          <label>Note</label>
+          <input class="form-input" id="absNote" placeholder="Ex: congés été, formation Omada…"/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="closeModal('modalAbsence')">Annuler</button>
+        <button class="btn-save pink" onclick="saveAbsence()">Enregistrer l'absence</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sync-bar" id="syncBar">
+  <div class="sync-dot" id="syncDot"></div>
+  <span id="syncMsg">Synchronisé</span>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════════════════
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbye5ghdeGfjeAaQGLkRgTDzGVGaXkvntKXL1VDcxwRQ5oxaGgHzJGNefm68KDT_ZXZh/exec';
+const USE_DEMO_DATA = false;
+
+// ══════════════════════════════════════════════════════
+//  DATA CONFIG
+// ══════════════════════════════════════════════════════
+const typeConfig = {
+  chantier: {color:'blue',  label:'Chantier', dot:'#3b82f6'},
+  sav:      {color:'red',   label:'SAV',      dot:'#ef4444'},
+  achats:   {color:'purple',label:'Achats',   dot:'#8b5cf6'},
+  business: {color:'green', label:'Business', dot:'#22c55e'},
+  admin:    {color:'gray',  label:'Admin',    dot:'#64748b'},
+  marketing:{color:'yellow',label:'Com',      dot:'#f59e0b'},
+  absence:  {color:'absence',label:'Absence', dot:'#ec4899'},
+};
+const absTypeLabel = {conge:'Congés',maladie:'Maladie',formation:'Formation',autre:'Absence'};
+const urgencyTag = {
+  critical:{label:'CRITIQUE',   bg:'rgba(239,68,68,.18)',  color:'#fca5a5'},
+  priority:{label:'PRIORITAIRE',bg:'rgba(245,158,11,.18)', color:'#fcd34d'},
+  normal:  {label:'NORMAL',     bg:'rgba(100,116,139,.18)',color:'#94a3b8'},
+};
+const teamRoles = {
+  tech:      ['direction','tech'],
+  adv:       ['direction','adv'],
+  biz:       ['direction','business'],
+  mkt:       ['direction','marketing'],
+  direction: ['direction'],
+};
+const teamLabels = {tech:'Anthony · Fabian',adv:'Ambre · ADV',biz:'Virginie · Carla',mkt:'Amanda · Com',direction:'Direction'};
+const ownerColors = {
+  Anthony:'#3b82f6',Fabian:'#06b6d4',Ambre:'#8b5cf6',
+  Virginie:'#22c55e',Carla:'#10b981',Amanda:'#f59e0b',
+  Stéphane:'#ef4444',Jonovan:'#fb923c',Frédéric:'#a78bfa'
+};
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let tasks     = loadLocal('sw_tasks_v2') || (USE_DEMO_DATA ? getDemoTasks() : []);
+let absences  = loadLocal('sw_absences') || (USE_DEMO_DATA ? getDemoAbsences() : []);
+let selectedRole    = 'direction';
+let activeTypes     = new Set();
+let currentView     = 'semaine';
+let selectedTaskId  = null;
+let selectedDay     = null;
+let weekOffset      = 0;
+
+// ══════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════
+function today(){const d=new Date();return fmt(d)}
+function fmt(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function addDays(s,n){const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return fmt(d)}
+function getWeekStart(off=0){
+  const d=new Date();const day=d.getDay();
+  d.setDate(d.getDate()+(day===0?-6:1-day)+off*7);return fmt(d)
+}
+function parseDate(s){return new Date(s+'T12:00:00')}
+function fmtDisplay(s){
+  const d=parseDate(s);
+  const days=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  const months=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  return days[d.getDay()]+' '+d.getDate()+' '+months[d.getMonth()]
+}
+function fmtLong(s){
+  const d=parseDate(s);
+  const days=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  const months=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  return days[d.getDay()]+' '+d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear()
+}
+function uid(){return 't_'+Date.now()+'_'+Math.random().toString(36).slice(2,6)}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+// Vérifie si une tâche est active un jour donné (gestion plages)
+function taskOnDay(t, dayStr){
+  const start = t.date_start || t.date || '';
+  const end   = t.date_end   || start;
+  return start && dayStr >= start && dayStr <= end;
+}
+
+// Vérifie si une absence couvre un jour
+function absenceOnDay(a, dayStr){
+  return dayStr >= a.start && dayStr <= a.end;
+}
+
+// Durée en jours d'une tâche
+function taskDuration(t){
+  const s = t.date_start || t.date || '';
+  const e = t.date_end   || s;
+  if(!s) return 1;
+  const diff = (parseDate(e)-parseDate(s))/(1000*3600*24);
+  return Math.max(1, Math.round(diff)+1);
+}
+
+function loadLocal(k){try{const d=localStorage.getItem(k);return d?JSON.parse(d):null}catch(e){return null}}
+function saveLocal(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function saveAll(){saveLocal('sw_tasks_v2',tasks);saveLocal('sw_absences',absences)}
+
+function visibleTasks(){
+  return tasks.filter(t=>{
+    const roles=(teamRoles[t.team]||[]);
+    const roleOk=roles.includes(selectedRole);
+    const typeOk=activeTypes.size===0||activeTypes.has(t.type);
+    return roleOk&&typeOk;
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  CLOCK
+// ══════════════════════════════════════════════════════
+function updateClock(){
+  const now=new Date();
+  const h=String(now.getHours()).padStart(2,'0');
+  const m=String(now.getMinutes()).padStart(2,'0');
+  const days=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  const months=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  const el=document.getElementById('clock');
+  if(el) el.textContent=days[now.getDay()]+' '+now.getDate()+' '+months[now.getMonth()]+' · '+h+':'+m;
+}
+updateClock(); setInterval(updateClock,10000);
+
+// ══════════════════════════════════════════════════════
+//  VIEW / FILTER SWITCHERS
+// ══════════════════════════════════════════════════════
+function setView(v,btn){
+  currentView=v;
+  document.querySelectorAll('.view-tab').forEach(t=>t.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  render();
+}
+function setRole(btn){
+  document.querySelectorAll('[data-role]').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  selectedRole=btn.dataset.role;
+  render();
+}
+function toggleType(btn){
+  const t=btn.dataset.type;
+  if(activeTypes.has(t)){activeTypes.delete(t);btn.classList.remove('active');}
+  else{activeTypes.add(t);btn.classList.add('active');}
+  render();
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════
+function render(){
+  if(currentView==='semaine')   renderSemaine();
+  else if(currentView==='jour') renderJour();
+  else                          renderSemestre();
+}
+
+// ══════════════════════════════════════════════════════
+//  VUE SEMAINE
+// ══════════════════════════════════════════════════════
+function renderSemaine(){
+  const ws   = getWeekStart(weekOffset);
+  const days = Array.from({length:7},(_,i)=>addDays(ws,i));
+  const todayStr = today();
+  if(!selectedDay) selectedDay=todayStr;
+  const vt   = visibleTasks();
+  const teams = Object.entries(teamLabels).filter(([id])=>(teamRoles[id]||[]).includes(selectedRole));
+
+  const d0=parseDate(days[0]),d6=parseDate(days[6]);
+  const months=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  const weekLabel=d0.getDate()+' '+months[d0.getMonth()]+' → '+d6.getDate()+' '+months[d6.getMonth()]+' '+d6.getFullYear();
+
+  let html=`<div class="week-header">
+    <div class="week-nav">
+      <button class="nav-btn" onclick="weekOffset--;render()">‹</button>
+      <span class="week-label">${weekLabel}</span>
+      <button class="nav-btn" onclick="weekOffset++;render()">›</button>
+    </div>
+    <button class="today-btn" onclick="weekOffset=0;selectedDay='${todayStr}';render()">Aujourd'hui</button>
+  </div>
+  <div class="view-layout"><div>
+  <div class="week-grid">
+    <div class="wg-corner">équipe / jour</div>`;
+
+  days.forEach(d=>{
+    const dd=parseDate(d);
+    const dayNames=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+    const count=vt.filter(t=>taskOnDay(t,d)).length;
+    const absCount=absences.filter(a=>absenceOnDay(a,d)).length;
+    const isTd=d===todayStr,isSel=d===selectedDay;
+    html+=`<div class="wg-day-header ${isTd?'today':''} ${isSel?'selected':''}" onclick="selectedDay='${d}';render()">
+      <div class="wg-day-name">${dayNames[dd.getDay()]}</div>
+      <div class="wg-day-num">${dd.getDate()}</div>
+      <div class="wg-day-count">${count} tâche${count!==1?'s':''}${absCount?` · ${absCount}🏖`:''}</div>
+    </div>`;
+  });
+
+  teams.forEach(([teamId,teamLabel])=>{
+    html+=`<div class="wg-team-label">${teamLabel}</div>`;
+    days.forEach(d=>{
+      const dayTasks = vt.filter(t=>taskOnDay(t,d)&&t.team===teamId);
+      // Absences pour cette équipe ce jour
+      const dayAbs = absences.filter(a=>absenceOnDay(a,d)&&getPersonTeam(a.person)===teamId);
+
+      html+=`<div class="wg-cell">`;
+
+      // Absences d'abord
+      dayAbs.forEach(a=>{
+        html+=`<div class="task-chip chip-absence">
+          <div class="tc-title">🏖 ${esc(a.person)}</div>
+          <div class="tc-sub">${absTypeLabel[a.type]||'Absence'}</div>
+        </div>`;
+      });
+
+      // Tâches
+      dayTasks.forEach(t=>{
+        const cfg=typeConfig[t.type]||typeConfig.admin;
+        const sel=t.id===selectedTaskId?'selected':'';
+        const dur=taskDuration(t);
+        const start=t.date_start||t.date||'';
+        const isFirst=start===d;
+        const isLast=(t.date_end||start)===d;
+        const spanCls=dur>1?(isFirst?'span-start':isLast?'span-end':'span-mid'):'';
+
+        html+=`<div class="task-chip chip-${cfg.color} urgency-${t.urgency} ${sel} ${spanCls}"
+          onclick="selectTask('${t.id}')">
+          <div class="tc-title">${esc(t.title)}</div>
+          ${isFirst&&t.site?`<div class="tc-sub">${esc(t.site)}</div>`:''}
+          ${dur>1&&isFirst?`<div class="tc-dates">${fmtDisplay(start)} → ${fmtDisplay(t.date_end||start)}</div>`:''}
+          <div class="urgency-dot"></div>
+        </div>`;
+      });
+      html+=`</div>`;
+    });
+  });
+
+  html+=`</div></div>`;
+
+  // Side panel
+  const selTask=tasks.find(t=>t.id===selectedTaskId);
+  const dayTasks=vt.filter(t=>taskOnDay(t,selectedDay));
+  const dayAbs=absences.filter(a=>absenceOnDay(a,selectedDay));
+  const done=dayTasks.filter(t=>t.status==='Terminé').length;
+  const pct=dayTasks.length?Math.round(done/dayTasks.length*100):0;
+  const dayLabel=selectedDay?fmtDisplay(selectedDay):'—';
+
+  html+=`<div><div class="side-panel">
+    <div class="sp-header">
+      <div class="sp-title">📌 ${dayLabel}</div>
+      <div class="sp-badge">${dayTasks.length} tâche${dayTasks.length!==1?'s':''}</div>
+    </div>
+    <div class="sp-body">
+      <div class="day-progress">
+        <div class="dp-label">Avancement</div>
+        <div class="dp-bar-bg"><div class="dp-bar-fill" style="width:${pct}%"></div></div>
+        <div class="dp-count">${done}/${dayTasks.length}</div>
+      </div>`;
+
+  // Absences du jour
+  if(dayAbs.length){
+    html+=`<div class="day-section" style="margin-bottom:8px">
+      <div class="day-section-header" style="color:#f9a8d4">🏖 Absences (${dayAbs.length})</div>
+      <div class="day-section-body">`;
+    dayAbs.forEach(a=>{
+      html+=`<div class="day-task-row">
+        <div class="dtr-dot" style="background:#ec4899"></div>
+        <div class="dtr-main">
+          <div class="dtr-title">${esc(a.person)}</div>
+          <div class="dtr-sub">${absTypeLabel[a.type]||'Absence'} · jusqu'au ${fmtDisplay(a.end)}</div>
+        </div>
+      </div>`;
+    });
+    html+=`</div></div>`;
+  }
+
+  html+=`<div class="day-sections">`;
+  const sections=[
+    {label:'🔧 Terrain',types:['chantier','sav']},
+    {label:'🚨 Urgences',filter:t=>t.urgency!=='normal'},
+    {label:'📦 Achats / ADV',types:['achats']},
+    {label:'💼 Business / Com',types:['business','marketing']},
+    {label:'🗂️ Admin',types:['admin']},
+  ];
+  sections.forEach(sec=>{
+    let items=sec.filter?dayTasks.filter(sec.filter):dayTasks.filter(t=>sec.types.includes(t.type));
+    if(!items.length) return;
+    const urg=urgencyTag;
+    html+=`<div class="day-section">
+      <div class="day-section-header">${sec.label}<span style="margin-left:auto;font-size:9px;color:var(--muted);font-family:var(--mono)">${items.length}</span></div>
+      <div class="day-section-body">`;
+    items.forEach(t=>{
+      const cfg=typeConfig[t.type]||typeConfig.admin;
+      const u=urgencyTag[t.urgency]||urgencyTag.normal;
+      const dur=taskDuration(t);
+      html+=`<div class="day-task-row" onclick="selectTask('${t.id}')">
+        <div class="dtr-dot" style="background:${cfg.dot}"></div>
+        <div class="dtr-main">
+          <div class="dtr-title">${esc(t.title)}${dur>1?` <span style="font-size:9px;color:var(--teal)">(${dur}j)</span>`:''}</div>
+          <div class="dtr-sub">${esc(t.owner)} · ${esc(t.site||'')}</div>
+        </div>
+        <div class="dtr-tag" style="background:${u.bg};color:${u.color}">${t.status}</div>
+      </div>`;
+    });
+    html+=`</div></div>`;
+  });
+  html+=`</div>`;
+
+  // Task detail
+  if(selTask){
+    const cfg=typeConfig[selTask.type]||typeConfig.admin;
+    const u=urgencyTag[selTask.urgency]||urgencyTag.normal;
+    const dur=taskDuration(selTask);
+    html+=`<div style="margin-top:10px">
+      <div class="td-grid">
+        <div class="td-block"><div class="td-k">Titre</div><div class="td-v">${esc(selTask.title)}</div></div>
+        <div class="td-block"><div class="td-k">Type</div><div class="td-v" style="color:${cfg.dot}">${cfg.label}</div></div>
+        <div class="td-block"><div class="td-k">Responsable</div><div class="td-v">${esc(selTask.owner)}</div></div>
+        <div class="td-block"><div class="td-k">Site</div><div class="td-v">${esc(selTask.site||'—')}</div></div>
+        <div class="td-block"><div class="td-k">Statut</div><div class="td-v">${esc(selTask.status)}</div></div>
+        <div class="td-block"><div class="td-k">Durée</div><div class="td-v" style="color:var(--teal)">${dur} jour${dur>1?'s':''}</div></div>
+      </div>
+      ${dur>1?`<div class="td-block" style="margin-bottom:8px"><div class="td-k">Période</div><div class="td-v" style="font-family:var(--mono);font-size:11px;color:var(--teal)">${fmtDisplay(selTask.date_start||selTask.date||'')} → ${fmtDisplay(selTask.date_end||selTask.date_start||selTask.date||'')}</div></div>`:''}
+      ${selTask.description?`<div class="td-desc">${esc(selTask.description)}</div>`:''}
+      <div class="td-actions">
+        <button class="td-btn primary" onclick="openEditModal('${selTask.id}')">✏️</button>
+        <button class="td-btn" onclick="markDone('${selTask.id}')">✓</button>
+        <button class="td-btn" style="color:#fca5a5" onclick="deleteTask('${selTask.id}')">✕</button>
+      </div>
+    </div>`;
+  }
+
+  html+=`</div></div></div></div>`;
+  document.getElementById('mainContent').innerHTML=html;
+}
+
+// ══════════════════════════════════════════════════════
+//  VUE JOUR
+// ══════════════════════════════════════════════════════
+function renderJour(){
+  if(!selectedDay) selectedDay=today();
+  const vt=visibleTasks().filter(t=>taskOnDay(t,selectedDay));
+  const dayAbs=absences.filter(a=>absenceOnDay(a,selectedDay));
+  const d=parseDate(selectedDay);
+  const todayStr=today();
+  const done=vt.filter(t=>t.status==='Terminé').length;
+  const crits=vt.filter(t=>t.urgency==='critical');
+
+  let html=`<div class="day-view-header">
+    <div class="week-nav">
+      <button class="nav-btn" onclick="selectedDay=addDays(selectedDay,-1);render()">‹</button>
+      <button class="nav-btn" onclick="selectedDay=addDays(selectedDay,1);render()">›</button>
+    </div>
+    <div>
+      <div class="day-view-title">${fmtLong(selectedDay)}</div>
+      <div class="day-view-sub">${vt.length} tâche${vt.length!==1?'s':''} · ${done} terminée${done!==1?'s':''} · ${crits.length} critique${crits.length!==1?'s':''}${dayAbs.length?` · ${dayAbs.length} absence${dayAbs.length>1?'s':''} 🏖`:''}</div>
+    </div>
+    <button class="today-btn" onclick="selectedDay='${todayStr}';render()" style="margin-left:auto">Aujourd'hui</button>
+  </div>`;
+
+  // Absences du jour
+  if(dayAbs.length){
+    html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-bottom:14px">`;
+    dayAbs.forEach(a=>{
+      const oc=ownerColors[a.person]||'#8fa3c8';
+      html+=`<div class="absence-card">
+        <div class="absence-card-top">
+          <div class="absence-person">
+            <div class="owner-dot" style="background:${oc}22;color:${oc}">${a.person[0]}</div>
+            ${esc(a.person)}
+          </div>
+          <span class="absence-type">${absTypeLabel[a.type]||'Absence'}</span>
+        </div>
+        <div class="absence-dates">Du ${fmtDisplay(a.start)} au ${fmtDisplay(a.end)}</div>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+
+  // Urgences critiques
+  if(crits.length){
+    html+=`<div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:var(--r);padding:12px 14px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:600;color:#fca5a5;margin-bottom:8px">🚨 Urgences critiques (${crits.length})</div>
+      <div style="display:grid;gap:5px">`;
+    crits.forEach(t=>{ html+=dayTaskCardHtml(t); });
+    html+=`</div></div>`;
+  }
+
+  const cols=[
+    {label:'🔧 Terrain',types:['chantier','sav'],color:'var(--blue)'},
+    {label:'💼 Business / Achats',types:['business','achats','admin'],color:'var(--green)'},
+    {label:'📣 Com / Autres',types:['marketing'],color:'var(--yellow)'},
+  ];
+  html+=`<div class="day-columns">`;
+  cols.forEach(col=>{
+    const items=vt.filter(t=>col.types.includes(t.type));
+    html+=`<div class="day-col">
+      <div class="day-col-header">
+        <div class="day-col-title" style="color:${col.color}">${col.label}</div>
+        <div class="day-col-count">${items.length}</div>
+      </div>
+      <div class="day-col-body">`;
+    if(!items.length) html+=`<div class="empty-msg">Rien de prévu.</div>`;
+    items.forEach(t=>{html+=dayTaskCardHtml(t);});
+    html+=`</div></div>`;
+  });
+  html+=`</div>`;
+  document.getElementById('mainContent').innerHTML=html;
+}
+
+function dayTaskCardHtml(t){
+  const cfg=typeConfig[t.type]||typeConfig.admin;
+  const u=urgencyTag[t.urgency]||urgencyTag.normal;
+  const oc=ownerColors[t.owner]||'#8fa3c8';
+  const dur=taskDuration(t);
+  return `<div class="day-task-card chip-${cfg.color}" onclick="selectTask('${t.id}');setView('semaine',null)" style="border-left-color:${cfg.dot}">
+    <div class="dtc-top">
+      <div class="dtc-title">${esc(t.title)}</div>
+      <div class="dtc-urgency" style="background:${u.bg};color:${u.color}">${u.label}</div>
+    </div>
+    ${dur>1?`<div class="dtc-dates">📅 ${fmtDisplay(t.date_start||t.date||'')} → ${fmtDisplay(t.date_end||t.date_start||t.date||'')} (${dur}j)</div>`:''}
+    <div class="dtc-meta">
+      <div style="display:flex;align-items:center;gap:4px">
+        <div class="owner-dot" style="background:${oc}22;color:${oc}">${(t.owner||'?')[0]}</div>${esc(t.owner)}
+      </div>
+      ${t.site?'· '+esc(t.site):''}
+      · <span style="color:var(--muted)">${t.status}</span>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+//  VUE SEMESTRE
+// ══════════════════════════════════════════════════════
+function renderSemestre(){
+  const vt=visibleTasks();
+  const now=new Date();
+  const monthsToShow=Array.from({length:6},(_,i)=>{
+    const d=new Date(now.getFullYear(),now.getMonth()+i,1);
+    return{year:d.getFullYear(),month:d.getMonth()};
+  });
+  const mNames=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+
+  let html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:600;letter-spacing:-.3px">Vue semestre ${now.getFullYear()}</div>
+    <div style="font-size:11px;color:var(--muted)">Cliquer sur un jour pour le détail</div>
+  </div>
+  <div class="semester-grid">`;
+
+  monthsToShow.forEach(({year,month})=>{
+    const firstDay=new Date(year,month,1);
+    const lastDay=new Date(year,month+1,0);
+    const startDow=(firstDay.getDay()+6)%7;
+    const total=lastDay.getDate();
+
+    html+=`<div class="month-card">
+      <div class="month-header">
+        <div class="month-name">${mNames[month]}</div>
+        <div class="month-year">${year}</div>
+      </div>
+      <div class="month-body">
+        <div class="cal-weekdays">`;
+    ['L','M','M','J','V','S','D'].forEach(d=>{html+=`<div class="cal-wd">${d}</div>`;});
+    html+=`</div><div class="cal-days">`;
+
+    for(let i=0;i<startDow;i++) html+=`<div class="cal-day empty"></div>`;
+    for(let d=1;d<=total;d++){
+      const ds=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      const dayTasks=vt.filter(t=>taskOnDay(t,ds));
+      const hasAbs=absences.some(a=>absenceOnDay(a,ds));
+      const hasCrit=dayTasks.some(t=>t.urgency==='critical');
+      const hasPrio=dayTasks.some(t=>t.urgency==='priority');
+      const hasNorm=dayTasks.length>0;
+      const isTd=ds===today();
+      const dotCls=hasCrit?'has-critical':hasPrio?'has-priority':hasNorm?'has-normal':'';
+      const clickable=dayTasks.length||hasAbs?'clickable':'';
+      html+=`<div class="cal-day ${isTd?'today':''} ${dotCls} ${hasAbs?'absence-day':''} ${clickable}"
+        ${(dayTasks.length||hasAbs)?`onclick="selectedDay='${ds}';setView('jour',document.querySelectorAll('.view-tab')[1])"`:''}>
+        ${d}${dayTasks.length||hasAbs?`<div class="cal-dot"></div>`:''}
+      </div>`;
+    }
+    html+=`</div></div></div>`;
+  });
+
+  html+=`</div>
+  <div class="sem-legend">
+    <div class="sem-legend-item"><div class="sem-dot" style="background:var(--red)"></div>Urgence critique</div>
+    <div class="sem-legend-item"><div class="sem-dot" style="background:var(--yellow)"></div>Prioritaire</div>
+    <div class="sem-legend-item"><div class="sem-dot" style="background:var(--blue)"></div>Activité normale</div>
+    <div class="sem-legend-item"><div class="sem-dot" style="background:var(--pink)"></div>Absence</div>
+  </div>`;
+
+  document.getElementById('mainContent').innerHTML=html;
+}
+
+// ══════════════════════════════════════════════════════
+//  TASK ACTIONS
+// ══════════════════════════════════════════════════════
+function selectTask(id){
+  selectedTaskId=id;
+  const t=tasks.find(x=>x.id===id);
+  if(t) selectedDay=t.date_start||t.date||today();
+  render();
+}
+function markDone(id){
+  const t=tasks.find(x=>x.id===id);
+  if(t){t.status='Terminé';saveAll();render();showSync('Tâche terminée ✓');}
+}
+function deleteTask(id){
+  if(!confirm('Supprimer cette tâche ?')) return;
+  tasks=tasks.filter(x=>x.id!==id);
+  if(selectedTaskId===id) selectedTaskId=null;
+  saveAll();render();showSync('Tâche supprimée');
+}
+
+// ══════════════════════════════════════════════════════
+//  PERSON → TEAM
+// ══════════════════════════════════════════════════════
+function getPersonTeam(person){
+  const map={Anthony:'tech',Fabian:'tech',Jonovan:'tech',Frédéric:'tech',
+             Ambre:'adv',Virginie:'biz',Carla:'biz',Amanda:'mkt',Stéphane:'direction'};
+  return map[person]||'direction';
+}
+
+// ══════════════════════════════════════════════════════
+//  MODALS — TÂCHE
+// ══════════════════════════════════════════════════════
+function quickAdd(type){
+  openAddModal();
+  selectType(type);
+  if(type==='sav'){
+    document.getElementById('fUrgency').value='critical';
+    document.getElementById('fTeam').value='tech';
+    document.getElementById('fOwner').value='Fabian';
+  } else if(type==='chantier'){
+    document.getElementById('fTeam').value='tech';
+    document.getElementById('fOwner').value='Anthony';
+  } else if(type==='achats'){
+    document.getElementById('fTeam').value='adv';
+    document.getElementById('fOwner').value='Ambre';
+  }
+}
+
+function openAddModal(){
+  document.getElementById('editId').value='';
+  document.getElementById('modalTaskTitle').textContent='Nouvelle tâche';
+  document.getElementById('fTitle').value='';
+  document.getElementById('fSite').value='';
+  document.getElementById('fDateStart').value=selectedDay||today();
+  document.getElementById('fDateEnd').value='';
+  document.getElementById('fOwner').value='Virginie';
+  document.getElementById('fUrgency').value='normal';
+  document.getElementById('fStatus').value='À faire';
+  document.getElementById('fTeam').value='tech';
+  document.getElementById('fDesc').value='';
+  document.getElementById('fLink').value='';
+  selectType('chantier');
+  document.getElementById('modalTask').classList.add('open');
+}
+
+function openEditModal(id){
+  const t=tasks.find(x=>x.id===id);
+  if(!t) return;
+  document.getElementById('editId').value=t.id;
+  document.getElementById('modalTaskTitle').textContent='Modifier la tâche';
+  document.getElementById('fTitle').value=t.title||'';
+  document.getElementById('fSite').value=t.site||'';
+  document.getElementById('fDateStart').value=t.date_start||t.date||'';
+  document.getElementById('fDateEnd').value=t.date_end||'';
+  document.getElementById('fOwner').value=t.owner||'Virginie';
+  document.getElementById('fUrgency').value=t.urgency||'normal';
+  document.getElementById('fStatus').value=t.status||'À faire';
+  document.getElementById('fTeam').value=t.team||'tech';
+  document.getElementById('fDesc').value=t.description||'';
+  document.getElementById('fLink').value=t.link||'';
+  selectType(t.type||'chantier');
+  document.getElementById('modalTask').classList.add('open');
+}
+
+function selectType(type){
+  document.getElementById('fType').value=type;
+  document.querySelectorAll('.type-opt').forEach(o=>{
+    o.classList.toggle('selected',o.dataset.type===type);
+  });
+}
+
+function saveTask(){
+  const title=document.getElementById('fTitle').value.trim();
+  const dateStart=document.getElementById('fDateStart').value;
+  if(!title){alert('Le titre est obligatoire.');return;}
+  if(!dateStart){alert('La date de début est obligatoire.');return;}
+  const dateEnd=document.getElementById('fDateEnd').value;
+  const editId=document.getElementById('editId').value;
+  const team=document.getElementById('fTeam').value;
+  const obj={
+    id:         editId||uid(),
+    title,
+    site:       document.getElementById('fSite').value.trim(),
+    type:       document.getElementById('fType').value,
+    urgency:    document.getElementById('fUrgency').value,
+    date_start: dateStart,
+    date_end:   dateEnd||dateStart,
+    date:       dateStart, // compatibilité
+    owner:      document.getElementById('fOwner').value,
+    status:     document.getElementById('fStatus').value,
+    team,
+    description:document.getElementById('fDesc').value.trim(),
+    link:       document.getElementById('fLink').value.trim(),
+    subtitle:   document.getElementById('fSite').value.trim(),
+    roles:      teamRoles[team]||['direction'],
+  };
+  if(editId){const i=tasks.findIndex(x=>x.id===editId);if(i>=0)tasks[i]=obj;else tasks.push(obj);}
+  else tasks.push(obj);
+  selectedTaskId=obj.id;
+  selectedDay=dateStart;
+  saveAll();
+  closeModal('modalTask');
+  render();
+  showSync('Tâche enregistrée');
+  if(APPS_SCRIPT_URL) pushToSheets(obj);
+}
+
+// ══════════════════════════════════════════════════════
+//  MODALS — ABSENCE
+// ══════════════════════════════════════════════════════
+function openAbsenceModal(){
+  document.getElementById('absEditId').value='';
+  document.getElementById('absStart').value=selectedDay||today();
+  document.getElementById('absEnd').value=selectedDay||today();
+  document.getElementById('absNote').value='';
+  selectAbsType('conge');
+  document.getElementById('modalAbsence').classList.add('open');
+}
+
+function selectAbsType(type){
+  document.getElementById('absType').value=type;
+  document.querySelectorAll('.at-opt').forEach(o=>{
+    o.classList.toggle('selected',o.dataset.atype===type);
+  });
+}
+
+function saveAbsence(){
+  const person=document.getElementById('absPerson').value;
+  const start=document.getElementById('absStart').value;
+  const end=document.getElementById('absEnd').value;
+  if(!start||!end){alert('Les dates sont obligatoires.');return;}
+  if(end<start){alert('La date de fin doit être après la date de début.');return;}
+  const abs={
+    id:     uid(),
+    person,
+    type:   document.getElementById('absType').value,
+    start,
+    end,
+    note:   document.getElementById('absNote').value.trim(),
+  };
+  absences.push(abs);
+  saveAll();
+  closeModal('modalAbsence');
+  render();
+  showSync(`Absence de ${person} enregistrée`);
+}
+
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function closeModalOutside(e,id){if(e.target===document.getElementById(id))closeModal(id)}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){['modalTask','modalAbsence'].forEach(closeModal);}
+});
+
+// ══════════════════════════════════════════════════════
+//  GOOGLE SHEETS SYNC — JSONP
+// ══════════════════════════════════════════════════════
+function syncFromSheets(){
+  if(!APPS_SCRIPT_URL){showSync('⚠ URL non configurée','error');return;}
+  showSync('Synchronisation…','loading');
+  const btn=document.getElementById('syncBtn');
+  if(btn){btn.classList.add('syncing');btn.textContent='⟳ Sync…';}
+
+  const old=document.getElementById('jsonp_script');
+  if(old) old.remove();
+  if(window._jsonpCallback) delete window._jsonpCallback;
+
+  const timer=setTimeout(()=>{
+    showSync('Délai dépassé','error');
+    const s=document.getElementById('jsonp_script');if(s)s.remove();
+    if(btn){btn.classList.remove('syncing');btn.textContent='⟳ Sync';}
+  },10000);
+
+  window._jsonpCallback=function(data){
+    clearTimeout(timer);
+    if(btn){btn.classList.remove('syncing');btn.textContent='⟳ Sync';}
+    if(data&&data.tasks){
+      tasks=data.tasks.map(t=>({
+        ...t,
+        date_start: String(t.date_start||t.date||'').substring(0,10),
+        date_end:   String(t.date_end||t.date_start||t.date||'').substring(0,10),
+        date:       String(t.date_start||t.date||'').substring(0,10),
+        roles: Array.isArray(t.roles)?t.roles:String(t.roles||'direction').split(',').map(r=>r.trim()),
+      }));
+      saveAll();render();
+      showSync(`${tasks.length} tâches synchronisées ✓`);
+    } else {showSync('Réponse inattendue','error');}
+  };
+
+  const s=document.createElement('script');
+  s.id='jsonp_script';
+  s.src=APPS_SCRIPT_URL+'?action=getTasks&callback=_jsonpCallback';
+  s.onerror=()=>{clearTimeout(timer);showSync('Erreur de connexion','error');if(btn){btn.classList.remove('syncing');btn.textContent='⟳ Sync';}};
+  document.head.appendChild(s);
+}
+
+async function pushToSheets(task){
+  if(!APPS_SCRIPT_URL) return;
+  try{
+    await fetch(APPS_SCRIPT_URL,{
+      method:'POST',mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action:'saveTask',task})
+    });
+  }catch(e){}
+}
+
+// ══════════════════════════════════════════════════════
+//  SYNC BAR
+// ══════════════════════════════════════════════════════
+let syncTimer;
+function showSync(msg,state='ok'){
+  const bar=document.getElementById('syncBar');
+  const dot=document.getElementById('syncDot');
+  document.getElementById('syncMsg').textContent=msg;
+  dot.className='sync-dot'+(state==='loading'?' loading':state==='error'?' error':'');
+  bar.classList.add('show');
+  clearTimeout(syncTimer);
+  if(state!=='loading') syncTimer=setTimeout(()=>bar.classList.remove('show'),2800);
+}
+
+// ══════════════════════════════════════════════════════
+//  DEMO DATA
+// ══════════════════════════════════════════════════════
+function getDemoTasks(){
+  const w=getWeekStart(0);
+  const add=(n,e,obj)=>({id:uid(),date_start:addDays(w,n),date_end:addDays(w,e||n),date:addDays(w,n),subtitle:'',roles:teamRoles[obj.team]||['direction'],...obj});
+  return [
+    add(0,0,{team:'tech',type:'sav',urgency:'critical',title:'SAV Miremer',site:'Camping Miremer',owner:'Fabian',status:'Urgent',description:'Signal faible zone premium.'}),
+    add(0,2,{team:'tech',type:'chantier',urgency:'priority',title:'Déploiement Vidaresse',site:'Camping La Vidaresse',owner:'Anthony',status:'Planifié',description:'Installation bornes outdoor — 3 jours terrain.'}),
+    add(1,1,{team:'adv',type:'achats',urgency:'priority',title:'Commandes saison',site:'Interne',owner:'Ambre',status:'À faire',description:'Valider commandes matériel.'}),
+    add(1,1,{team:'biz',type:'business',urgency:'priority',title:'2 devis',site:'Interne',owner:'Virginie',status:'En cours',description:'Finaliser devis portail premium.'}),
+    add(2,2,{team:'tech',type:'sav',urgency:'critical',title:'Tikayan portail',site:'Tikayan Les Cigales',owner:'Fabian',status:'Bloqué',description:'Portail captif instable.'}),
+    add(2,4,{team:'biz',type:'admin',urgency:'normal',title:'Suivi cash',site:'Interne',owner:'Virginie',status:'À faire',description:'Arbitrage dépenses semaine.'}),
+    add(3,3,{team:'mkt',type:'marketing',urgency:'normal',title:'Newsletter',site:'Interne',owner:'Amanda',status:'Planifié',description:'Validation newsletter.'}),
+    add(4,4,{team:'tech',type:'admin',urgency:'normal',title:'CR interventions',site:'Interne',owner:'Anthony',status:'À faire',description:'Photos + fiches sites.'}),
+  ];
+}
+
+function getDemoAbsences(){
+  const w=getWeekStart(0);
+  return [
+    {id:'abs1',person:'Fabian',type:'conge',start:addDays(w,5),end:addDays(w,9),note:'Congés été'},
+  ];
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+window.addDays=addDays;
+selectedDay=today();
+render();
+</script>
+</body>
+</html>
