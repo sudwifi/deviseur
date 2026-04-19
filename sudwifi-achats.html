@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sud Wifi — Achats & Stock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:      #080e1a;
+  --s1:      #0d1525;
+  --s2:      #111e33;
+  --s3:      #172240;
+  --s4:      #1c2a4a;
+  --border:  rgba(255,255,255,.07);
+  --border2: rgba(255,255,255,.13);
+  --border3: rgba(255,255,255,.22);
+  --text:    #dde6f8;
+  --muted:   #6b80a8;
+  --muted2:  #8fa3c8;
+  --blue:    #3b82f6;
+  --red:     #ef4444;
+  --purple:  #8b5cf6;
+  --green:   #22c55e;
+  --gray:    #64748b;
+  --yellow:  #f59e0b;
+  --orange:  #fb923c;
+  --teal:    #14b8a6;
+  --font:    'DM Sans', sans-serif;
+  --mono:    'DM Mono', monospace;
+  --r:       16px;
+  --r-sm:    10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+button,select,input,textarea{font:inherit}
+
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(59,130,246,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(59,130,246,.025) 1px,transparent 1px);
+  background-size:48px 48px;pointer-events:none;z-index:0
+}
+
+/* ─── TOPBAR ─── */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(8,14,26,.92);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;height:58px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px
+}
+.back-btn{
+  display:flex;align-items:center;gap:8px;
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:999px;padding:6px 14px;
+  color:var(--muted2);font-size:13px;cursor:pointer;
+  text-decoration:none;transition:all .18s
+}
+.back-btn:hover{border-color:var(--border2);color:var(--text)}
+.topbar-title{font-size:16px;font-weight:600;letter-spacing:-.3px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.add-btn{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.35);
+  color:#fcd34d;border-radius:999px;padding:7px 16px;
+  font-size:13px;font-weight:500;cursor:pointer;transition:all .18s
+}
+.add-btn:hover{background:rgba(245,158,11,.25)}
+
+/* ─── TABS ─── */
+.tabs{
+  position:sticky;top:58px;z-index:90;
+  background:rgba(8,14,26,.88);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;display:flex;align-items:center;gap:0
+}
+.tab{
+  padding:14px 20px;font-size:14px;font-weight:500;
+  color:var(--muted);border-bottom:2px solid transparent;
+  cursor:pointer;transition:all .18s;white-space:nowrap;
+  background:none;border-top:none;border-left:none;border-right:none
+}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--text);border-bottom-color:var(--yellow)}
+
+/* ─── MAIN ─── */
+.main{position:relative;z-index:1;padding:24px;max-width:1400px;margin:0 auto;display:grid;gap:20px}
+
+/* ─── KPI ROW ─── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.kpi{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:16px 18px;
+  display:flex;align-items:center;gap:14px
+}
+.kpi-icon{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:18px;flex-shrink:0}
+.kpi .label{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.kpi .value{font-size:24px;font-weight:600;letter-spacing:-.5px;margin:3px 0}
+.kpi .sub{font-size:11px;color:var(--muted2)}
+
+/* ─── PANEL ─── */
+.panel{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.panel-header{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap
+}
+.panel-title{font-size:15px;font-weight:600}
+.panel-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.panel-actions{display:flex;gap:8px;align-items:center}
+
+/* ─── BADGES / TAGS ─── */
+.badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:999px;font-size:11px;
+  font-family:var(--mono);border:1px solid var(--border);color:var(--muted2)
+}
+.tag{padding:3px 8px;border-radius:6px;font-size:10px;font-weight:500;font-family:var(--mono)}
+.tag-ok    {background:rgba(34,197,94,.15);color:#86efac}
+.tag-warn  {background:rgba(245,158,11,.15);color:#fcd34d}
+.tag-crit  {background:rgba(239,68,68,.15);color:#fca5a5}
+.tag-info  {background:rgba(59,130,246,.15);color:#93c5fd}
+.tag-purple{background:rgba(139,92,246,.15);color:#c4b5fd}
+.tag-gray  {background:rgba(100,116,139,.18);color:#94a3b8}
+
+/* ─── STOCK TABLE ─── */
+.stock-filters{
+  padding:12px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap
+}
+.sf-pill{
+  background:transparent;border:1px solid var(--border);
+  color:var(--muted);border-radius:999px;
+  padding:5px 13px;font-size:12px;cursor:pointer;transition:all .15s
+}
+.sf-pill:hover{border-color:var(--border2);color:var(--text)}
+.sf-pill.active{background:rgba(245,158,11,.18);border-color:rgba(245,158,11,.4);color:#fcd34d}
+.search-input{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:999px;padding:6px 14px;color:var(--text);
+  font-size:12px;outline:none;width:200px;transition:border-color .15s
+}
+.search-input:focus{border-color:var(--border2)}
+.search-input::placeholder{color:var(--muted)}
+
+.stock-table{width:100%;border-collapse:collapse}
+.stock-table th{
+  padding:10px 16px;text-align:left;font-size:11px;font-family:var(--mono);
+  color:var(--muted);text-transform:uppercase;letter-spacing:.05em;
+  border-bottom:1px solid var(--border);background:var(--s2);font-weight:500
+}
+.stock-table td{
+  padding:12px 16px;font-size:13px;
+  border-bottom:1px solid var(--border);vertical-align:middle
+}
+.stock-table tr:last-child td{border-bottom:none}
+.stock-table tr:hover td{background:rgba(255,255,255,.02)}
+
+.item-name{font-weight:500}
+.item-ref{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:2px}
+.item-cat{
+  display:inline-block;padding:3px 8px;border-radius:6px;
+  font-size:10px;font-family:var(--mono)
+}
+
+/* Stock bar */
+.stock-bar-wrap{display:flex;align-items:center;gap:10px;min-width:140px}
+.stock-bar-bg{flex:1;height:5px;border-radius:99px;background:var(--s3)}
+.stock-bar-fill{height:100%;border-radius:99px;transition:width .4s ease}
+.bar-ok  {background:var(--green)}
+.bar-warn{background:var(--yellow)}
+.bar-crit{background:var(--red)}
+.stock-num{font-family:var(--mono);font-size:12px;color:var(--muted2);min-width:52px;text-align:right}
+
+.action-btns{display:flex;gap:6px}
+.act-btn{
+  width:28px;height:28px;border-radius:7px;
+  border:1px solid var(--border);background:var(--s2);
+  color:var(--muted2);cursor:pointer;font-size:13px;
+  display:grid;place-items:center;transition:all .15s
+}
+.act-btn:hover{border-color:var(--border2);color:var(--text)}
+.act-btn.green:hover{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.3);color:#86efac}
+.act-btn.red:hover{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.3);color:#fca5a5}
+.act-btn.blue:hover{background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.3);color:#93c5fd}
+
+/* ─── MOUVEMENTS ─── */
+.mvt-list{display:grid;gap:0}
+.mvt-row{
+  padding:12px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;font-size:13px;
+  transition:background .15s
+}
+.mvt-row:hover{background:rgba(255,255,255,.02)}
+.mvt-row:last-child{border-bottom:none}
+.mvt-arrow{
+  width:32px;height:32px;border-radius:8px;
+  display:grid;place-items:center;font-size:14px;flex-shrink:0
+}
+.mvt-arrow.in {background:rgba(34,197,94,.15);color:#86efac}
+.mvt-arrow.out{background:rgba(239,68,68,.15);color:#fca5a5}
+.mvt-main{flex:1;min-width:0}
+.mvt-title{font-weight:500}
+.mvt-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.mvt-qty{font-family:var(--mono);font-size:14px;font-weight:600;flex-shrink:0}
+.mvt-qty.in {color:#86efac}
+.mvt-qty.out{color:#fca5a5}
+.mvt-date{font-family:var(--mono);font-size:11px;color:var(--muted);flex-shrink:0}
+.mvt-who{
+  width:28px;height:28px;border-radius:50%;
+  display:grid;place-items:center;font-size:10px;font-weight:700;flex-shrink:0
+}
+
+/* ─── COMMANDES ─── */
+.cmd-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:16px}
+.cmd-card{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:14px;
+  transition:border-color .15s
+}
+.cmd-card:hover{border-color:var(--border2)}
+.cmd-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.cmd-ref{font-size:11px;font-family:var(--mono);color:var(--muted)}
+.cmd-supplier{font-size:14px;font-weight:600;margin-top:3px}
+.cmd-items{font-size:12px;color:var(--muted2);margin-bottom:10px;line-height:1.6}
+.cmd-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:10px;border-top:1px solid var(--border)
+}
+.cmd-date{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.cmd-amount{font-size:14px;font-weight:600;color:#fcd34d}
+
+/* ─── AFFECTATIONS ─── */
+.affect-list{display:grid;gap:0}
+.affect-row{
+  padding:13px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;font-size:13px
+}
+.affect-row:last-child{border-bottom:none}
+.affect-row:hover{background:rgba(255,255,255,.02)}
+.affect-site{
+  width:36px;height:36px;border-radius:9px;
+  background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.2);
+  display:grid;place-items:center;font-size:14px;flex-shrink:0
+}
+.affect-main{flex:1;min-width:0}
+.affect-title{font-weight:500}
+.affect-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.affect-items{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+.affect-chip{
+  padding:3px 8px;border-radius:6px;font-size:11px;font-family:var(--mono);
+  background:var(--s3);border:1px solid var(--border);color:var(--muted2)
+}
+.affect-who{display:flex;align-items:center;gap:6px;flex-shrink:0;font-size:12px;color:var(--muted2)}
+.affect-date{font-size:11px;font-family:var(--mono);color:var(--muted);flex-shrink:0}
+
+/* ─── ALERTES ─── */
+.alert-banner{
+  margin:16px 20px;padding:12px 16px;border-radius:var(--r-sm);
+  display:flex;align-items:center;gap:12px;font-size:13px
+}
+.alert-banner.crit{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25)}
+.alert-banner.warn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25)}
+.alert-icon{font-size:18px;flex-shrink:0}
+.alert-text strong{display:block;font-weight:600;margin-bottom:2px}
+.alert-text span{color:var(--muted2);font-size:12px}
+.alert-action{
+  margin-left:auto;padding:6px 12px;border-radius:8px;font-size:12px;
+  cursor:pointer;border:1px solid var(--border2);background:var(--s3);
+  color:var(--text);transition:all .15s;white-space:nowrap
+}
+.alert-action:hover{background:var(--s4)}
+
+/* ─── MODAL ─── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);
+  backdrop-filter:blur(8px);z-index:200;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity .2s
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{
+  background:var(--s1);border:1px solid var(--border2);
+  border-radius:22px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;
+  transform:translateY(18px);transition:transform .25s
+}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-hdr{
+  padding:20px 22px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between
+}
+.modal-hdr-title{font-size:17px;font-weight:600}
+.modal-close{
+  width:28px;height:28px;border-radius:50%;background:var(--s2);
+  border:1px solid var(--border);color:var(--muted);
+  cursor:pointer;display:grid;place-items:center;transition:all .15s
+}
+.modal-close:hover{background:var(--s3);color:var(--text)}
+.modal-body{padding:18px 22px 22px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-row.full{grid-template-columns:1fr}
+.form-row.trio{grid-template-columns:1fr 1fr 1fr}
+.form-group label{
+  display:block;font-size:11px;font-family:var(--mono);
+  color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px
+}
+.form-input,.form-select,.form-textarea{
+  width:100%;background:var(--s2);border:1px solid var(--border);
+  border-radius:9px;padding:9px 12px;color:var(--text);
+  font-size:13px;outline:none;transition:border-color .15s;-webkit-appearance:none
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--border3)}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--muted)}
+.form-select option{background:var(--s2)}
+.form-textarea{resize:vertical;min-height:64px}
+.form-actions{display:flex;gap:10px;margin-top:16px}
+.btn-cancel{
+  flex:1;padding:10px;border-radius:10px;
+  background:var(--s2);border:1px solid var(--border);
+  color:var(--muted2);cursor:pointer;transition:all .15s
+}
+.btn-cancel:hover{border-color:var(--border2);color:var(--text)}
+.btn-save{
+  flex:2;padding:10px;border-radius:10px;
+  background:rgba(245,158,11,.2);border:1px solid rgba(245,158,11,.4);
+  color:#fcd34d;cursor:pointer;font-weight:500;transition:all .15s
+}
+.btn-save:hover{background:rgba(245,158,11,.3)}
+.btn-save.blue{
+  background:rgba(59,130,246,.2);border-color:rgba(59,130,246,.4);color:#93c5fd
+}
+.btn-save.blue:hover{background:rgba(59,130,246,.3)}
+.btn-save.red{
+  background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.4);color:#fca5a5
+}
+
+/* Mouvement rapide */
+.mvt-quick{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px
+}
+.mvt-quick-btn{
+  padding:16px;border-radius:12px;border:1px solid var(--border);
+  background:var(--s2);cursor:pointer;text-align:center;transition:all .18s
+}
+.mvt-quick-btn:hover{border-color:var(--border2)}
+.mvt-quick-btn.selected-in{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.4)}
+.mvt-quick-btn.selected-out{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.4)}
+.mvt-quick-btn .qb-icon{font-size:22px;margin-bottom:6px}
+.mvt-quick-btn .qb-label{font-size:13px;font-weight:500}
+.mvt-quick-btn .qb-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ─── TOAST ─── */
+.toast{
+  position:fixed;bottom:20px;right:24px;z-index:300;
+  background:var(--s2);border:1px solid var(--border2);
+  border-radius:999px;padding:10px 18px;font-size:13px;
+  display:flex;align-items:center;gap:8px;
+  opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none
+}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.toast-dot.warn{background:var(--yellow)}
+.toast-dot.err{background:var(--red)}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:1100px){
+  .kpi-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cmd-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:700px){
+  .main{padding:14px 16px}
+  .topbar{padding:0 16px}
+  .kpi-row{grid-template-columns:1fr 1fr;gap:10px}
+  .cmd-grid{grid-template-columns:1fr}
+  .stock-table th:nth-child(4),.stock-table td:nth-child(4),
+  .stock-table th:nth-child(5),.stock-table td:nth-child(5){display:none}
+  .form-row{grid-template-columns:1fr}
+  .form-row.trio{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .tabs{overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+}
+
+/* ─── ANIMATIONS ─── */
+.main>*{animation:fadeUp .35s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="back-btn" href="https://sudwifi.github.io/deviseur/sudwifi-dashboard.html">← Dashboard</a>
+  <div class="topbar-title">📦 Achats & Stock</div>
+  <div class="topbar-right">
+    <button class="add-btn" onclick="openModal('article')">+ Article</button>
+    <button class="add-btn" style="background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.35);color:#93c5fd" onclick="openModal('commande')">+ Commande</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="setTab('stock',this)">Stock</button>
+  <button class="tab" onclick="setTab('mouvements',this)">Mouvements</button>
+  <button class="tab" onclick="setTab('commandes',this)">Commandes</button>
+  <button class="tab" onclick="setTab('affectations',this)">Affectations chantier</button>
+</div>
+
+<main class="main" id="mainContent"></main>
+
+<!-- MODAL ARTICLE -->
+<div class="modal-overlay" id="modalArticle" onclick="closeModalOutside(event,'modalArticle')">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-hdr-title" id="modalArticleTitle">Nouvel article</div>
+      <button class="modal-close" onclick="closeModal('modalArticle')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="aEditId"/>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nom *</label>
+          <input class="form-input" id="aName" placeholder="Ex: AP EAP670 Outdoor"/>
+        </div>
+        <div class="form-group">
+          <label>Référence</label>
+          <input class="form-input" id="aRef" placeholder="Ex: EAP670-OUT"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Catégorie</label>
+          <select class="form-select" id="aCat">
+            <option value="borne">Bornes Wifi</option>
+            <option value="switch">Switches</option>
+            <option value="routeur">Routeurs</option>
+            <option value="cable">Câblage</option>
+            <option value="alimentation">Alimentation / PoE</option>
+            <option value="fixation">Fixation / accessoires</option>
+            <option value="autre">Autre</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Fournisseur</label>
+          <input class="form-input" id="aSupplier" placeholder="Ex: TP-Link, Ubiquiti…"/>
+        </div>
+      </div>
+      <div class="form-row trio">
+        <div class="form-group">
+          <label>Stock actuel</label>
+          <input class="form-input" id="aQty" type="number" min="0" placeholder="0"/>
+        </div>
+        <div class="form-group">
+          <label>Seuil alerte</label>
+          <input class="form-input" id="aMin" type="number" min="0" placeholder="2"/>
+        </div>
+        <div class="form-group">
+          <label>Stock idéal</label>
+          <input class="form-input" id="aMax" type="number" min="0" placeholder="10"/>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label>Emplacement</label>
+          <input class="form-input" id="aLocation" placeholder="Ex: Étagère A3, Carton rouge…"/>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea class="form-textarea" id="aNotes" placeholder="Références, liens fournisseurs, notes…"></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="closeModal('modalArticle')">Annuler</button>
+        <button class="btn-save" onclick="saveArticle()">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MOUVEMENT -->
+<div class="modal-overlay" id="modalMvt" onclick="closeModalOutside(event,'modalMvt')">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-hdr-title">Enregistrer un mouvement</div>
+      <button class="modal-close" onclick="closeModal('modalMvt')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="mvt-quick">
+        <div class="mvt-quick-btn" id="qbIn" onclick="selectMvtType('in')">
+          <div class="qb-icon">📥</div>
+          <div class="qb-label">Entrée stock</div>
+          <div class="qb-sub">Réception commande</div>
+        </div>
+        <div class="mvt-quick-btn" id="qbOut" onclick="selectMvtType('out')">
+          <div class="qb-icon">📤</div>
+          <div class="qb-label">Sortie stock</div>
+          <div class="qb-sub">Départ chantier</div>
+        </div>
+      </div>
+      <input type="hidden" id="mvtType" value="out"/>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Article *</label>
+          <select class="form-select" id="mvtArticle"></select>
+        </div>
+        <div class="form-group">
+          <label>Quantité *</label>
+          <input class="form-input" id="mvtQty" type="number" min="1" value="1"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Qui</label>
+          <select class="form-select" id="mvtWho">
+            <option>Anthony</option>
+            <option>Fabian</option>
+            <option>Ambre</option>
+            <option>Virginie</option>
+            <option>Stéphane</option>
+            <option>Jonovan</option>
+            <option>Frédéric</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input class="form-input" id="mvtDate" type="date"/>
+        </div>
+      </div>
+      <div class="form-row full" id="mvtChantierRow">
+        <div class="form-group">
+          <label>Chantier / site affecté</label>
+          <input class="form-input" id="mvtChantier" placeholder="Ex: Camping Bonporteau"/>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label>Note</label>
+          <input class="form-input" id="mvtNote" placeholder="Ex: remplacement switch défaillant"/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="closeModal('modalMvt')">Annuler</button>
+        <button class="btn-save blue" onclick="saveMouvement()">Enregistrer le mouvement</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COMMANDE -->
+<div class="modal-overlay" id="modalCommande" onclick="closeModalOutside(event,'modalCommande')">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-hdr-title">Nouvelle commande</div>
+      <button class="modal-close" onclick="closeModal('modalCommande')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fournisseur *</label>
+          <input class="form-input" id="cmdSupplier" placeholder="Ex: TP-Link France"/>
+        </div>
+        <div class="form-group">
+          <label>N° commande</label>
+          <input class="form-input" id="cmdRef" placeholder="Ex: CMD-2026-042"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date commande</label>
+          <input class="form-input" id="cmdDate" type="date"/>
+        </div>
+        <div class="form-group">
+          <label>Livraison prévue</label>
+          <input class="form-input" id="cmdDelivery" type="date"/>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label>Articles commandés</label>
+          <textarea class="form-textarea" id="cmdItems" placeholder="Ex: 4× AP EAP670 Outdoor&#10;2× Switch TL-SG108E&#10;10m Câble Cat6"></textarea>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Montant HT (€)</label>
+          <input class="form-input" id="cmdAmount" type="number" placeholder="0"/>
+        </div>
+        <div class="form-group">
+          <label>Statut</label>
+          <select class="form-select" id="cmdStatus">
+            <option value="en_attente">En attente</option>
+            <option value="commandé">Commandé</option>
+            <option value="expédié">Expédié</option>
+            <option value="reçu">Reçu</option>
+            <option value="annulé">Annulé</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label>Notes / lien suivi</label>
+          <input class="form-input" id="cmdNotes" placeholder="Ex: lien suivi transporteur…"/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="closeModal('modalCommande')">Annuler</button>
+        <button class="btn-save" onclick="saveCommande()">Enregistrer la commande</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <div class="toast-dot" id="toastDot"></div>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════════════
+let articles    = loadLS('sw_articles')    || getDemoArticles();
+let mouvements  = loadLS('sw_mouvements')  || getDemoMouvements();
+let commandes   = loadLS('sw_commandes')   || getDemoCommandes();
+
+let currentTab = 'stock';
+let stockFilter = 'all';
+let stockSearch = '';
+
+const catConfig = {
+  borne:        {label:'Borne Wifi',   bg:'rgba(59,130,246,.15)',  color:'#93c5fd'},
+  switch:       {label:'Switch',       bg:'rgba(139,92,246,.15)', color:'#c4b5fd'},
+  routeur:      {label:'Routeur',      bg:'rgba(20,184,166,.15)', color:'#5eead4'},
+  cable:        {label:'Câblage',      bg:'rgba(100,116,139,.18)',color:'#94a3b8'},
+  alimentation: {label:'Alim / PoE',  bg:'rgba(245,158,11,.15)', color:'#fcd34d'},
+  fixation:     {label:'Fixation',     bg:'rgba(34,197,94,.15)',  color:'#86efac'},
+  autre:        {label:'Autre',        bg:'rgba(100,116,139,.18)',color:'#94a3b8'},
+};
+
+const cmdStatusConfig = {
+  en_attente: {label:'En attente', cls:'tag-gray'},
+  commandé:   {label:'Commandé',  cls:'tag-info'},
+  expédié:    {label:'Expédié',   cls:'tag-warn'},
+  reçu:       {label:'Reçu ✓',   cls:'tag-ok'},
+  annulé:     {label:'Annulé',   cls:'tag-crit'},
+};
+
+const ownerColors = {
+  Anthony:'#3b82f6',Fabian:'#06b6d4',Ambre:'#8b5cf6',
+  Virginie:'#22c55e',Stéphane:'#ef4444',Jonovan:'#fb923c',Frédéric:'#a78bfa'
+};
+
+// ══════════════════════════════════════════════════════
+//  STORAGE
+// ══════════════════════════════════════════════════════
+function loadLS(k){try{const d=localStorage.getItem(k);return d?JSON.parse(d):null}catch(e){return null}}
+function saveLS(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function saveAll(){saveLS('sw_articles',articles);saveLS('sw_mouvements',mouvements);saveLS('sw_commandes',commandes)}
+function uid(){return 's_'+Date.now()+'_'+Math.random().toString(36).slice(2,6)}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function fmtDate(s){if(!s)return'—';const d=new Date(s+'T12:00:00');const m=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];return d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear()}
+
+// ══════════════════════════════════════════════════════
+//  TABS & FILTERS
+// ══════════════════════════════════════════════════════
+function setTab(tab,btn){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  render();
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════
+function render(){
+  renderKpis();
+  if(currentTab==='stock')        renderStock();
+  else if(currentTab==='mouvements')  renderMouvements();
+  else if(currentTab==='commandes')   renderCommandes();
+  else if(currentTab==='affectations') renderAffectations();
+}
+
+// ── KPIs ──
+function renderKpis(){
+  const alerts  = articles.filter(a=>a.qty<=a.min);
+  const ruptures = articles.filter(a=>a.qty===0);
+  const cmdOpen  = commandes.filter(c=>c.status!=='reçu'&&c.status!=='annulé');
+  const mvtWeek  = mouvements.filter(m=>{
+    const d=new Date(m.date+'T12:00:00');
+    const now=new Date();
+    return (now-d)<7*24*3600*1000;
+  });
+
+  document.getElementById('mainContent').innerHTML=`
+  <div class="kpi-row" id="kpiRow">
+    <div class="kpi">
+      <div class="kpi-icon" style="background:rgba(59,130,246,.12)">📦</div>
+      <div>
+        <div class="label">références en stock</div>
+        <div class="value">${articles.length}</div>
+        <div class="sub">${articles.reduce((s,a)=>s+a.qty,0)} unités au total</div>
+      </div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon" style="background:rgba(239,68,68,.12)">🚨</div>
+      <div>
+        <div class="label">alertes stock</div>
+        <div class="value" style="color:${alerts.length?'#fca5a5':'#86efac'}">${alerts.length}</div>
+        <div class="sub">${ruptures.length} rupture${ruptures.length!==1?'s':''} · ${alerts.length-ruptures.length} bas</div>
+      </div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon" style="background:rgba(245,158,11,.12)">🛒</div>
+      <div>
+        <div class="label">commandes en cours</div>
+        <div class="value" style="color:#fcd34d">${cmdOpen.length}</div>
+        <div class="sub">${cmdOpen.filter(c=>c.status==='expédié').length} expédiée${cmdOpen.filter(c=>c.status==='expédié').length!==1?'s':''}</div>
+      </div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon" style="background:rgba(34,197,94,.12)">🔄</div>
+      <div>
+        <div class="label">mouvements (7j)</div>
+        <div class="value">${mvtWeek.length}</div>
+        <div class="sub">${mvtWeek.filter(m=>m.type==='in').length} entrées · ${mvtWeek.filter(m=>m.type==='out').length} sorties</div>
+      </div>
+    </div>
+  </div>
+  <div id="tabContent"></div>`;
+
+  if(currentTab==='stock')         renderStock();
+  else if(currentTab==='mouvements')   renderMouvements();
+  else if(currentTab==='commandes')    renderCommandes();
+  else if(currentTab==='affectations') renderAffectations();
+}
+
+// ── STOCK ──
+function renderStock(){
+  const alerts = articles.filter(a=>a.qty<=a.min);
+  let filtered = articles.filter(a=>{
+    const catOk = stockFilter==='all'||a.cat===stockFilter;
+    const srchOk = !stockSearch||a.name.toLowerCase().includes(stockSearch.toLowerCase())||a.ref.toLowerCase().includes(stockSearch.toLowerCase());
+    return catOk&&srchOk;
+  });
+
+  let html=`<div class="panel">`;
+
+  // Alertes
+  articles.filter(a=>a.qty===0).forEach(a=>{
+    html+=`<div class="alert-banner crit">
+      <div class="alert-icon">⛔</div>
+      <div class="alert-text"><strong>RUPTURE — ${esc(a.name)}</strong><span>Stock à 0 — commande urgente requise</span></div>
+      <button class="alert-action" onclick="openModal('commande')">Commander</button>
+    </div>`;
+  });
+  articles.filter(a=>a.qty>0&&a.qty<=a.min).forEach(a=>{
+    html+=`<div class="alert-banner warn">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-text"><strong>Stock bas — ${esc(a.name)}</strong><span>${a.qty} restant${a.qty>1?'s':''} · seuil : ${a.min}</span></div>
+      <button class="alert-action" onclick="openModal('commande')">Commander</button>
+    </div>`;
+  });
+
+  // Filters
+  html+=`<div class="stock-filters">
+    <button class="sf-pill ${stockFilter==='all'?'active':''}" onclick="stockFilter='all';render()">Tout</button>
+    ${Object.entries(catConfig).map(([k,v])=>`<button class="sf-pill ${stockFilter===k?'active':''}" onclick="stockFilter='${k}';render()">${v.label}</button>`).join('')}
+    <input class="search-input" placeholder="Rechercher…" value="${esc(stockSearch)}" oninput="stockSearch=this.value;renderStock()"/>
+    <button class="sf-pill" style="margin-left:auto;color:var(--teal);border-color:rgba(20,184,166,.3)" onclick="openModal('mouvement')">📤 Sortie rapide</button>
+  </div>`;
+
+  html+=`<div style="overflow-x:auto"><table class="stock-table">
+    <thead><tr>
+      <th>Article</th><th>Catégorie</th><th>Stock</th>
+      <th>Niveau</th><th>Emplacement</th><th>Fournisseur</th><th></th>
+    </tr></thead><tbody>`;
+
+  if(!filtered.length){
+    html+=`<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">Aucun article trouvé.</td></tr>`;
+  }
+
+  filtered.forEach(a=>{
+    const pct = a.max>0?Math.min(100,Math.round(a.qty/a.max*100)):0;
+    const state = a.qty===0?'crit':a.qty<=a.min?'warn':'ok';
+    const barCls = a.qty===0?'bar-crit':a.qty<=a.min?'bar-warn':'bar-ok';
+    const tagCls = a.qty===0?'tag-crit':a.qty<=a.min?'tag-warn':'tag-ok';
+    const tagLabel = a.qty===0?'RUPTURE':a.qty<=a.min?'BAS':'OK';
+    const cat = catConfig[a.cat]||catConfig.autre;
+
+    html+=`<tr>
+      <td>
+        <div class="item-name">${esc(a.name)}</div>
+        ${a.ref?`<div class="item-ref">${esc(a.ref)}</div>`:''}
+      </td>
+      <td><span class="item-cat" style="background:${cat.bg};color:${cat.color}">${cat.label}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-family:var(--mono);font-size:14px;font-weight:600">${a.qty}</span>
+          <span class="tag ${tagCls}">${tagLabel}</span>
+        </div>
+      </td>
+      <td>
+        <div class="stock-bar-wrap">
+          <div class="stock-bar-bg"><div class="stock-bar-fill ${barCls}" style="width:${pct}%"></div></div>
+          <div class="stock-num">${a.qty}/${a.max||'?'}</div>
+        </div>
+      </td>
+      <td style="color:var(--muted2);font-size:12px">${esc(a.location||'—')}</td>
+      <td style="color:var(--muted2);font-size:12px">${esc(a.supplier||'—')}</td>
+      <td>
+        <div class="action-btns">
+          <button class="act-btn green" title="Entrée" onclick="quickMvt('${a.id}','in')">+</button>
+          <button class="act-btn red"   title="Sortie" onclick="quickMvt('${a.id}','out')">−</button>
+          <button class="act-btn blue"  title="Modifier" onclick="editArticle('${a.id}')">✎</button>
+        </div>
+      </td>
+    </tr>`;
+  });
+
+  html+=`</tbody></table></div></div>`;
+  document.getElementById('tabContent').innerHTML=html;
+}
+
+// ── MOUVEMENTS ──
+function renderMouvements(){
+  const sorted = [...mouvements].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  let html=`<div class="panel">
+    <div class="panel-header">
+      <div><div class="panel-title">Historique des mouvements</div>
+      <div class="panel-sub">Toutes les entrées et sorties de stock</div></div>
+      <button class="add-btn" style="background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.35);color:#93c5fd" onclick="openModal('mouvement')">+ Mouvement</button>
+    </div>
+    <div class="mvt-list">`;
+
+  if(!sorted.length){
+    html+=`<div style="padding:32px;text-align:center;color:var(--muted)">Aucun mouvement enregistré.</div>`;
+  }
+
+  sorted.forEach(m=>{
+    const art = articles.find(a=>a.id===m.articleId);
+    const oc  = ownerColors[m.who]||'#8fa3c8';
+    html+=`<div class="mvt-row">
+      <div class="mvt-arrow ${m.type}">${m.type==='in'?'↓':'↑'}</div>
+      <div class="mvt-main">
+        <div class="mvt-title">${esc(art?art.name:m.articleName||'Article supprimé')}</div>
+        <div class="mvt-sub">${m.chantier?'🏗 '+esc(m.chantier)+' · ':''}${esc(m.note||'')}</div>
+      </div>
+      <div class="mvt-qty ${m.type}">${m.type==='in'?'+':'−'}${m.qty}</div>
+      <div class="mvt-who" style="background:${oc}22;color:${oc}" title="${esc(m.who)}">${(m.who||'?')[0]}</div>
+      <div class="mvt-date">${fmtDate(m.date)}</div>
+    </div>`;
+  });
+
+  html+=`</div></div>`;
+  document.getElementById('tabContent').innerHTML=html;
+}
+
+// ── COMMANDES ──
+function renderCommandes(){
+  let html=`<div class="panel">
+    <div class="panel-header">
+      <div><div class="panel-title">Commandes fournisseurs</div>
+      <div class="panel-sub">Suivi des approvisionnements</div></div>
+      <button class="add-btn" onclick="openModal('commande')">+ Commande</button>
+    </div>
+    <div class="cmd-grid">`;
+
+  if(!commandes.length){
+    html+=`<div style="padding:32px;text-align:center;color:var(--muted);grid-column:1/-1">Aucune commande.</div>`;
+  }
+
+  [...commandes].sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(c=>{
+    const sc = cmdStatusConfig[c.status]||cmdStatusConfig.en_attente;
+    html+=`<div class="cmd-card">
+      <div class="cmd-card-top">
+        <div>
+          <div class="cmd-ref">${esc(c.ref||'—')}</div>
+          <div class="cmd-supplier">${esc(c.supplier)}</div>
+        </div>
+        <span class="tag ${sc.cls}">${sc.label}</span>
+      </div>
+      <div class="cmd-items">${esc(c.items||'').replace(/\n/g,'<br>')}</div>
+      <div class="cmd-footer">
+        <div class="cmd-date">
+          ${c.date?'Cmd : '+fmtDate(c.date):''}
+          ${c.delivery?'<br>Livr : '+fmtDate(c.delivery):''}
+        </div>
+        <div class="cmd-amount">${c.amount?Number(c.amount).toLocaleString('fr-FR')+'€':''}</div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px">
+        ${c.status!=='reçu'?`<button class="act-btn blue" style="width:auto;padding:0 10px;font-size:11px" onclick="markCmdRecu('${c.id}')">✓ Reçu</button>`:''}
+        <button class="act-btn" style="width:auto;padding:0 10px;font-size:11px" onclick="deleteCommande('${c.id}')">Supprimer</button>
+      </div>
+    </div>`;
+  });
+
+  html+=`</div></div>`;
+  document.getElementById('tabContent').innerHTML=html;
+}
+
+// ── AFFECTATIONS ──
+function renderAffectations(){
+  // Grouper les sorties par chantier
+  const chantiers = {};
+  mouvements.filter(m=>m.type==='out'&&m.chantier).forEach(m=>{
+    const k = m.chantier;
+    if(!chantiers[k]) chantiers[k]={name:k,items:[],who:new Set(),lastDate:m.date};
+    const art = articles.find(a=>a.id===m.articleId);
+    chantiers[k].items.push({name:art?art.name:m.articleName||'?',qty:m.qty,who:m.who,date:m.date,note:m.note});
+    if(m.who) chantiers[k].who.add(m.who);
+    if(m.date>chantiers[k].lastDate) chantiers[k].lastDate=m.date;
+  });
+
+  const list = Object.values(chantiers).sort((a,b)=>new Date(b.lastDate)-new Date(a.lastDate));
+
+  let html=`<div class="panel">
+    <div class="panel-header">
+      <div><div class="panel-title">Affectations par chantier</div>
+      <div class="panel-sub">Traçabilité du matériel sorti par site</div></div>
+    </div>
+    <div class="affect-list">`;
+
+  if(!list.length){
+    html+=`<div style="padding:32px;text-align:center;color:var(--muted)">Aucune sortie avec chantier associé.</div>`;
+  }
+
+  list.forEach(c=>{
+    const whoArr = Array.from(c.who);
+    html+=`<div class="affect-row">
+      <div class="affect-site">🏗</div>
+      <div class="affect-main">
+        <div class="affect-title">${esc(c.name)}</div>
+        <div class="affect-sub">${c.items.length} sortie${c.items.length>1?'s'} · dernière le ${fmtDate(c.lastDate)}</div>
+        <div style="margin-top:6px;display:grid;gap:3px">
+          ${c.items.map(i=>`<div style="font-size:11px;color:var(--muted2)">
+            ${esc(i.name)} × ${i.qty}
+            <span style="color:var(--muted)">· ${esc(i.who)} · ${fmtDate(i.date)}${i.note?' · '+esc(i.note):''}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+      <div class="affect-who">
+        ${whoArr.map(w=>`<div class="mvt-who" style="background:${(ownerColors[w]||'#8fa3c8')}22;color:${ownerColors[w]||'#8fa3c8'}" title="${esc(w)}">${w[0]}</div>`).join('')}
+      </div>
+      <div class="affect-date">${fmtDate(c.lastDate)}</div>
+    </div>`;
+  });
+
+  html+=`</div></div>`;
+  document.getElementById('tabContent').innerHTML=html;
+}
+
+// ══════════════════════════════════════════════════════
+//  ACTIONS STOCK
+// ══════════════════════════════════════════════════════
+function quickMvt(articleId, type){
+  document.getElementById('mvtArticle').value = articleId;
+  document.getElementById('mvtType').value = type;
+  document.getElementById('mvtDate').value = today();
+  selectMvtType(type);
+  openModal('mouvement');
+}
+
+function saveArticle(){
+  const name = document.getElementById('aName').value.trim();
+  if(!name){alert('Le nom est obligatoire.');return;}
+  const editId = document.getElementById('aEditId').value;
+  const obj = {
+    id:       editId||uid(),
+    name,
+    ref:      document.getElementById('aRef').value.trim(),
+    cat:      document.getElementById('aCat').value,
+    supplier: document.getElementById('aSupplier').value.trim(),
+    qty:      parseInt(document.getElementById('aQty').value)||0,
+    min:      parseInt(document.getElementById('aMin').value)||2,
+    max:      parseInt(document.getElementById('aMax').value)||10,
+    location: document.getElementById('aLocation').value.trim(),
+    notes:    document.getElementById('aNotes').value.trim(),
+  };
+  if(editId){const i=articles.findIndex(a=>a.id===editId);if(i>=0)articles[i]=obj;else articles.push(obj);}
+  else articles.push(obj);
+  saveAll(); closeModal('modalArticle'); render(); toast('Article enregistré');
+}
+
+function editArticle(id){
+  const a = articles.find(x=>x.id===id);
+  if(!a)return;
+  document.getElementById('aEditId').value=a.id;
+  document.getElementById('modalArticleTitle').textContent='Modifier l\'article';
+  document.getElementById('aName').value=a.name||'';
+  document.getElementById('aRef').value=a.ref||'';
+  document.getElementById('aCat').value=a.cat||'autre';
+  document.getElementById('aSupplier').value=a.supplier||'';
+  document.getElementById('aQty').value=a.qty||0;
+  document.getElementById('aMin').value=a.min||2;
+  document.getElementById('aMax').value=a.max||10;
+  document.getElementById('aLocation').value=a.location||'';
+  document.getElementById('aNotes').value=a.notes||'';
+  openModal('article');
+}
+
+function saveMouvement(){
+  const articleId = document.getElementById('mvtArticle').value;
+  const qty = parseInt(document.getElementById('mvtQty').value)||1;
+  const type = document.getElementById('mvtType').value;
+  if(!articleId){alert('Sélectionner un article.');return;}
+
+  const art = articles.find(a=>a.id===articleId);
+  if(type==='out'&&art&&art.qty<qty){
+    if(!confirm(`Stock insuffisant (${art.qty} disponible). Continuer quand même ?`))return;
+  }
+
+  const mvt = {
+    id:        uid(),
+    articleId,
+    articleName: art?art.name:'',
+    qty,
+    type,
+    who:       document.getElementById('mvtWho').value,
+    date:      document.getElementById('mvtDate').value||today(),
+    chantier:  document.getElementById('mvtChantier').value.trim(),
+    note:      document.getElementById('mvtNote').value.trim(),
+  };
+
+  mouvements.push(mvt);
+
+  // MAJ stock
+  if(art){
+    art.qty = type==='in' ? art.qty+qty : Math.max(0,art.qty-qty);
+  }
+
+  saveAll();
+  closeModal('modalMvt');
+  render();
+  toast(type==='in'?`+${qty} en stock`:`−${qty} sorti · ${mvt.chantier||'stock'}`, type==='in'?'ok':'warn');
+}
+
+function saveCommande(){
+  const supplier = document.getElementById('cmdSupplier').value.trim();
+  if(!supplier){alert('Le fournisseur est obligatoire.');return;}
+  const cmd = {
+    id:       uid(),
+    supplier,
+    ref:      document.getElementById('cmdRef').value.trim(),
+    date:     document.getElementById('cmdDate').value||today(),
+    delivery: document.getElementById('cmdDelivery').value,
+    items:    document.getElementById('cmdItems').value.trim(),
+    amount:   document.getElementById('cmdAmount').value,
+    status:   document.getElementById('cmdStatus').value,
+    notes:    document.getElementById('cmdNotes').value.trim(),
+  };
+  commandes.push(cmd);
+  saveAll(); closeModal('modalCommande'); render(); toast('Commande enregistrée');
+}
+
+function markCmdRecu(id){
+  const c=commandes.find(x=>x.id===id);
+  if(c){c.status='reçu';saveAll();render();toast('Commande marquée reçue ✓');}
+}
+
+function deleteCommande(id){
+  if(!confirm('Supprimer cette commande ?'))return;
+  commandes=commandes.filter(x=>x.id!==id);
+  saveAll();render();toast('Commande supprimée','warn');
+}
+
+function selectMvtType(type){
+  document.getElementById('mvtType').value=type;
+  document.getElementById('qbIn').className='mvt-quick-btn'+(type==='in'?' selected-in':'');
+  document.getElementById('qbOut').className='mvt-quick-btn'+(type==='out'?' selected-out':'');
+  document.getElementById('mvtChantierRow').style.display=type==='out'?'':'none';
+}
+
+// ══════════════════════════════════════════════════════
+//  MODALS
+// ══════════════════════════════════════════════════════
+function openModal(type){
+  if(type==='article'){
+    document.getElementById('aEditId').value='';
+    document.getElementById('modalArticleTitle').textContent='Nouvel article';
+    ['aName','aRef','aSupplier','aLocation','aNotes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('aQty').value=0;
+    document.getElementById('aMin').value=2;
+    document.getElementById('aMax').value=10;
+    document.getElementById('aCat').value='borne';
+    document.getElementById('modalArticle').classList.add('open');
+  } else if(type==='mouvement'){
+    // Populate article select
+    const sel=document.getElementById('mvtArticle');
+    sel.innerHTML=articles.map(a=>`<option value="${a.id}">${esc(a.name)} (${a.qty} en stock)</option>`).join('');
+    document.getElementById('mvtDate').value=today();
+    document.getElementById('mvtQty').value=1;
+    document.getElementById('mvtChantier').value='';
+    document.getElementById('mvtNote').value='';
+    selectMvtType('out');
+    document.getElementById('modalMvt').classList.add('open');
+  } else if(type==='commande'){
+    ['cmdSupplier','cmdRef','cmdItems','cmdNotes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('cmdDate').value=today();
+    document.getElementById('cmdDelivery').value='';
+    document.getElementById('cmdAmount').value='';
+    document.getElementById('cmdStatus').value='commandé';
+    document.getElementById('modalCommande').classList.add('open');
+  }
+}
+
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function closeModalOutside(e,id){if(e.target===document.getElementById(id))closeModal(id)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){['modalArticle','modalMvt','modalCommande'].forEach(closeModal)}});
+
+// ══════════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════════
+let toastTimer;
+function toast(msg,state='ok'){
+  const t=document.getElementById('toast');
+  const d=document.getElementById('toastDot');
+  document.getElementById('toastMsg').textContent=msg;
+  d.className='toast-dot'+(state==='warn'?' warn':state==='err'?' err':'');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ══════════════════════════════════════════════════════
+//  ESC HTML
+// ══════════════════════════════════════════════════════
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+// ══════════════════════════════════════════════════════
+//  DEMO DATA
+// ══════════════════════════════════════════════════════
+function getDemoArticles(){
+  return [
+    {id:'a1',name:'AP EAP670 Outdoor',ref:'EAP670-OUT',cat:'borne',supplier:'TP-Link',qty:7,min:3,max:10,location:'Étagère A1'},
+    {id:'a2',name:'AP EAP225 Outdoor',ref:'EAP225-OUT',cat:'borne',supplier:'TP-Link',qty:2,min:3,max:8,location:'Étagère A1'},
+    {id:'a3',name:'Switch TL-SG108E',ref:'SG108E',cat:'switch',supplier:'TP-Link',qty:1,min:2,max:5,location:'Étagère B2'},
+    {id:'a4',name:'Switch TL-SG1024',ref:'SG1024',cat:'switch',supplier:'TP-Link',qty:3,min:2,max:6,location:'Étagère B2'},
+    {id:'a5',name:'Injecteur PoE 48V',ref:'POE48V',cat:'alimentation',supplier:'Generic',qty:0,min:2,max:4,location:'Tiroir C1'},
+    {id:'a6',name:'Câble FTP Cat6 (m)',ref:'CAT6-FTP',cat:'cable',supplier:'Legrand',qty:55,min:20,max:100,location:'Rouleau R1'},
+    {id:'a7',name:'Routeur ER605',ref:'ER605',cat:'routeur',supplier:'TP-Link',qty:4,min:2,max:6,location:'Étagère A3'},
+    {id:'a8',name:'Support mural AP',ref:'MOUNT-AP',cat:'fixation',supplier:'Generic',qty:12,min:5,max:20,location:'Carton F1'},
+  ];
+}
+
+function getDemoMouvements(){
+  const d=(n)=>{const x=new Date();x.setDate(x.getDate()-n);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
+  return [
+    {id:'m1',articleId:'a1',articleName:'AP EAP670 Outdoor',qty:3,type:'in',who:'Ambre',date:d(5),chantier:'',note:'Réception commande CMD-2026-038'},
+    {id:'m2',articleId:'a1',articleName:'AP EAP670 Outdoor',qty:2,type:'out',who:'Anthony',date:d(3),chantier:'Camping Vidaresse',note:'Déploiement bornes zone piscine'},
+    {id:'m3',articleId:'a3',articleName:'Switch TL-SG108E',qty:2,type:'out',who:'Fabian',date:d(3),chantier:'Camping Bonporteau',note:'Remplacement switch défaillant'},
+    {id:'m4',articleId:'a6',articleName:'Câble FTP Cat6',qty:30,type:'out',who:'Anthony',date:d(2),chantier:'Camping Vidaresse',note:'Tirage réseau local'},
+    {id:'m5',articleId:'a5',articleName:'Injecteur PoE 48V',qty:2,type:'out',who:'Fabian',date:d(1),chantier:'Tikayan Les Cigales',note:'Injecteurs défectueux à remplacer'},
+    {id:'m6',articleId:'a7',articleName:'Routeur ER605',qty:1,type:'out',who:'Anthony',date:d(1),chantier:'Hôtellerie Kouros',note:'Remplacement routeur'},
+    {id:'m7',articleId:'a2',articleName:'AP EAP225 Outdoor',qty:1,type:'out',who:'Fabian',date:d(0),chantier:'Camping Miremer',note:'SAV zone premium'},
+  ];
+}
+
+function getDemoCommandes(){
+  const d=(n)=>{const x=new Date();x.setDate(x.getDate()+n);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
+  const p=(n)=>{const x=new Date();x.setDate(x.getDate()-n);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
+  return [
+    {id:'c1',supplier:'TP-Link France',ref:'CMD-2026-041',date:p(2),delivery:d(3),items:'4× AP EAP670 Outdoor\n2× Switch TL-SG108E',amount:1240,status:'expédié',notes:'Suivi DHL : 1Z999AA'},
+    {id:'c2',supplier:'Generic PoE',ref:'CMD-2026-042',date:p(1),delivery:d(5),items:'4× Injecteur PoE 48V',amount:180,status:'commandé',notes:'Rupture urgente'},
+    {id:'c3',supplier:'Legrand Pro',ref:'CMD-2026-039',date:p(7),delivery:p(1),items:'100m Câble FTP Cat6\n20× Support mural AP',amount:320,status:'reçu',notes:''},
+  ];
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+render();
+</script>
+</body>
+</html>
