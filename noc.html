@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>NOC — Sud Wifi</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0b;--s1:#131311;--s2:#1a1a17;--s3:#222220;--s4:#2a2a27;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.12);
+  --txt:#e6e6e0;--txt2:#888882;--txt3:#484844;
+  --green:#3dba5f;--green-bg:rgba(61,186,95,.12);
+  --red:#e04040;--red-bg:rgba(224,64,64,.12);
+  --amber:#e8920a;--amber-bg:rgba(232,146,10,.12);
+  --blue:#3b82f6;--blue-bg:rgba(59,130,246,.12);
+  --r:8px;--rs:5px;
+  --sidebar:210px;--header:48px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow:hidden}
+
+/* ── HEADER ── */
+header{background:var(--s1);border-bottom:1px solid var(--border);padding:0 14px;height:var(--header);display:flex;align-items:center;gap:10px;position:fixed;top:0;left:0;right:0;z-index:1000}
+.logo{width:24px;height:24px;border-radius:5px;background:linear-gradient(135deg,#1d5fe6,#0a3699);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo svg{width:12px;height:12px}
+header h1{font-size:12px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.hbadges{display:flex;gap:4px;margin-left:auto;align-items:center;flex-shrink:0;flex-wrap:nowrap}
+.hbadge{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.hb-up{background:var(--green-bg);color:var(--green)}
+.hb-dn{background:var(--red-bg);color:var(--red)}
+.hb-to{background:var(--amber-bg);color:var(--amber)}
+#ping-status{font-size:10px;color:var(--blue);min-width:80px;text-align:right}
+#last-check{font-size:10px;color:var(--txt3);white-space:nowrap}
+.btn{background:var(--s3);border:1px solid var(--border2);border-radius:var(--rs);padding:3px 9px;font-size:11px;cursor:pointer;color:var(--txt2);font-family:inherit;transition:all .15s;white-space:nowrap}
+.btn:hover{background:var(--s4);color:var(--txt)}
+.btn-stop{background:var(--red-bg);border-color:rgba(224,64,64,.3);color:var(--red)}
+.btn-editor{background:var(--amber-bg);border-color:rgba(232,146,10,.3);color:var(--amber)}
+.btn-editor.active{background:var(--amber);color:#000;font-weight:700}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:var(--sidebar) 1fr;height:calc(100vh - var(--header));margin-top:var(--header);overflow:hidden}
+
+/* ── SIDEBAR ── */
+aside{background:var(--s1);border-right:1px solid var(--border);overflow-y:auto;padding:6px 0}
+.sidebar-title{padding:5px 12px;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txt3)}
+.site-btn{width:100%;background:transparent;border:none;border-left:2px solid transparent;padding:6px 12px;text-align:left;cursor:pointer;color:var(--txt2);font-size:11.5px;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all .1s}
+.site-btn:hover{background:var(--s2);color:var(--txt)}
+.site-btn.active{background:var(--s2);color:var(--txt);border-left-color:var(--blue)}
+.site-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.site-count{margin-left:auto;font-size:9px;color:var(--txt3);background:var(--s3);padding:1px 5px;border-radius:10px}
+.site-has-plan{font-size:8px;color:var(--amber);margin-left:2px}
+
+/* ── MAIN ── */
+main{overflow:hidden;display:flex;flex-direction:column}
+.summary-bar{display:flex;gap:6px;padding:8px 12px;background:var(--s1);border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center;flex-shrink:0}
+.scard{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:4px 9px;min-width:60px}
+.scard-label{font-size:8px;color:var(--txt3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:1px}
+.scard-val{font-size:16px;font-weight:600;line-height:1}
+
+/* ── VUE PLAN ── */
+#plan-wrap{position:relative;background:#111;border-bottom:1px solid var(--border);flex-shrink:0;overflow:hidden;user-select:none}
+#plan-wrap.has-plan{height:320px}
+#plan-wrap.no-plan{height:0;display:none}
+#plan-img{display:block;height:100%;width:100%;object-fit:contain;pointer-events:none}
+#plan-overlay{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+#plan-wrap.editor-mode{cursor:crosshair}
+#plan-wrap.editor-mode #plan-overlay{pointer-events:all}
+
+/* Points AP sur le plan */
+.ap-dot{position:absolute;transform:translate(-50%,-50%);pointer-events:all;cursor:pointer;z-index:10}
+.ap-dot-inner{width:14px;height:14px;border-radius:50%;border:2.5px solid rgba(255,255,255,.9);box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 0 3px rgba(0,0,0,.3);transition:transform .15s,box-shadow .15s}
+.ap-dot:hover .ap-dot-inner{transform:scale(1.35);box-shadow:0 3px 12px rgba(0,0,0,.7),0 0 0 4px rgba(0,0,0,.4)}
+.ap-dot-label{position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;font-size:9px;font-family:'DM Mono',monospace;font-weight:500;padding:2px 5px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
+.ap-dot:hover .ap-dot-label{opacity:1}
+.ap-dot.pinging .ap-dot-inner{animation:pulseDot 1s infinite}
+@keyframes pulseDot{0%,100%{box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 0 3px rgba(59,130,246,.4)}50%{box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 0 6px rgba(59,130,246,.15)}}
+
+/* ── TOOLTIP CLICK ── */
+.ap-tooltip{position:absolute;background:var(--s2);border:1px solid var(--border2);border-radius:6px;padding:8px 10px;font-size:11px;pointer-events:none;z-index:100;box-shadow:0 4px 16px rgba(0,0,0,.5);min-width:140px}
+.ap-tooltip b{font-size:12px;display:block;margin-bottom:3px}
+.ap-tooltip .tt-ip{font-family:'DM Mono',monospace;font-size:10px;color:var(--txt2)}
+.ap-tooltip .tt-link{font-size:10px;color:var(--blue);text-decoration:none;display:block;margin-top:3px}
+.ap-tooltip .tt-ping{font-size:10px;margin-top:3px}
+
+/* ── MODE ÉDITEUR ── */
+.editor-bar{display:flex;align-items:center;gap:8px;padding:6px 12px;background:rgba(232,146,10,.08);border-bottom:1px solid rgba(232,146,10,.2);font-size:11px;color:var(--amber);flex-shrink:0;flex-wrap:wrap}
+.editor-bar.hidden{display:none}
+.editor-select{background:var(--s3);border:1px solid var(--border2);border-radius:var(--rs);padding:3px 8px;color:var(--txt);font-size:11px;font-family:inherit;max-width:220px}
+.editor-msg{color:var(--txt2);font-size:10px}
+.btn-save-plan{background:var(--amber);color:#000;font-weight:700;border-color:var(--amber)}
+.btn-save-plan:hover{filter:brightness(1.1)}
+.btn-del-ap{background:var(--red-bg);border-color:rgba(224,64,64,.3);color:var(--red);font-size:10px}
+
+/* ── TABLEAU ── */
+.table-wrap{overflow-y:auto;flex:1}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+thead{position:sticky;top:0;z-index:10;background:var(--s2)}
+thead th{padding:7px 10px;text-align:left;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt3);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--s3)}
+tbody tr.hl{background:rgba(59,130,246,.08)}
+tbody tr.placed{background:rgba(232,146,10,.04)}
+td{padding:6px 10px;vertical-align:middle}
+.nm{font-weight:500;font-size:11.5px}
+.ip{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--txt2)}
+.url-link{color:var(--blue);font-size:10px;font-family:'DM Mono',monospace;text-decoration:none}
+.url-link:hover{text-decoration:underline}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:20px;font-size:9.5px;font-weight:700;white-space:nowrap}
+.badge::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0}
+.b-up    {background:var(--green-bg);color:var(--green)}
+.b-down  {background:var(--red-bg);color:var(--red)}
+.b-timeout{background:var(--amber-bg);color:var(--amber)}
+.b-skip  {background:var(--s3);color:var(--txt3)}
+.b-pinging{background:var(--blue-bg);color:var(--blue)}
+.b-ok    {background:var(--green-bg);color:var(--green)}
+.b-hs    {background:var(--red-bg);color:var(--red)}
+.placed-icon{font-size:9px;color:var(--amber);margin-left:3px}
+
+/* ── PROGRESS ── */
+#progress-bar{position:fixed;top:var(--header);left:var(--sidebar);right:0;height:2px;z-index:999}
+#progress-fill{height:100%;background:var(--blue);width:0%;transition:width .4s;opacity:.85}
+
+/* ── MISC ── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
+.fade{animation:fadeIn .12s ease}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.pulsing{animation:pulse 1.1s infinite}
+.empty{padding:40px;text-align:center;color:var(--txt3);font-size:13px}
+.proxy-warn{background:var(--amber-bg);border:1px solid rgba(232,146,10,.25);border-radius:var(--rs);padding:6px 12px;font-size:10.5px;color:var(--amber);margin:8px 12px;flex-shrink:0}
+
+/* ── MODAL PLAN UPLOAD ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;display:flex;align-items:center;justify-content:center}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:24px;max-width:420px;width:90%}
+.modal h2{font-size:14px;font-weight:600;margin-bottom:12px}
+.modal p{font-size:11.5px;color:var(--txt2);margin-bottom:16px;line-height:1.5}
+.drop-zone{border:2px dashed var(--border2);border-radius:var(--rs);padding:30px;text-align:center;cursor:pointer;transition:all .15s;font-size:12px;color:var(--txt3)}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--amber);color:var(--amber);background:var(--amber-bg)}
+.drop-zone input{display:none}
+.modal-actions{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
+</style>
+</head>
+<body>
+<div id="progress-bar"><div id="progress-fill"></div></div>
+
+<header>
+  <div class="logo"><svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2" fill="#fff"/><circle cx="7" cy="7" r="5" stroke="#fff" stroke-width="1.2" fill="none"/><path d="M7 2v1.2M7 10.8V12M2 7h1.2M10.8 7H12" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+  <h1>NOC — Sud Wifi</h1>
+  <div class="hbadges" id="hbadges"></div>
+  <span id="ping-status"></span>
+  <span id="last-check"></span>
+  <button class="btn btn-editor" id="editor-btn" onclick="toggleEditor()" title="Mode placement AP sur plan">✎ Plan</button>
+  <button class="btn" id="ping-btn" onclick="togglePing()">⏹ Stop</button>
+  <button class="btn" onclick="loadData()" title="Recharger">↺</button>
+</header>
+
+<div class="layout">
+  <aside id="sidebar"></aside>
+  <main id="main">
+    <div class="empty pulsing">Chargement…</div>
+  </main>
+</div>
+
+<!-- Modal upload plan -->
+<div class="modal-overlay hidden" id="plan-modal">
+  <div class="modal">
+    <h2>📍 Ajouter un plan pour <span id="modal-site-name"></span></h2>
+    <p>Dépose ou sélectionne l'image PNG/JPG du plan du camping. Elle sera stockée localement dans ton navigateur.</p>
+    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('plan-file-input').click()">
+      <input type="file" id="plan-file-input" accept="image/*" onchange="handlePlanFile(event)"/>
+      📁 Déposer ou cliquer pour choisir un fichier PNG/JPG
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closePlanModal()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════════════════
+const PROXY_BASE       = 'http://localhost:8081';
+const STATUS_FILE      = 'data/status.json';
+const PING_INTERVAL_MS = 15 * 60 * 1000;
+const HOUR_START = 8, HOUR_END = 22;
+const COLORS = {up:'#3dba5f',down:'#e04040',timeout:'#e8920a',pinging:'#3b82f6',skip:'#333',ok:'#3dba5f',hs:'#e04040',warn:'#e8920a','?':'#444'};
+const sc = s => COLORS[(s||'').toLowerCase()] || '#444';
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let allData = null, activeSite = null;
+let pingRunning = false, pingAbort = false;
+let pingTimer = null, countdownTimer = null, nextPingAt = null;
+let proxyAvailable = false;
+let editorMode = false;
+let editorSelectedEqIdx = null;
+// plans[siteName] = {src: dataURL, aps: [{eqIdx, x, y}]}
+let plans = {};
+
+// ══════════════════════════════════════════════════════
+//  STORAGE (localStorage — plans et positions AP)
+// ══════════════════════════════════════════════════════
+function savePlans() {
+  try { localStorage.setItem('noc_plans', JSON.stringify(plans)); } catch(e) {}
+}
+function loadPlans() {
+  try {
+    const d = localStorage.getItem('noc_plans');
+    if (d) plans = JSON.parse(d);
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════
+//  PROXY CHECK
+// ══════════════════════════════════════════════════════
+async function checkProxy() {
+  try {
+    const r = await fetch(PROXY_BASE+'/api/ping?url=http://localhost', {signal: AbortSignal.timeout(2000)});
+    proxyAvailable = r.ok || r.status < 500;
+  } catch(e) { proxyAvailable = false; }
+  return proxyAvailable;
+}
+
+// ══════════════════════════════════════════════════════
+//  CHARGEMENT DATA
+// ══════════════════════════════════════════════════════
+async function loadData() {
+  try {
+    const r = await fetch(STATUS_FILE+'?t='+Date.now());
+    if (!r.ok) throw new Error(r.status);
+    allData = await r.json();
+    render();
+  } catch(e) { showFilePicker(); }
+}
+
+function showFilePicker() {
+  document.getElementById('main').innerHTML = `
+    <div style="padding:40px 20px;text-align:center">
+      <div style="font-size:13px;color:var(--txt2);margin-bottom:16px">Impossible de charger <code style="font-family:DM Mono,monospace;font-size:11px">data/status.json</code></div>
+      <label style="display:inline-flex;align-items:center;gap:8px;background:var(--s3);border:1px solid var(--border2);border-radius:var(--rs);padding:8px 14px;cursor:pointer;font-size:12px">
+        📂 Ouvrir status.json
+        <input type="file" accept=".json" style="display:none" onchange="loadLocalFile(event)"/>
+      </label>
+    </div>`;
+}
+
+function loadLocalFile(ev) {
+  const f = ev.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try { allData = JSON.parse(e.target.result); render(); runPing(); }
+    catch(err) { alert('JSON invalide : '+err.message); }
+  };
+  r.readAsText(f);
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDER GLOBAL
+// ══════════════════════════════════════════════════════
+function render() {
+  if (!allData) return;
+  const sites = allData.sites || [];
+  updateHeaderBadges(sites);
+  renderSidebar(sites);
+  if (!activeSite && sites.length) activeSite = sites[0].name;
+  const s = sites.find(x => x.name === activeSite);
+  if (s) renderSite(s);
+}
+
+function updateHeaderBadges(sites) {
+  const eqs = sites.flatMap(s => s.equipements || []);
+  const up  = eqs.filter(e => e.ping_status === 'up').length;
+  const dn  = eqs.filter(e => e.ping_status === 'down').length;
+  const to  = eqs.filter(e => e.ping_status === 'timeout').length;
+  const sk  = eqs.filter(e => !e.ping_status || e.ping_status === 'skip').length;
+  document.getElementById('hbadges').innerHTML = `
+    <span class="hbadge hb-up">▲ ${up}</span>
+    <span class="hbadge hb-dn">▼ ${dn}</span>
+    <span class="hbadge hb-to">~ ${to}</span>
+    <span id="next-ping" style="font-size:10px;color:var(--txt3);white-space:nowrap"></span>`;
+}
+
+function renderSidebar(sites) {
+  const el = document.getElementById('sidebar');
+  el.innerHTML = `<div class="sidebar-title">Sites (${sites.length})</div>`;
+  sites.forEach(site => {
+    const eqs = site.equipements || [];
+    const up  = eqs.filter(e => e.ping_status === 'up').length;
+    const dn  = eqs.filter(e => ['down','timeout'].includes(e.ping_status)).length;
+    const hasPlan = !!plans[site.name]?.src;
+    const color = dn > 0 ? 'var(--red)' : up > 0 ? 'var(--green)' : 'var(--txt3)';
+    el.innerHTML += `
+      <button class="site-btn ${activeSite===site.name?'active':''}" onclick="selectSite('${site.name.replace(/'/g,"\\'")}')">
+        <span class="site-dot" style="background:${color}"></span>
+        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${site.name}</span>
+        ${hasPlan?'<span class="site-has-plan" title="Plan disponible">📍</span>':''}
+        <span class="site-count">${eqs.length}</span>
+      </button>`;
+  });
+}
+
+function selectSite(name) {
+  activeSite = name;
+  const site = (allData?.sites||[]).find(s => s.name === name);
+  if (site) { renderSidebar(allData.sites||[]); renderSite(site); }
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDER SITE
+// ══════════════════════════════════════════════════════
+function renderSite(site) {
+  const eqs = (site.equipements||[]).filter(e => e.ip || e.localisation);
+  const up  = eqs.filter(e => e.ping_status === 'up').length;
+  const dn  = eqs.filter(e => e.ping_status === 'down').length;
+  const to  = eqs.filter(e => e.ping_status === 'timeout').length;
+  const pl  = plans[site.name];
+  const hasP = pl && pl.src;
+  const apCount = hasP ? (pl.aps||[]).length : 0;
+
+  document.getElementById('main').innerHTML = `
+    <div class="summary-bar fade">
+      <div class="scard" id="card-up"><div class="scard-label">UP</div><div class="scard-val" style="color:var(--green)">${up}</div></div>
+      <div class="scard" id="card-dn"><div class="scard-label">DOWN</div><div class="scard-val" style="color:var(--red)">${dn}</div></div>
+      <div class="scard" id="card-to"><div class="scard-label">TIMEOUT</div><div class="scard-val" style="color:var(--amber)">${to}</div></div>
+      <div class="scard"><div class="scard-label">TOTAL</div><div class="scard-val">${eqs.length}</div></div>
+      <div class="scard"><div class="scard-label">Placés</div><div class="scard-val" style="color:var(--amber)">${apCount}</div></div>
+      <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+        <button class="btn" onclick="openPlanModal()" title="${hasP?'Changer le plan':'Charger un plan'}">
+          ${hasP?'🔄 Plan':'📂 Plan'}
+        </button>
+        ${hasP?`<button class="btn btn-del-ap" onclick="deletePlan()" title="Supprimer le plan">✕ Plan</button>`:''}
+      </div>
+    </div>
+    ${!proxyAvailable ? '<div class="proxy-warn">⚠️ proxy_ping.py non détecté sur localhost:8081 — lance <code>python proxy_ping.py</code></div>' : ''}
+    <div class="editor-bar hidden" id="editor-bar">
+      ✎ Mode placement —
+      <select class="editor-select" id="editor-select" onchange="editorSelectedEqIdx=parseInt(this.value)">
+        <option value="-1">— Sélectionner une borne —</option>
+        ${eqs.map((eq,i) => {
+          const nom = eq.localisation || eq.ip || `#${i+1}`;
+          const placed = hasP && (pl.aps||[]).some(a => a.eqIdx === i);
+          return `<option value="${i}" ${placed?'':''}>${placed?'✓ ':''} ${nom}</option>`;
+        }).join('')}
+      </select>
+      <span class="editor-msg" id="editor-msg">Cliquer sur le plan pour placer la borne sélectionnée</span>
+      <button class="btn btn-save-plan" onclick="exportPlanJSON()">💾 Exporter JSON</button>
+    </div>
+    <div id="plan-wrap" class="${hasP?'has-plan':'no-plan'}">
+      ${hasP ? `<img id="plan-img" src="${pl.src}" alt="Plan ${site.name}" draggable="false"/>` : ''}
+      <div id="plan-overlay"></div>
+    </div>
+    <div class="table-wrap">
+      <table class="fade">
+        <thead>
+          <tr>
+            <th>Borne</th>
+            <th>IP</th>
+            <th>Interface</th>
+            <th>URL</th>
+            <th>Statut Telmat</th>
+            <th>Ping</th>
+            <th>ms</th>
+          </tr>
+        </thead>
+        <tbody id="eq-tbody">
+          ${eqs.map((eq,i) => buildRow(site.name, i, eq)).join('')}
+        </tbody>
+      </table>
+    </div>`;
+
+  // Rendu des points AP sur le plan
+  if (hasP) renderPlanDots(site, eqs);
+
+  // Restaurer état éditeur
+  const eb = document.getElementById('editor-btn');
+  if (editorMode) {
+    eb.classList.add('active');
+    document.getElementById('editor-bar').classList.remove('hidden');
+    document.getElementById('plan-wrap').classList.add('editor-mode');
+    setupPlanClick(site, eqs);
+  }
+
+  // Drag & drop plan
+  setupDropZonePlan(site.name);
+}
+
+// ══════════════════════════════════════════════════════
+//  BUILD TABLE ROW
+// ══════════════════════════════════════════════════════
+function buildRow(siteName, i, eq) {
+  const ps  = eq.ping_status || 'skip';
+  const ms  = eq.ping_ms ? `${eq.ping_ms}ms` : '—';
+  const nom = eq.localisation || eq.ip || `#${i+1}`;
+  const pl  = plans[siteName];
+  const placed = pl && (pl.aps||[]).some(a => a.eqIdx === i);
+  const telmatSt = (eq.etat||'?').toLowerCase();
+  return `<tr id="row-${i}" class="${placed?'placed':''}" onclick="highlightAP(${i})">
+    <td><span class="nm">${nom}</span>${placed?'<span class="placed-icon">📍</span>':''}</td>
+    <td><span class="ip">${eq.ip||'—'}</span></td>
+    <td><span style="font-size:10.5px;color:var(--txt2)">${eq.interface||'—'}</span></td>
+    <td>${eq.url_https?`<a class="url-link" href="${eq.url_https}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${eq.url_https}</a>`:'<span style="color:var(--txt3);font-size:10px">—</span>'}</td>
+    <td><span class="badge b-${telmatSt}">${(eq.etat||'?').toUpperCase()}</span></td>
+    <td id="ps-${i}"><span class="badge b-${ps}">${ps.toUpperCase()}</span></td>
+    <td id="ms-${i}"><span style="font-size:10px;color:var(--txt3)">${ms}</span></td>
+  </tr>`;
+}
+
+function updateRow(siteName, i, eq) {
+  if (siteName !== activeSite) return;
+  const ps = eq.ping_status || 'skip';
+  const ms = eq.ping_ms ? `${eq.ping_ms}ms` : '';
+  const elp = document.getElementById(`ps-${i}`);
+  const elm = document.getElementById(`ms-${i}`);
+  if (elp) elp.innerHTML = `<span class="badge b-${ps}">${ps.toUpperCase()}</span>`;
+  if (elm) elm.innerHTML = `<span style="font-size:10px;color:var(--txt3)">${ms||'—'}</span>`;
+  updateDotColor(i, ps);
+  recalcCards(siteName);
+}
+
+function recalcCards(siteName) {
+  const site = (allData?.sites||[]).find(s => s.name === siteName);
+  if (!site) return;
+  const eqs = site.equipements||[];
+  const up = document.getElementById('card-up'); if(up) up.querySelector('.scard-val').textContent = eqs.filter(e=>e.ping_status==='up').length;
+  const dn = document.getElementById('card-dn'); if(dn) dn.querySelector('.scard-val').textContent = eqs.filter(e=>e.ping_status==='down').length;
+  const to = document.getElementById('card-to'); if(to) to.querySelector('.scard-val').textContent = eqs.filter(e=>e.ping_status==='timeout').length;
+}
+
+// ══════════════════════════════════════════════════════
+//  PLAN — DOTS RENDU
+// ══════════════════════════════════════════════════════
+function renderPlanDots(site, eqs) {
+  const overlay = document.getElementById('plan-overlay');
+  if (!overlay) return;
+  overlay.innerHTML = '';
+  const pl = plans[site.name];
+  if (!pl || !pl.src) return;
+  (pl.aps||[]).forEach(ap => {
+    const eq = eqs[ap.eqIdx];
+    if (!eq) return;
+    const ps = eq.ping_status || 'skip';
+    const color = sc(ps);
+    const nom = eq.localisation || eq.ip || `#${ap.eqIdx+1}`;
+    const dot = document.createElement('div');
+    dot.className = 'ap-dot' + (ps==='pinging'?' pinging':'');
+    dot.id = `dot-${ap.eqIdx}`;
+    dot.style.left = ap.x + '%';
+    dot.style.top  = ap.y + '%';
+    dot.innerHTML = `
+      <div class="ap-dot-inner" style="background:${color}"></div>
+      <div class="ap-dot-label">${nom}</div>`;
+    dot.addEventListener('click', e => {
+      e.stopPropagation();
+      showAPTooltip(ap.eqIdx, eq, ap.x, ap.y, e);
+      highlightRow(ap.eqIdx);
+    });
+    overlay.appendChild(dot);
+  });
+}
+
+function updateDotColor(idx, status) {
+  const dot = document.getElementById(`dot-${idx}`);
+  if (!dot) return;
+  const inner = dot.querySelector('.ap-dot-inner');
+  if (inner) inner.style.background = sc(status);
+  dot.className = 'ap-dot' + (status==='pinging'?' pinging':'');
+}
+
+// ══════════════════════════════════════════════════════
+//  PLAN — TOOLTIP
+// ══════════════════════════════════════════════════════
+let activeTooltip = null;
+function showAPTooltip(idx, eq, xPct, yPct, evt) {
+  removeTooltip();
+  const wrap = document.getElementById('plan-wrap');
+  if (!wrap) return;
+  const ps = eq.ping_status || 'skip';
+  const ms = eq.ping_ms ? `${eq.ping_ms}ms` : '—';
+  const nom = eq.localisation || eq.ip || `#${idx+1}`;
+  const tt = document.createElement('div');
+  tt.className = 'ap-tooltip';
+  tt.innerHTML = `
+    <b>${nom}</b>
+    <span class="tt-ip">${eq.ip||'—'} · ${eq.interface||'—'}</span>
+    <span class="tt-ping"><span class="badge b-${ps}" style="font-size:9px">${ps.toUpperCase()}</span> <span style="color:var(--txt2)">${ms}</span></span>
+    ${eq.url_https ? `<a class="tt-link" href="${eq.url_https}" target="_blank" rel="noopener">↗ ${eq.url_https}</a>` : ''}
+    ${editorMode ? `<button class="btn btn-del-ap" style="margin-top:5px;font-size:10px;pointer-events:all" onclick="removeAPFromPlan(${idx})">✕ Retirer du plan</button>` : ''}`;
+  // Position
+  const rect = wrap.getBoundingClientRect();
+  let left = xPct/100 * wrap.offsetWidth + 10;
+  let top  = yPct/100 * wrap.offsetHeight - 40;
+  if (left + 160 > wrap.offsetWidth) left = xPct/100 * wrap.offsetWidth - 170;
+  if (top < 0) top = yPct/100 * wrap.offsetHeight + 10;
+  tt.style.left = left + 'px';
+  tt.style.top  = top + 'px';
+  tt.style.pointerEvents = editorMode ? 'all' : 'none';
+  wrap.appendChild(tt);
+  activeTooltip = tt;
+  setTimeout(() => document.addEventListener('click', removeTooltipOnce, {once:true}), 50);
+}
+function removeTooltip() {
+  if (activeTooltip) { activeTooltip.remove(); activeTooltip = null; }
+}
+function removeTooltipOnce() { removeTooltip(); }
+
+// ══════════════════════════════════════════════════════
+//  PLAN — ÉDITEUR
+// ══════════════════════════════════════════════════════
+function toggleEditor() {
+  editorMode = !editorMode;
+  const btn = document.getElementById('editor-btn');
+  btn.classList.toggle('active', editorMode);
+  const bar = document.getElementById('editor-bar');
+  if (bar) bar.classList.toggle('hidden', !editorMode);
+  const wrap = document.getElementById('plan-wrap');
+  if (wrap) {
+    if (editorMode) {
+      wrap.classList.add('editor-mode');
+      const site = (allData?.sites||[]).find(s=>s.name===activeSite);
+      if (site) {
+        const eqs = (site.equipements||[]).filter(e=>e.ip||e.localisation);
+        setupPlanClick(site, eqs);
+      }
+    } else {
+      wrap.classList.remove('editor-mode');
+      removePlanClick();
+    }
+  }
+}
+
+function setupPlanClick(site, eqs) {
+  const overlay = document.getElementById('plan-overlay');
+  if (!overlay) return;
+  overlay._clickHandler = function(e) {
+    const sel = parseInt(document.getElementById('editor-select')?.value ?? -1);
+    if (sel < 0) {
+      const msg = document.getElementById('editor-msg');
+      if (msg) { msg.textContent = '⚠ Sélectionner d\'abord une borne'; msg.style.color = 'var(--red)'; setTimeout(()=>{msg.textContent='Cliquer sur le plan pour placer la borne sélectionnée';msg.style.color='';},2000); }
+      return;
+    }
+    const rect = overlay.getBoundingClientRect();
+    const xPct = ((e.clientX - rect.left) / rect.width  * 100).toFixed(2);
+    const yPct = ((e.clientY - rect.top)  / rect.height * 100).toFixed(2);
+    placeAP(site.name, sel, parseFloat(xPct), parseFloat(yPct), eqs);
+  };
+  overlay.addEventListener('click', overlay._clickHandler);
+}
+
+function removePlanClick() {
+  const overlay = document.getElementById('plan-overlay');
+  if (overlay && overlay._clickHandler) {
+    overlay.removeEventListener('click', overlay._clickHandler);
+  }
+}
+
+function placeAP(siteName, eqIdx, x, y, eqs) {
+  if (!plans[siteName]) plans[siteName] = {src:'', aps:[]};
+  const pl = plans[siteName];
+  // Supprimer ancien placement si existant
+  pl.aps = (pl.aps||[]).filter(a => a.eqIdx !== eqIdx);
+  pl.aps.push({eqIdx, x, y});
+  savePlans();
+
+  // Rafraîchir les dots + sélecteur
+  const site = (allData?.sites||[]).find(s=>s.name===siteName);
+  if (site) {
+    renderPlanDots(site, eqs);
+    if (editorMode) setupPlanClick(site, eqs);
+    // Mettre à jour le select
+    const sel = document.getElementById('editor-select');
+    if (sel) {
+      const opt = sel.querySelector(`option[value="${eqIdx}"]`);
+      if (opt && !opt.textContent.startsWith('✓')) opt.textContent = '✓ ' + opt.textContent;
+    }
+    // Marquer la ligne dans le tableau
+    const row = document.getElementById(`row-${eqIdx}`);
+    if (row) { row.classList.add('placed'); }
+  }
+  const msg = document.getElementById('editor-msg');
+  const nom = eqs[eqIdx]?.localisation || eqs[eqIdx]?.ip || `#${eqIdx+1}`;
+  if (msg) { msg.textContent = `✓ ${nom} placé à (${x}%, ${y}%)`; msg.style.color='var(--green)'; setTimeout(()=>{msg.textContent='Cliquer sur le plan pour placer la borne sélectionnée';msg.style.color='';},2000); }
+
+  // Mise à jour compteur placés
+  const cardP = document.querySelector('.scard:nth-child(5) .scard-val');
+  if (cardP) cardP.textContent = pl.aps.length;
+}
+
+function removeAPFromPlan(eqIdx) {
+  const pl = plans[activeSite];
+  if (!pl) return;
+  pl.aps = (pl.aps||[]).filter(a => a.eqIdx !== eqIdx);
+  savePlans();
+  removeTooltip();
+  const site = (allData?.sites||[]).find(s=>s.name===activeSite);
+  if (site) {
+    const eqs = (site.equipements||[]).filter(e=>e.ip||e.localisation);
+    renderPlanDots(site, eqs);
+    if (editorMode) setupPlanClick(site, eqs);
+  }
+  const row = document.getElementById(`row-${eqIdx}`);
+  if (row) row.classList.remove('placed');
+}
+
+function deletePlan() {
+  if (!confirm('Supprimer le plan et tous les placements de ce site ?')) return;
+  delete plans[activeSite];
+  savePlans();
+  const site = (allData?.sites||[]).find(s=>s.name===activeSite);
+  if (site) renderSite(site);
+}
+
+// ══════════════════════════════════════════════════════
+//  PLAN — UPLOAD MODAL
+// ══════════════════════════════════════════════════════
+function openPlanModal() {
+  document.getElementById('modal-site-name').textContent = activeSite;
+  document.getElementById('plan-modal').classList.remove('hidden');
+  const dz = document.getElementById('drop-zone');
+  dz.ondragover = e => { e.preventDefault(); dz.classList.add('drag'); };
+  dz.ondragleave = () => dz.classList.remove('drag');
+  dz.ondrop = e => { e.preventDefault(); dz.classList.remove('drag'); const f=e.dataTransfer.files[0]; if(f) loadPlanFile(f); };
+}
+function closePlanModal() {
+  document.getElementById('plan-modal').classList.add('hidden');
+}
+function handlePlanFile(ev) {
+  const f = ev.target.files[0]; if (!f) return;
+  loadPlanFile(f);
+}
+function loadPlanFile(file) {
+  if (!file.type.startsWith('image/')) { alert('Format invalide — PNG ou JPG uniquement'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    if (!plans[activeSite]) plans[activeSite] = {src:'', aps:[]};
+    plans[activeSite].src = e.target.result;
+    savePlans();
+    closePlanModal();
+    const site = (allData?.sites||[]).find(s=>s.name===activeSite);
+    if (site) { renderSidebar(allData.sites||[]); renderSite(site); }
+  };
+  reader.readAsDataURL(file);
+}
+
+// Drop direct sur le plan-wrap (quand plan déjà chargé)
+function setupDropZonePlan(siteName) {
+  const wrap = document.getElementById('plan-wrap');
+  if (!wrap) return;
+  wrap.ondragover = e => { e.preventDefault(); wrap.style.outline='2px dashed var(--amber)'; };
+  wrap.ondragleave = () => { wrap.style.outline=''; };
+  wrap.ondrop = e => {
+    e.preventDefault(); wrap.style.outline='';
+    const f = e.dataTransfer.files[0];
+    if (f && f.type.startsWith('image/')) {
+      const prev = plans[siteName];
+      const reader = new FileReader();
+      reader.onload = ev => {
+        if (!plans[siteName]) plans[siteName] = {src:'', aps: prev?.aps||[]};
+        plans[siteName].src = ev.target.result;
+        savePlans();
+        const site = (allData?.sites||[]).find(s=>s.name===siteName);
+        if (site) { renderSidebar(allData.sites||[]); renderSite(site); }
+      };
+      reader.readAsDataURL(f);
+    }
+  };
+}
+
+// ══════════════════════════════════════════════════════
+//  EXPORT JSON (pour les positions AP)
+// ══════════════════════════════════════════════════════
+function exportPlanJSON() {
+  const pl = plans[activeSite];
+  if (!pl || !(pl.aps||[]).length) { alert('Aucun AP placé sur ce plan.'); return; }
+  const site = (allData?.sites||[]).find(s=>s.name===activeSite);
+  const eqs  = (site?.equipements||[]).filter(e=>e.ip||e.localisation);
+  const out  = {
+    site: activeSite,
+    aps: pl.aps.map(a => ({
+      eqIdx: a.eqIdx,
+      localisation: eqs[a.eqIdx]?.localisation || '',
+      ip: eqs[a.eqIdx]?.ip || '',
+      x: a.x, y: a.y
+    }))
+  };
+  const blob = new Blob([JSON.stringify(out, null, 2)], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `plan_${activeSite.replace(/\s+/g,'_')}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════════════════
+//  HIGHLIGHT
+// ══════════════════════════════════════════════════════
+function highlightAP(idx) {
+  document.querySelectorAll('#eq-tbody tr').forEach(r => r.classList.remove('hl'));
+  document.getElementById(`row-${idx}`)?.classList.add('hl');
+  document.getElementById(`row-${idx}`)?.scrollIntoView({behavior:'smooth',block:'center'});
+  // Pulse le dot
+  const dot = document.getElementById(`dot-${idx}`);
+  if (dot) { dot.querySelector('.ap-dot-inner')?.animate([{transform:'scale(1)'},{transform:'scale(1.8)'},{transform:'scale(1)'}],{duration:400,easing:'ease-out'}); }
+}
+function highlightRow(idx) {
+  document.querySelectorAll('#eq-tbody tr').forEach(r => r.classList.remove('hl'));
+  document.getElementById(`row-${idx}`)?.classList.add('hl');
+  document.getElementById(`row-${idx}`)?.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+// ══════════════════════════════════════════════════════
+//  PING
+// ══════════════════════════════════════════════════════
+async function runPing() {
+  if (pingRunning) return;
+  pingRunning = true; pingAbort = false;
+  const btn = document.getElementById('ping-btn');
+  if (btn) { btn.textContent='⏹ Stop'; btn.className='btn btn-stop'; }
+  const pstat = document.getElementById('ping-status');
+  const pfill = document.getElementById('progress-fill');
+  if (pstat) pstat.textContent = 'Ping…';
+  if (pfill) pfill.style.width = '25%';
+
+  try {
+    const r = await fetch(PROXY_BASE+'/api/ping_all', {signal: AbortSignal.timeout(120000)});
+    if (!r.ok) throw new Error('Proxy erreur '+r.status);
+    const data = await r.json();
+    allData = data.data || allData;
+    if (pfill) { pfill.style.width='100%'; setTimeout(()=>{pfill.style.width='0%';},700); }
+    const ts = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('last-check').textContent = `${ts}`;
+    if (pstat) pstat.textContent = `✅ ${data.up}↑ ${data.down}↓`;
+    const sites = allData?.sites||[];
+    updateHeaderBadges(sites);
+    renderSidebar(sites);
+    const s = sites.find(x => x.name === activeSite);
+    if (s) renderSite(s);
+  } catch(e) {
+    proxyAvailable = false;
+    if (pfill) pfill.style.width = '0%';
+    if (pstat) pstat.textContent = 'Proxy off';
+    const s = (allData?.sites||[]).find(x => x.name === activeSite);
+    if (s) renderSite(s);
+  }
+
+  pingRunning = false; pingAbort = false;
+  if (btn) { btn.textContent='▶ Ping'; btn.className='btn'; }
+  scheduleNextPing();
+}
+
+function scheduleNextPing() {
+  clearTimeout(pingTimer); clearInterval(countdownTimer);
+  const h = new Date().getHours();
+  if (h < HOUR_START || h >= HOUR_END) {
+    const el = document.getElementById('next-ping');
+    if (el) el.textContent = 'Hors plage';
+    return;
+  }
+  nextPingAt = Date.now() + PING_INTERVAL_MS;
+  pingTimer = setTimeout(() => runPing(), PING_INTERVAL_MS);
+  countdownTimer = setInterval(() => {
+    const el = document.getElementById('next-ping'); if (!el) return;
+    const rem = Math.max(0, Math.round((nextPingAt - Date.now()) / 1000));
+    const m = Math.floor(rem/60), s = rem%60;
+    el.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    if (rem === 0) clearInterval(countdownTimer);
+  }, 1000);
+}
+
+function togglePing() {
+  if (pingRunning) { pingAbort = true; }
+  else runPing();
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+loadPlans();
+checkProxy().then(() => {
+  loadData().then(() => runPing());
+});
+</script>
+</body>
+</html>
