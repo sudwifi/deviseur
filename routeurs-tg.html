@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌐 Routeurs TG — Sud Wifi</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #151820;
+    --border: #252a35;
+    --accent: #00d4ff;
+    --green: #00e676;
+    --red: #ff3d3d;
+    --orange: #ff9800;
+    --text: #e8eaf0;
+    --muted: #5a6070;
+    --card-hover: #1a1f2e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+  }
+
+  .header-stats {
+    margin-left: auto;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    font-size: 0.7rem;
+  }
+
+  .stat-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot.red   { background: var(--red);   box-shadow: 0 0 6px var(--red); }
+  .dot.wait  { background: var(--orange); }
+
+  .content { padding: 24px 28px; }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 7px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:hover { background: rgba(0, 212, 255, 0.2); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .progress-wrap {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    min-width: 80px;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.2s;
+  }
+
+  .last-refresh { font-size: 0.65rem; color: var(--muted); white-space: nowrap; }
+
+  .search-wrap { position: relative; }
+  .search-wrap input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    padding: 7px 12px 7px 28px;
+    border-radius: 6px;
+    outline: none;
+    width: 220px;
+    transition: border-color 0.15s;
+  }
+  .search-wrap input:focus { border-color: rgba(0,212,255,0.4); }
+  .search-wrap::before {
+    content: '🔍';
+    position: absolute;
+    left: 8px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7rem;
+  }
+
+  .section-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin: 24px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 7px;
+  }
+
+  .card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 13px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    background: var(--card-hover);
+    border-color: rgba(0,212,255,0.25);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--muted);
+    transition: background 0.3s;
+  }
+  .card.up::before    { background: var(--green); }
+  .card.down::before  { background: var(--red); }
+  .card.pending::before { background: var(--orange); }
+
+  .status-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--muted);
+    transition: all 0.3s;
+  }
+  .card.up   .status-dot { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .card.down .status-dot { background: var(--red);   box-shadow: 0 0 8px var(--red); }
+  .card.pending .status-dot { background: var(--orange); animation: pulse 1s infinite; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  .card-info { flex: 1; min-width: 0; }
+  .card-name {
+    font-size: 0.76rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+  }
+  .card-url {
+    font-size: 0.62rem;
+    color: var(--muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card-latency {
+    font-size: 0.67rem;
+    color: var(--muted);
+    flex-shrink: 0;
+    min-width: 44px;
+    text-align: right;
+  }
+  .card.up   .card-latency { color: var(--green); }
+  .card.down .card-latency { color: var(--red); }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.62rem;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    margin-top: 12px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌐 Routeurs TG — Sud Wifi</h1>
+  <div class="header-stats">
+    <div class="stat-pill"><div class="dot green"></div><span id="count-up">–</span> UP</div>
+    <div class="stat-pill"><div class="dot red"></div><span id="count-down">–</span> DOWN</div>
+    <div class="stat-pill"><div class="dot wait"></div><span id="count-wait">–</span> en cours</div>
+  </div>
+</header>
+
+<div class="content">
+  <div class="toolbar">
+    <button class="btn" id="btn-refresh" onclick="pingAll()">⟳ Ping tout</button>
+    <div class="progress-wrap"><div class="progress-bar" id="prog"></div></div>
+    <div class="last-refresh" id="lr"></div>
+    <div class="search-wrap">
+      <input type="text" placeholder="Filtrer par nom…" oninput="filterCards(this.value)">
+    </div>
+  </div>
+
+  <div class="section-label">📡 FTTH / FTTB — Clients TG</div>
+  <div class="grid" id="grid-ftth"></div>
+</div>
+
+<footer>SUDWIFI.COM · TG CLIENTS · Cliquer = ouvrir l'interface admin du routeur</footer>
+
+<script>
+const DATA = [
+  // ── FTTH ──────────────────────────────────────────────────────────────────
+  { name: "ABRAN & DURBAN – FTTH Orange LA LONDE",        url: "https://185.26.88.21:8282/" },
+  { name: "ABRAN DURBAN – TOULON FTTH Livebox",           url: "https://90.63.147.232:10001/4.64.16/gui/#NATPATPlace:" },
+  { name: "AGENCE DES ÎLES D'HYÈRES FTTH",                url: "http://5.50.54.134/ext-js/index.html?_dc_=1636545111005" },
+  { name: "ATD SECURITE FTTH",                            url: "https://83.172.154.237:8282/webpages/login.html" },
+  { name: "BANAPRIM FTTH HYÈRES",                         url: "https://5.50.56.156:8282/" },
+  { name: "BBS MARINE FTTH",                              url: "https://5.50.57.68:9090/" },
+  { name: "BERGERIE PLAGE FTTH",                          url: "https://5.50.58.206/weblogin.htm" },
+  { name: "BMR ARCHITECTE FTTH",                          url: "https://5.50.54.133/" },
+  { name: "BONPORTEAU FTTH",                              url: "https://80.11.92.109:10001/" },
+  { name: "BORGUETTO HYÈRES",                             url: "https://130.93.182.79/" },
+  { name: "BOUT DU MONDE FTTH",                           url: "https://185.23.166.106:8282/weblogin.htm" },
+  { name: "BOULANGERIE CORNU FTTH Bouygues",              url: "http://5.50.49.231:8282/" },
+  { name: "BRISE MARINE FTTH",                            url: "https://90.63.143.15:10002/" },
+  { name: "BROCARD PEPINIERES HYÈRES FTTH",               url: "https://5.50.58.9/" },
+  { name: "BUNAN FTTH",                                   url: "https://90.9.109.74:10002/homeAuthentificationRemote.html" },
+  { name: "BUREAU VALLÉE AUBAGNE FTTH",                   url: "https://5.50.56.154/" },
+  { name: "BUREAU VALLÉE LA GARDE FTTH",                  url: "https://5.50.49.5/weblogin.htm" },
+  { name: "BUREAU VALLÉE OLLIOULES FTTH",                 url: "https://5.50.56.134:8282/" },
+  { name: "BV OLLIOULES",                                 url: "https://5.50.56.134/webpages/login.html" },
+  { name: "CABINET DENTAIRE ASSANTE KOUSMENKO FTTH",      url: "https://90.119.58.183:10001/homeAuthentificationRemote.html" },
+  { name: "CABINET DENTAIRE CARRERE PINTO CASTOR",        url: "https://176.161.186.62:8282/webpages/index.html" },
+  { name: "CAMPING CLAU MAR JO FTTH",                     url: "https://83.172.154.249:8282/" },
+  { name: "CAMPING LA LÉZARDIÈRE FTTH",                   url: "https://95.140.4.22:8282/webpages/login.html" },
+  { name: "CAMPING LA PLAGE FTTH SFR Osmozis",            url: "https://185.234.142.42/" },
+  { name: "CAMPING LES GRANDS PINS FTTH",                 url: "https://5.50.61.28/" },
+  { name: "CAMPING LES PEUPLIERS FTTH",                   url: "https://45.81.212.187:8282/" },
+  { name: "CAMPING SAINT CLAIR FTTH",                     url: "https://178.251.82.34/weblogin.htm" },
+  { name: "CAPRICORNE CAMPING FTTH",                      url: "https://5.50.54.200:8282/" },
+  { name: "CARRÉ VERT 4G Archer MR600",                   url: "https://89.85.219.133/" },
+  { name: "CARRÉ VERT PEPINIERES HYÈRES FTTH",            url: "https://185.238.37.210/" },
+  { name: "CARRÉ VERT (partie MH) FTTH",                  url: "https://83.167.135.63:8282/weblogin.htm" },
+  { name: "CEDALI / HERMITAGE FTTH",                      url: "https://178.251.82.46:8282/" },
+  { name: "CEPS D'OR RESTAURANT HYÈRES FTTH",             url: "http://130.93.190.29:82/" },
+  { name: "CGE COGOLIN FTTH",                             url: "https://83.167.151.145:8282/" },
+  { name: "CGE FTTH",                                     url: "https://83.172.154.246:8282/" },
+  { name: "CLOS ROSE MARIE FTTH",                         url: "https://5.50.59.91/" },
+  { name: "CORNU HYÈRES FTTH",                            url: "https://178.251.83.53:8282/" },
+  { name: "CORNU LA FARLEDE FTTH",                        url: "http://5.50.49.231:8282/" },
+  { name: "EA EXPERTISE FTTH",                            url: "https://83.172.166.89:8282/webpages/login.html" },
+  { name: "EDEN ROAD FTTH",                               url: "https://217.15.93.110:8282/webpages/login.html" },
+  { name: "FIBRE ABRAN TOULON",                           url: "https://92.182.116.142/" },
+  { name: "FONTETES CAMPING FTTH (VPN2S)",                url: "https://130.93.185.213:8080/" },
+  { name: "FORMANAILS LA CRAU",                           url: "http://141.101.51.169:8282/" },
+  { name: "FREEBOX CAMPING PEUPLIERS",                    url: "https://88.160.112.246:23269/login.php" },
+  { name: "FTTH AÉROPORT LA MÔLE VoIP",                  url: "https://83.167.143.52:8282/weblogin.htm" },
+  { name: "FTTH GARAGE PROVENÇAL LA VALETTE",             url: "https://185.153.175.186:8282/weblogin.htm" },
+  { name: "FTTH GARAGE PROVENÇAL",                       url: "https://141.101.51.167:8282/weblogin.htm" },
+  { name: "FTTH HAMEAU DES PINS SFR",                    url: "https://130.93.187.183:8282/" },
+  { name: "FTTH JB COUVERTURE",                          url: "https://83.167.143.45:8282/weblogin.htm" },
+  { name: "FTTH LA CERISE",                               url: "https://83.167.143.56:8282/" },
+  { name: "FTTH ÎLE D'OR Orange",                        url: "https://82.127.139.39:10000/homeAuthentificationRemote.html" },
+  { name: "FTTH MIREMER",                                 url: "https://185.204.205.140/" },
+  { name: "FTTH SIGALOUS Orange",                         url: "https://92.150.138.104:10002/" },
+  { name: "FTTH VERT GAPEAU",                             url: "https://185.153.175.169:9090/weblogin.htm" },
+  { name: "FTTH WIFI PANSARD",                            url: "https://80.14.208.45:10000/" },
+  { name: "GRAND CENTRAL FTTH",                           url: "https://45.81.212.184/weblogin.htm" },
+  { name: "GRAND LITIER FTTH",                            url: "https://130.93.187.20:8282/weblogin.htm" },
+  { name: "HALLES MILONA FTTH VoIP",                      url: "https://5.50.56.214:8080/" },
+  { name: "HOIRY MAISON FTTH",                            url: "https://5.50.52.2/weblogin.htm" },
+  { name: "HORTS CAMPING HYÈRES FTTH",                   url: "http://5.50.55.5/" },
+  { name: "HOTEL EUCALYPTUS FTTH",                        url: "https://130.93.179.78/weblogin.htm" },
+  { name: "HOTEL LA POTINIÈRE FTTH",                      url: "https://5.50.55.185:9090/" },
+  { name: "HOTEL ORANGERAIE FTTH",                        url: "https://185.204.190.81:8282/" },
+  { name: "HOTEL SAINT-MARC FTTH",                        url: "https://185.204.206.219/weblogin.htm" },
+  { name: "INGENERIA FTTH",                               url: "https://83.172.154.247:8282/weblogin.htm" },
+  { name: "IPVS SOLLIES FTTH",                            url: "http://83.172.191.116/" },
+  { name: "JARDINERIE DELBARD RICARD MARSEILLE FTTH",     url: "https://80.14.222.90:10001/4.71.6/gui/#HomePlace:" },
+  { name: "KOUROS HOTEL FTTH",                            url: "https://5.50.62.43:8282/weblogin.htm" },
+  { name: "LA BRULADE FTTH",                              url: "http://86.241.165.15:10001/" },
+  { name: "LA LORENZA CASSIS FTTH",                       url: "https://5.50.58.149/weblogin.htm" },
+  { name: "LA ROUILLERE RÉCEPTION FTTH",                  url: "https://185.234.141.58:8282/" },
+  { name: "LA TERRASSE RESTAURANT FTTH",                  url: "https://5.50.55.112:8080/" },
+  { name: "LA VALLÉE DU PARADIS TIKAYAN FTTH",            url: "https://5.50.51.88/" },
+  { name: "LE LIDO FTTH",                                 url: "https://83.172.154.252:8282/weblogin.htm" },
+  { name: "LE MÉDITERRANÉE CAMPING FTTH",                 url: "http://130.93.191.118/" },
+  { name: "LE PILAT FTTH",                                url: "https://80.15.155.163:10000/" },
+  { name: "LE RICHIARDI HOTEL FTTH",                      url: "https://5.50.49.147/" },
+  { name: "LES PÊCHEURS FTTH",                            url: "https://130.93.179.154/" },
+  { name: "LES PEUPLIERS RESTAURANT FTTH",                url: "https://130.93.191.30:8282/" },
+  { name: "LOU PANTAI CAMPING FTTH",                      url: "https://5.50.51.163/" },
+  { name: "LOU PANTAI FTTH (Bbox)",                       url: "https://5.50.51.163:8282/webpages/login.html" },
+  { name: "MARE NOVA FTTH",                               url: "https://130.93.179.152:8282/" },
+  { name: "MARE NOVA 4G",                                 url: "https://45.143.210.20:8282/webpages/index.html" },
+  { name: "MEDIVAR LAVANDOU FTTH",                        url: "https://5.50.61.45:8282/" },
+  { name: "MEDIVAR FTTH",                                 url: "https://83.172.154.241:8282/weblogin.htm" },
+  { name: "MIDAS FIBRE SFR",                              url: "https://130.93.182.30/" },
+  { name: "MIDAS BOUYGUES FTTH",                          url: "https://5.50.58.111:8181/webpages/login.html" },
+  { name: "MIDAS MAISON FTTH",                            url: "https://130.93.90.152:8282/" },
+  { name: "MIRAMAR CAMPING FTTH Orange",                  url: "https://80.14.177.65:20000/homeAuthentificationRemote.html" },
+  { name: "MONEVAR LA FARLÈDE FTTH",                      url: "https://185.238.37.17:8282/weblogin.htm" },
+  { name: "ORANGERAIE BOUYGUES FTTH",                     url: "https://5.50.61.247:8282/weblogin.htm" },
+  { name: "PALMIERS BRENGUIER FTTH",                      url: "https://89.37.107.103/weblogin.htm" },
+  { name: "PANSARD CAMPING FTTH Livebox",                 url: "https://80.14.208.45:10000/homeAuthentificationRemote.html" },
+  { name: "PANSARD CAMPING VoIP FTTH",                    url: "https://90.119.69.222:10000/" },
+  { name: "PANSARD HOMAIR FTTH",                          url: "https://130.93.179.116/weblogin.htm" },
+  { name: "PARADIS DES CAMPEURS FTTH",                    url: "https://80.15.88.207:10000/" },
+  { name: "PETIT ARLANNE TIKAYAN FTTH",                   url: "https://83.172.154.234:8282/weblogin.htm" },
+  { name: "PIZZA BRUNO LES 3 ÎLES FTTH",                  url: "https://5.50.55.205/" },
+  { name: "PRAMOUSQUIER FTTH",                            url: "https://90.119.6.165:10002/homeAuthentificationRemote.html" },
+  { name: "PROFIL HYÈRES FTTH",                           url: "https://178.251.83.24/" },
+  { name: "QUALI SERVICES FTTH",                          url: "https://86.241.241.245:10002/homeAuthentificationRemote.html" },
+  { name: "RELAIS DU BAOU FTTH",                          url: "https://130.93.179.68/weblogin.htm" },
+  { name: "RESTAURANT VERGER DES KOUROS FTTH",            url: "https://83.172.155.233:8282/weblogin.htm" },
+  { name: "RK2C HYÈRES FTTH",                             url: "https://130.93.183.192/" },
+  { name: "ROUILLERE WIFI FTTH",                          url: "https://185.234.141.52:8282/weblogin.htm" },
+  { name: "SAINT CLAIR FTTH",                             url: "https://178.251.82.34:8282/weblogin.htm" },
+  { name: "SELECTION CAMPING FTTH (data/VoIP)",           url: "https://5.50.57.165:8282/weblogin.htm" },
+  { name: "SELECTION CAMPING FTTH (WiFi)",                url: "https://5.50.58.49:8282/weblogin.htm" },
+  { name: "TCT FTTH",                                     url: "https://130.93.126.111/" },
+  { name: "TIKAYAN LES PALMIERS FTTH",                    url: "https://5.50.55.35/weblogin.htm" },
+  { name: "VALROSE FTTH (accueil WiFi)",                  url: "https://130.93.158.18:8282/" },
+  { name: "VALROSE FTTH (restaurant Orange)",             url: "https://130.93.158.19/weblogin.htm" },
+  { name: "VERDINO CABINET DENTAIRE FTTH",                url: "http://5.50.54.169:82/" },
+  { name: "VOIP CIGALES FTTH",                            url: "https://83.172.191.97:8282/weblogin.htm" },
+  // ── FTTB ─────────────────────────────────────────────────────────────────
+  { name: "BANAPRIM FTTB SFR MARSEILLE",                  url: "http://185.234.140.2/" },
+  { name: "MIREMER FTTB",                                 url: "http://130.93.189.119/" },
+  { name: "LORENZA MARSEILLE FTTB",                       url: "http://185.171.112.29/" },
+  { name: "BERGERIE FTTO",                                url: "https://178.20.49.55:8282/webpages/login.html" },
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+const CARDS = {};
+let cardCounter = 0;
+
+// ── BUILD ──────────────────────────────────────────────────────────────────
+function buildCards() {
+  const grid = document.getElementById('grid-ftth');
+  DATA.forEach(item => {
+    const id = 'c' + (++cardCounter);
+    let host;
+    try { host = new URL(item.url).host; } catch(e) { host = item.url; }
+    const card = document.createElement('a');
+    card.className = 'card pending';
+    card.href = item.url;
+    card.target = '_blank';
+    card.id = id;
+    card.dataset.name = item.name.toLowerCase();
+    card.innerHTML = `
+      <div class="status-dot"></div>
+      <div class="card-info">
+        <div class="card-name">${item.name}</div>
+        <div class="card-url">${host}</div>
+      </div>
+      <div class="card-latency">…</div>
+    `;
+    grid.appendChild(card);
+    CARDS[id] = { el: card, url: item.url, status: 'pending' };
+  });
+  updateStats();
+}
+
+// ── PING ───────────────────────────────────────────────────────────────────
+const TIMEOUT_MS = 6000;
+const CONCURRENCY = 20;
+
+async function pingOne(id) {
+  const { el, url } = CARDS[id];
+  const latEl = el.querySelector('.card-latency');
+  el.className = 'card pending';
+  latEl.textContent = '…';
+  CARDS[id].status = 'pending';
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const t0 = Date.now();
+
+  try {
+    await fetch(url, { method: 'HEAD', mode: 'no-cors', cache: 'no-store', signal: controller.signal });
+    clearTimeout(timer);
+    const ms = Date.now() - t0;
+    el.className = 'card up';
+    latEl.textContent = ms + 'ms';
+    CARDS[id].status = 'up';
+  } catch(e) {
+    clearTimeout(timer);
+    if (e.name === 'AbortError') {
+      el.className = 'card down';
+      latEl.textContent = 'TIMEOUT';
+      CARDS[id].status = 'down';
+    } else {
+      // Network error = host responded (CORS block), so it's alive
+      const ms = Date.now() - t0;
+      el.className = 'card up';
+      latEl.textContent = ms + 'ms';
+      CARDS[id].status = 'up';
+    }
+  }
+  updateStats();
+}
+
+async function pingAll() {
+  const ids = Object.keys(CARDS);
+  const btn = document.getElementById('btn-refresh');
+  const prog = document.getElementById('prog');
+  const lr = document.getElementById('lr');
+  btn.disabled = true;
+  prog.style.width = '0%';
+
+  let done = 0;
+  const total = ids.length;
+  for (let i = 0; i < total; i += CONCURRENCY) {
+    const batch = ids.slice(i, i + CONCURRENCY);
+    await Promise.all(batch.map(pingOne));
+    done += batch.length;
+    prog.style.width = Math.round(done / total * 100) + '%';
+  }
+
+  prog.style.width = '100%';
+  lr.textContent = 'MAJ ' + new Date().toLocaleTimeString('fr-FR');
+  btn.disabled = false;
+  updateStats();
+}
+
+function updateStats() {
+  const all = Object.values(CARDS);
+  document.getElementById('count-up').textContent   = all.filter(c => c.status === 'up').length;
+  document.getElementById('count-down').textContent  = all.filter(c => c.status === 'down').length;
+  document.getElementById('count-wait').textContent  = all.filter(c => c.status === 'pending').length;
+}
+
+function filterCards(q) {
+  q = q.toLowerCase().trim();
+  document.querySelectorAll('.card').forEach(card => {
+    card.style.display = (!q || card.dataset.name.includes(q)) ? '' : 'none';
+  });
+}
+
+buildCards();
+setTimeout(() => pingAll(), 400);
+</script>
+</body>
+</html>
