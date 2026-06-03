@@ -1078,53 +1078,48 @@ body::before {
           </div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-          <span class="pavé-badge" id="badgeSemaine">🔵 Semaine —</span>
+          <span class="pavé-badge">🔵 Semaine 16</span>
           <span class="pavé-badge" style="color:var(--red);border-color:rgba(220,38,38,.2);background:rgba(220,38,38,.06)">⚠ 3 urgences</span>
         </div>
       </div>
       <div class="pavé-body">
-        <div class="mini-week" id="miniWeek">
-          <!-- En-têtes jours : générés dynamiquement -->
+        <div class="mini-week">
           <div class="mini-day-header" style="background:transparent;border-color:transparent"></div>
-          <div class="mini-day-header" id="dayHdr0"></div>
-          <div class="mini-day-header" id="dayHdr1"></div>
-          <div class="mini-day-header" id="dayHdr2"></div>
-          <div class="mini-day-header" id="dayHdr3"></div>
-          <div class="mini-day-header" id="dayHdr4"></div>
+          <div class="mini-day-header"><strong>Lun 15</strong><span style="color:var(--red);font-size:10px">3 urg.</span></div>
+          <div class="mini-day-header today"><strong>Mar 16</strong><span style="font-size:10px;color:var(--muted)">2 chantiers</span></div>
+          <div class="mini-day-header"><strong>Mer 17</strong><span style="font-size:10px;color:var(--muted)">normal</span></div>
+          <div class="mini-day-header"><strong>Jeu 18</strong><span style="font-size:10px;color:var(--muted)">dense</span></div>
+          <div class="mini-day-header"><strong>Ven 19</strong><span style="font-size:10px;color:var(--muted)">clôtures</span></div>
           <div class="mini-day-header" style="display:none"></div>
           <div class="mini-day-header" style="display:none"></div>
 
-          <!-- Ligne Anthony · Fabian -->
           <div class="mini-team-label">Anthony · Fabian</div>
-          <div class="mini-cell" id="cell-tech-0"></div>
-          <div class="mini-cell" id="cell-tech-1"></div>
-          <div class="mini-cell" id="cell-tech-2"></div>
-          <div class="mini-cell" id="cell-tech-3"></div>
-          <div class="mini-cell" id="cell-tech-4"></div>
+          <div class="mini-cell"><div class="mini-task blue">Vidaresse</div><div class="mini-task red">SAV Miremer</div></div>
+          <div class="mini-cell"><div class="mini-task blue">Kouros</div></div>
+          <div class="mini-cell"><div class="mini-task red">Tikayan !</div></div>
+          <div class="mini-cell"><div class="mini-task blue">Bonporteau</div></div>
+          <div class="mini-cell"><div class="mini-task gray">CR techs</div></div>
 
-          <!-- Ligne Ambre · ADV -->
           <div class="mini-team-label">Ambre · ADV</div>
-          <div class="mini-cell" id="cell-adv-0"></div>
-          <div class="mini-cell" id="cell-adv-1"></div>
-          <div class="mini-cell" id="cell-adv-2"></div>
-          <div class="mini-cell" id="cell-adv-3"></div>
-          <div class="mini-cell" id="cell-adv-4"></div>
+          <div class="mini-cell"><div class="mini-task purple">3 cdes</div></div>
+          <div class="mini-cell"><div class="mini-task gray">Factu SAV</div></div>
+          <div class="mini-cell"><div class="mini-task purple">Relance fourn.</div></div>
+          <div class="mini-cell"><div class="mini-task gray">Axonaut</div></div>
+          <div class="mini-cell"><div class="mini-task green">Relances</div></div>
 
-          <!-- Ligne Virginie · Carla -->
           <div class="mini-team-label">Virginie · Carla</div>
-          <div class="mini-cell" id="cell-dir-0"></div>
-          <div class="mini-cell" id="cell-dir-1"></div>
-          <div class="mini-cell" id="cell-dir-2"></div>
-          <div class="mini-cell" id="cell-dir-3"></div>
-          <div class="mini-cell" id="cell-dir-4"></div>
+          <div class="mini-cell"><div class="mini-task green">Relances VIP</div></div>
+          <div class="mini-cell"><div class="mini-task green">2 devis</div></div>
+          <div class="mini-cell"><div class="mini-task gray">Suivi cash</div></div>
+          <div class="mini-cell"><div class="mini-task green">Closing</div></div>
+          <div class="mini-cell"><div class="mini-task gray">Pilotage</div></div>
 
-          <!-- Ligne Amanda · Com -->
           <div class="mini-team-label">Amanda · Com</div>
-          <div class="mini-cell" id="cell-com-0"></div>
-          <div class="mini-cell" id="cell-com-1"></div>
-          <div class="mini-cell" id="cell-com-2"></div>
-          <div class="mini-cell" id="cell-com-3"></div>
-          <div class="mini-cell" id="cell-com-4"></div>
+          <div class="mini-cell"><div class="mini-task yellow">Visuels</div></div>
+          <div class="mini-cell"></div>
+          <div class="mini-cell"><div class="mini-task yellow">LinkedIn</div></div>
+          <div class="mini-cell"><div class="mini-task yellow">CMS</div></div>
+          <div class="mini-cell"><div class="mini-task yellow">Newsletter</div></div>
         </div>
         <div class="planning-footer">
           <div class="legend-chip"><span class="legend-dot" style="background:var(--blue1)"></span>Chantier</div>
@@ -1396,7 +1391,8 @@ body::before {
         </div>
       </div>
       <div class="pavé-open">
-        <button class="open-btn" onclick="window.open('https://docs.google.com/spreadsheets/d/1oBMzvDuGH8dt34nqUDKgRdldcZcV_r6GmbQWeovVjEA/edit?gid=220600479#gid=220600479','_blank');event.stopPropagation()">Ouvrir Base Parc →</button>
+        <button class="open-btn" onclick="window.open('https://docs.google.com/spreadsheets/d/1bSDZO4nDU1pTpmeYOwHseP_I-1A7lXLVm8mUBsesBko/edit?gid=1444419048#gid=1444419048','_blank');event.stopPropagation()">Consulter la Base Parc →</button>
+        <button class="open-btn" onclick="window.open('https://docs.google.com/spreadsheets/d/1bSDZO4nDU1pTpmeYOwHseP_I-1A7lXLVm8mUBsesBko/edit?gid=1444419048#gid=1444419048','_blank');event.stopPropagation()">Modifier / Ajouter un site →</button>
       </div>
     </div>
 
@@ -1428,117 +1424,6 @@ function updateClock() {
 }
 updateClock();
 setInterval(updateClock, 10000);
-
-// ── PLANNING DYNAMIQUE ──
-
-// Calcul numéro de semaine ISO
-function getISOWeek(date) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-}
-
-// Lundi de la semaine contenant `date`
-function getMondayOf(date) {
-  const d = new Date(date);
-  const day = d.getDay() || 7; // dim=7
-  d.setDate(d.getDate() - day + 1);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-// Tâches par semaine ISO → par équipe → par jour (0=lun … 4=ven)
-// Structure : TASKS[numSemaine][équipe][jourIndex] = [{label, color}]
-// Équipes : 'tech', 'adv', 'dir', 'com'
-// Colors : blue, red, purple, green, yellow, gray
-const TASKS = {
-  // ── Semaine 21 (exemple actuel, semaine du 19 mai 2025) ──
-  21: {
-    tech: [
-      [{label:'Vidaresse',color:'blue'},{label:'SAV Miremer',color:'red'}],
-      [{label:'Kouros',color:'blue'}],
-      [{label:'Tikayan !',color:'red'}],
-      [{label:'Bonporteau',color:'blue'}],
-      [{label:'CR techs',color:'gray'}],
-    ],
-    adv: [
-      [{label:'3 cdes',color:'purple'}],
-      [{label:'Factu SAV',color:'gray'}],
-      [{label:'Relance fourn.',color:'purple'}],
-      [{label:'Axonaut',color:'gray'}],
-      [{label:'Relances',color:'green'}],
-    ],
-    dir: [
-      [{label:'Relances VIP',color:'green'}],
-      [{label:'2 devis',color:'green'}],
-      [{label:'Suivi cash',color:'gray'}],
-      [{label:'Closing',color:'green'}],
-      [{label:'Pilotage',color:'gray'}],
-    ],
-    com: [
-      [{label:'Visuels',color:'yellow'}],
-      [],
-      [{label:'LinkedIn',color:'yellow'}],
-      [{label:'CMS',color:'yellow'}],
-      [{label:'Newsletter',color:'yellow'}],
-    ],
-  },
-  // Ajoutez d'autres semaines ici au même format
-};
-
-// Message affiché dans une cellule vide
-const EMPTY_LABEL = '';
-
-function task(label, color) {
-  return `<div class="mini-task ${color}">${label}</div>`;
-}
-
-function buildPlanning() {
-  const now  = new Date();
-  const week = getISOWeek(now);
-  const mon  = getMondayOf(now);
-
-  // Badge semaine
-  document.getElementById('badgeSemaine').textContent = `🔵 Semaine ${week}`;
-
-  // Noms des jours
-  const joursFr = ['Lun','Mar','Mer','Jeu','Ven'];
-  const months  = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
-
-  const todayStr = now.toDateString();
-
-  for (let i = 0; i < 5; i++) {
-    const d = new Date(mon);
-    d.setDate(mon.getDate() + i);
-
-    const hdr = document.getElementById(`dayHdr${i}`);
-    const isToday = d.toDateString() === todayStr;
-    hdr.innerHTML = `<strong>${joursFr[i]} ${d.getDate()}</strong><span style="font-size:10px;color:var(--muted)">${d.getMonth() !== now.getMonth() ? months[d.getMonth()] : ''}</span>`;
-    if (isToday) hdr.classList.add('today');
-    else hdr.classList.remove('today');
-  }
-
-  // Tâches : données de la semaine si dispo, sinon grille vide
-  const weekData = TASKS[week] || {};
-  const teams    = ['tech','adv','dir','com'];
-
-  teams.forEach(team => {
-    const teamData = weekData[team] || [];
-    for (let i = 0; i < 5; i++) {
-      const cell  = document.getElementById(`cell-${team}-${i}`);
-      const tasks = teamData[i] || [];
-      if (tasks.length === 0) {
-        cell.innerHTML = EMPTY_LABEL;
-      } else {
-        cell.innerHTML = tasks.map(t => task(t.label, t.color)).join('');
-      }
-    }
-  });
-}
-
-buildPlanning();
 
 // ── ROLE ──
 function setRole(btn) {
@@ -1602,8 +1487,9 @@ const modals = {
     title: '🗂️ Base Parc',
     body: `<p>Référentiel unique des sites clients. Fiches techniques, accès Omada/Telmat, contacts et historique incidents.</p>
     <div class="modal-links">
-      <a class="modal-link" href="https://docs.google.com/spreadsheets/d/1oBMzvDuGH8dt34nqUDKgRdldcZcV_r6GmbQWeovVjEA/edit?gid=220600479#gid=220600479" target="_blank"><div class="modal-link-left"><span class="modal-link-icon">📊</span><div><div class="modal-link-name">Google Sheets — Planning</div><div class="modal-link-sub">En attendant la Base Parc dédiée</div></div></div><span>↗</span></a>
-      <a class="modal-link" href="https://axonaut.com/fr/login" target="_blank"><div class="modal-link-left"><span class="modal-link-icon">📋</span><div><div class="modal-link-name">Axonaut</div><div class="modal-link-sub">Fiches clients</div></div></div><span>↗</span></a>
+      <a class="modal-link" href="https://docs.google.com/spreadsheets/d/1bSDZO4nDU1pTpmeYOwHseP_I-1A7lXLVm8mUBsesBko/edit?gid=1444419048#gid=1444419048" target="_blank"><div class="modal-link-left"><span class="modal-link-icon">📊</span><div><div class="modal-link-name">Base Parc — Vue complète</div><div class="modal-link-sub">185 clients · tous types · 37 colonnes</div></div></div><span>↗</span></a>
+      <a class="modal-link" href="https://docs.google.com/spreadsheets/d/1bSDZO4nDU1pTpmeYOwHseP_I-1A7lXLVm8mUBsesBko/edit?gid=1444419048#gid=1444419048" target="_blank"><div class="modal-link-left"><span class="modal-link-icon">🏕️</span><div><div class="modal-link-name">Base Parc — Vue Campings</div><div class="modal-link-sub">67 campings · SSID · contacts · saisons</div></div></div><span>↗</span></a>
+      <a class="modal-link" href="https://axonaut.com/fr/login" target="_blank"><div class="modal-link-left"><span class="modal-link-icon">📋</span><div><div class="modal-link-name">Axonaut</div><div class="modal-link-sub">Fiches clients · CRM</div></div></div><span>↗</span></a>
     </div>`
   },
   urgences: {
