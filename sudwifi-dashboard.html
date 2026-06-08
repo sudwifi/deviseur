@@ -779,7 +779,199 @@ body::before {
   .role-strip { padding: 0 16px; }
 }
 
-/* ── ANIMATIONS ── */
+/* KPI link cards */
+.kpi-link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color .2s, box-shadow .2s, transform .2s;
+}
+.kpi-link:hover {
+  border-color: var(--border2);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.kpi-title {
+  font-family: var(--title);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -.3px;
+  margin: 3px 0 2px;
+  color: var(--text);
+}
+
+/* ── TASK MODAL ── */
+.task-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,39,64,.45);
+  backdrop-filter: blur(6px);
+  z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+.task-modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.task-modal {
+  background: var(--surface);
+  border: 1.5px solid var(--border2);
+  border-radius: 20px;
+  width: 100%; max-width: 520px;
+  max-height: 90vh; overflow-y: auto;
+  transform: translateY(20px);
+  transition: transform .25s;
+  box-shadow: var(--shadow-lg);
+}
+.task-modal-overlay.open .task-modal { transform: translateY(0); }
+
+.task-modal-header {
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.task-modal-title {
+  font-family: var(--title); font-size: 16px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 10px;
+}
+.task-type-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+
+.task-modal-body { padding: 18px 22px 22px; display: grid; gap: 14px; }
+
+.task-field { display: grid; gap: 5px; }
+.task-field label {
+  font-family: var(--sub); font-size: 10px; font-weight: 600;
+  color: var(--muted); text-transform: uppercase; letter-spacing: .5px;
+}
+.task-field-value {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 12px;
+}
+.task-field-value.empty { color: var(--muted); font-weight: 400; font-style: italic; }
+
+.task-team-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.team-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--surface2); border: 1.5px solid var(--border2);
+  border-radius: 999px; padding: 4px 10px;
+  font-family: var(--sub); font-size: 12px; font-weight: 600; color: var(--blue1);
+}
+.team-chip.responsable {
+  background: rgba(0,126,177,.10); border-color: var(--blue1);
+}
+.team-chip-avatar {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--blue1); color: #fff;
+  font-size: 9px; font-weight: 700;
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.team-chip.responsable .team-chip-avatar { background: var(--blue1); }
+.team-chip:not(.responsable) .team-chip-avatar { background: var(--blue2); }
+
+.task-priority-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 999px;
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+}
+.task-priority-badge.urgente { background:rgba(220,38,38,.12); color:#dc2626; border:1px solid rgba(220,38,38,.2); }
+.task-priority-badge.haute   { background:rgba(214,113,26,.12); color:#d6711a; border:1px solid rgba(214,113,26,.2); }
+.task-priority-badge.normale { background:rgba(0,126,177,.10);  color:var(--blue1); border:1px solid rgba(0,126,177,.15); }
+.task-priority-badge.basse   { background:rgba(100,116,139,.10);color:var(--gray); border:1px solid rgba(100,116,139,.2); }
+
+/* NEW TASK FORM */
+.task-form { display: grid; gap: 12px; }
+.task-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.task-form-group { display: grid; gap: 5px; }
+.task-form-group label {
+  font-family: var(--sub); font-size: 10px; font-weight: 600;
+  color: var(--muted); text-transform: uppercase; letter-spacing: .5px;
+}
+.task-form-group input,
+.task-form-group select,
+.task-form-group textarea {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 9px 12px;
+  font-family: var(--font); font-size: 13px; color: var(--text);
+  outline: none; transition: border-color .18s, box-shadow .18s;
+  width: 100%;
+}
+.task-form-group input:focus,
+.task-form-group select:focus,
+.task-form-group textarea:focus {
+  border-color: var(--blue2); box-shadow: 0 0 0 3px rgba(18,170,204,.12);
+}
+.task-form-group textarea { min-height: 70px; resize: vertical; }
+
+/* Type de tâche selector */
+.task-types-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.task-type-btn {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 10px 8px;
+  font-family: var(--sub); font-size: 11px; font-weight: 600;
+  color: var(--muted2); cursor: pointer; text-align: center;
+  transition: all .15s; display: flex; flex-direction: column;
+  align-items: center; gap: 5px;
+}
+.task-type-btn:hover { border-color: var(--blue2); color: var(--blue1); }
+.task-type-btn.selected {
+  background: rgba(0,126,177,.10); border-color: var(--blue1); color: var(--blue1);
+}
+.task-type-btn .type-icon { font-size: 18px; }
+
+/* Multi-select équipe */
+.team-select-grid {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.team-member-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 999px; padding: 5px 12px;
+  font-family: var(--sub); font-size: 12px; font-weight: 600;
+  color: var(--muted2); cursor: pointer; transition: all .15s;
+}
+.team-member-btn:hover { border-color: var(--blue2); color: var(--blue1); }
+.team-member-btn.selected-resp {
+  background: rgba(0,126,177,.12); border-color: var(--blue1); color: var(--blue1);
+}
+.team-member-btn.selected-team {
+  background: rgba(18,170,204,.10); border-color: var(--blue2); color: var(--blue2);
+}
+.team-member-btn .mb-avatar {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--surface3); color: var(--muted2);
+  font-size: 9px; font-weight: 700;
+  display: grid; place-items: center;
+}
+.team-member-btn.selected-resp .mb-avatar { background: var(--blue1); color: #fff; }
+.team-member-btn.selected-team .mb-avatar { background: var(--blue2); color: #fff; }
+
+.resp-legend {
+  font-family: var(--sub); font-size: 11px; color: var(--muted);
+  margin-top: 4px; font-weight: 500;
+}
+
+.task-form-actions {
+  display: flex; gap: 8px; justify-content: flex-end; padding-top: 4px;
+  border-top: 1px solid var(--border); margin-top: 4px;
+}
+.btn-cancel {
+  background: var(--surface2); border: 1.5px solid var(--border2);
+  border-radius: 999px; padding: 8px 18px;
+  font-family: var(--sub); font-size: 13px; font-weight: 600;
+  color: var(--muted2); cursor: pointer; transition: all .15s;
+}
+.btn-cancel:hover { border-color: var(--gray); color: var(--text); }
+.btn-save {
+  background: var(--blue1); border: none; border-radius: 999px;
+  padding: 8px 20px; font-family: var(--sub); font-size: 13px;
+  font-weight: 600; color: #fff; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,126,177,.25); transition: all .15s;
+}
+.btn-save:hover { background: var(--blue2); box-shadow: 0 4px 14px rgba(0,126,177,.35); }
 .pavé { animation: fadeUp .4s ease both; }
 .pavé:nth-child(1) { animation-delay:.05s; }
 .pavé:nth-child(2) { animation-delay:.10s; }
@@ -1028,40 +1220,40 @@ body::before {
 <!-- MAIN -->
 <main class="main">
 
-  <!-- KPI ROW -->
+  <!-- ACCÈS RAPIDE -->
   <section class="kpi-row">
-    <div class="kpi-card">
-      <div class="kpi-icon" style="background:rgba(22,163,74,.10)">🟢</div>
+    <a class="kpi-card kpi-link" href="https://sudwifi.github.io/deviseur/noc.html" target="_blank">
+      <div class="kpi-icon" style="background:rgba(22,163,74,.10)">📡</div>
       <div class="kpi-text">
-        <div class="label">sites supervisés</div>
-        <div class="value">47</div>
-        <div class="sub">42 OK · 3 alertes · 2 hors ligne</div>
+        <div class="label">supervision réseau</div>
+        <div class="kpi-title">NOC · Bornes Wifi</div>
+        <div class="sub">Accès direct supervision →</div>
       </div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-icon" style="background:rgba(220,38,38,.10)">🔴</div>
+    </a>
+    <a class="kpi-card kpi-link" href="https://app.crisp.chat/initiate/login/" target="_blank">
+      <div class="kpi-icon" style="background:rgba(220,38,38,.10)">🎧</div>
       <div class="kpi-text">
-        <div class="label">urgences ouvertes</div>
-        <div class="value" style="color:var(--red)">3</div>
-        <div class="sub">2 SAV critiques · 1 chantier bloqué</div>
+        <div class="label">support clients</div>
+        <div class="kpi-title">Crisp Pro</div>
+        <div class="sub">Tickets & conversations →</div>
       </div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-icon" style="background:rgba(0,126,177,.10)">💬</div>
+    </a>
+    <a class="kpi-card kpi-link" href="https://app.crisp.chat/initiate/login/" target="_blank">
+      <div class="kpi-icon" style="background:rgba(0,126,177,.10)">🏕️</div>
       <div class="kpi-text">
-        <div class="label">conversations Crisp</div>
-        <div class="value">31</div>
-        <div class="sub">9 Pro · 22 Vacanciers</div>
+        <div class="label">support vacanciers</div>
+        <div class="kpi-title">Crisp Vacanciers</div>
+        <div class="sub">Bot IA & escalades →</div>
       </div>
-    </div>
-    <div class="kpi-card">
+    </a>
+    <a class="kpi-card kpi-link" href="https://axonaut.com/fr/login" target="_blank">
       <div class="kpi-icon" style="background:rgba(214,113,26,.10)">📋</div>
       <div class="kpi-text">
-        <div class="label">tâches semaine</div>
-        <div class="value">24</div>
-        <div class="sub">8 terrain · 5 urgences · 11 bureau</div>
+        <div class="label">gestion & suivi</div>
+        <div class="kpi-title">Axonaut</div>
+        <div class="sub">CRM · Tâches · SAV →</div>
       </div>
-    </div>
+    </a>
   </section>
 
   <!-- 7 PAVÉS -->
@@ -1078,48 +1270,48 @@ body::before {
           </div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-          <span class="pavé-badge">🔵 Semaine 16</span>
-          <span class="pavé-badge" style="color:var(--red);border-color:rgba(220,38,38,.2);background:rgba(220,38,38,.06)">⚠ 3 urgences</span>
+          <span class="pavé-badge" id="badgeSemaine">🔵 Semaine —</span>
+          <button class="pavé-badge" id="btnNouvelleTache" style="cursor:pointer;color:var(--blue1);border-color:rgba(0,126,177,.25);background:rgba(0,126,177,.07);font-family:var(--sub);font-weight:600" onclick="openNewTaskModal();event.stopPropagation()">+ Nouvelle tâche</button>
         </div>
       </div>
       <div class="pavé-body">
-        <div class="mini-week">
+        <div class="mini-week" id="miniWeek">
           <div class="mini-day-header" style="background:transparent;border-color:transparent"></div>
-          <div class="mini-day-header"><strong>Lun 15</strong><span style="color:var(--red);font-size:10px">3 urg.</span></div>
-          <div class="mini-day-header today"><strong>Mar 16</strong><span style="font-size:10px;color:var(--muted)">2 chantiers</span></div>
-          <div class="mini-day-header"><strong>Mer 17</strong><span style="font-size:10px;color:var(--muted)">normal</span></div>
-          <div class="mini-day-header"><strong>Jeu 18</strong><span style="font-size:10px;color:var(--muted)">dense</span></div>
-          <div class="mini-day-header"><strong>Ven 19</strong><span style="font-size:10px;color:var(--muted)">clôtures</span></div>
+          <div class="mini-day-header" id="dayHdr0"></div>
+          <div class="mini-day-header" id="dayHdr1"></div>
+          <div class="mini-day-header" id="dayHdr2"></div>
+          <div class="mini-day-header" id="dayHdr3"></div>
+          <div class="mini-day-header" id="dayHdr4"></div>
           <div class="mini-day-header" style="display:none"></div>
           <div class="mini-day-header" style="display:none"></div>
 
-          <div class="mini-team-label">Anthony · Fabian</div>
-          <div class="mini-cell"><div class="mini-task blue">Vidaresse</div><div class="mini-task red">SAV Miremer</div></div>
-          <div class="mini-cell"><div class="mini-task blue">Kouros</div></div>
-          <div class="mini-cell"><div class="mini-task red">Tikayan !</div></div>
-          <div class="mini-cell"><div class="mini-task blue">Bonporteau</div></div>
-          <div class="mini-cell"><div class="mini-task gray">CR techs</div></div>
+          <div class="mini-team-label">Anthony · Fabian · Jonovan · Fred</div>
+          <div class="mini-cell" id="cell-ops-0"></div>
+          <div class="mini-cell" id="cell-ops-1"></div>
+          <div class="mini-cell" id="cell-ops-2"></div>
+          <div class="mini-cell" id="cell-ops-3"></div>
+          <div class="mini-cell" id="cell-ops-4"></div>
 
           <div class="mini-team-label">Ambre · ADV</div>
-          <div class="mini-cell"><div class="mini-task purple">3 cdes</div></div>
-          <div class="mini-cell"><div class="mini-task gray">Factu SAV</div></div>
-          <div class="mini-cell"><div class="mini-task purple">Relance fourn.</div></div>
-          <div class="mini-cell"><div class="mini-task gray">Axonaut</div></div>
-          <div class="mini-cell"><div class="mini-task green">Relances</div></div>
+          <div class="mini-cell" id="cell-adv-0"></div>
+          <div class="mini-cell" id="cell-adv-1"></div>
+          <div class="mini-cell" id="cell-adv-2"></div>
+          <div class="mini-cell" id="cell-adv-3"></div>
+          <div class="mini-cell" id="cell-adv-4"></div>
 
-          <div class="mini-team-label">Virginie · Carla</div>
-          <div class="mini-cell"><div class="mini-task green">Relances VIP</div></div>
-          <div class="mini-cell"><div class="mini-task green">2 devis</div></div>
-          <div class="mini-cell"><div class="mini-task gray">Suivi cash</div></div>
-          <div class="mini-cell"><div class="mini-task green">Closing</div></div>
-          <div class="mini-cell"><div class="mini-task gray">Pilotage</div></div>
+          <div class="mini-team-label">Virginie · Direction</div>
+          <div class="mini-cell" id="cell-dir-0"></div>
+          <div class="mini-cell" id="cell-dir-1"></div>
+          <div class="mini-cell" id="cell-dir-2"></div>
+          <div class="mini-cell" id="cell-dir-3"></div>
+          <div class="mini-cell" id="cell-dir-4"></div>
 
-          <div class="mini-team-label">Amanda · Com</div>
-          <div class="mini-cell"><div class="mini-task yellow">Visuels</div></div>
-          <div class="mini-cell"></div>
-          <div class="mini-cell"><div class="mini-task yellow">LinkedIn</div></div>
-          <div class="mini-cell"><div class="mini-task yellow">CMS</div></div>
-          <div class="mini-cell"><div class="mini-task yellow">Newsletter</div></div>
+          <div class="mini-team-label">Amanda · Coordination</div>
+          <div class="mini-cell" id="cell-coord-0"></div>
+          <div class="mini-cell" id="cell-coord-1"></div>
+          <div class="mini-cell" id="cell-coord-2"></div>
+          <div class="mini-cell" id="cell-coord-3"></div>
+          <div class="mini-cell" id="cell-coord-4"></div>
         </div>
         <div class="planning-footer">
           <div class="legend-chip"><span class="legend-dot" style="background:var(--blue1)"></span>Chantier</div>
@@ -1128,6 +1320,7 @@ body::before {
           <div class="legend-chip"><span class="legend-dot" style="background:var(--green)"></span>Business</div>
           <div class="legend-chip"><span class="legend-dot" style="background:var(--gray)"></span>Admin</div>
           <div class="legend-chip"><span class="legend-dot" style="background:var(--yellow)"></span>Com</div>
+          <div class="legend-chip"><span class="legend-dot" style="background:var(--orange)"></span>Réunion</div>
         </div>
       </div>
       <div class="pavé-open">
@@ -1391,8 +1584,7 @@ body::before {
         </div>
       </div>
       <div class="pavé-open">
-        <button class="open-btn" onclick="window.open('https://docs.google.com/spreadsheets/d/1bSDZO4nDU1pTpmeYOwHseP_I-1A7lXLVm8mUBsesBko/edit?gid=1444419048#gid=1444419048','_blank');event.stopPropagation()">Consulter la Base Parc →</button>
-        <button class="open-btn" onclick="window.open('https://docs.google.com/spreadsheets/d/1bSDZO4nDU1pTpmeYOwHseP_I-1A7lXLVm8mUBsesBko/edit?gid=1444419048#gid=1444419048','_blank');event.stopPropagation()">Modifier / Ajouter un site →</button>
+        <button class="open-btn" onclick="window.open('https://docs.google.com/spreadsheets/d/1oBMzvDuGH8dt34nqUDKgRdldcZcV_r6GmbQWeovVjEA/edit?gid=220600479#gid=220600479','_blank');event.stopPropagation()">Ouvrir Base Parc →</button>
       </div>
     </div>
 
@@ -1487,9 +1679,8 @@ const modals = {
     title: '🗂️ Base Parc',
     body: `<p>Référentiel unique des sites clients. Fiches techniques, accès Omada/Telmat, contacts et historique incidents.</p>
     <div class="modal-links">
-      <a class="modal-link" href="https://docs.google.com/spreadsheets/d/1bSDZO4nDU1pTpmeYOwHseP_I-1A7lXLVm8mUBsesBko/edit?gid=1444419048#gid=1444419048" target="_blank"><div class="modal-link-left"><span class="modal-link-icon">📊</span><div><div class="modal-link-name">Base Parc — Vue complète</div><div class="modal-link-sub">185 clients · tous types · 37 colonnes</div></div></div><span>↗</span></a>
-      <a class="modal-link" href="https://docs.google.com/spreadsheets/d/1bSDZO4nDU1pTpmeYOwHseP_I-1A7lXLVm8mUBsesBko/edit?gid=1444419048#gid=1444419048" target="_blank"><div class="modal-link-left"><span class="modal-link-icon">🏕️</span><div><div class="modal-link-name">Base Parc — Vue Campings</div><div class="modal-link-sub">67 campings · SSID · contacts · saisons</div></div></div><span>↗</span></a>
-      <a class="modal-link" href="https://axonaut.com/fr/login" target="_blank"><div class="modal-link-left"><span class="modal-link-icon">📋</span><div><div class="modal-link-name">Axonaut</div><div class="modal-link-sub">Fiches clients · CRM</div></div></div><span>↗</span></a>
+      <a class="modal-link" href="https://docs.google.com/spreadsheets/d/1oBMzvDuGH8dt34nqUDKgRdldcZcV_r6GmbQWeovVjEA/edit?gid=220600479#gid=220600479" target="_blank"><div class="modal-link-left"><span class="modal-link-icon">📊</span><div><div class="modal-link-name">Google Sheets — Planning</div><div class="modal-link-sub">En attendant la Base Parc dédiée</div></div></div><span>↗</span></a>
+      <a class="modal-link" href="https://axonaut.com/fr/login" target="_blank"><div class="modal-link-left"><span class="modal-link-icon">📋</span><div><div class="modal-link-name">Axonaut</div><div class="modal-link-sub">Fiches clients</div></div></div><span>↗</span></a>
     </div>`
   },
   urgences: {
@@ -1723,6 +1914,385 @@ function maskEmail(email) {
   const [user, domain] = email.split('@');
   return user.slice(0, 2) + '***@' + domain;
 }
+</script>
+<!-- TASK DETAIL / NEW TASK MODAL -->
+<div class="task-modal-overlay" id="taskModalOverlay" onclick="closeTaskModal(event)">
+  <div class="task-modal" id="taskModal">
+    <div class="task-modal-header">
+      <div class="task-modal-title" id="taskModalTitle">Tâche</div>
+      <button class="modal-close" onclick="closeTaskModalDirect()">✕</button>
+    </div>
+    <div class="task-modal-body" id="taskModalBody"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// PLANNING DYNAMIQUE
+// ══════════════════════════════════════════════
+
+function getISOWeek(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+function getMondayOf(date) {
+  const d = new Date(date);
+  const day = d.getDay() || 7;
+  d.setDate(d.getDate() - day + 1);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+// ── Structure tâche enrichie ──
+// { label, color, responsable, equipe:[], client:'', priorite:'normale', description:'' }
+// Équipes : 'ops', 'adv', 'dir', 'coord'
+// Colors  : blue(chantier), red(SAV), purple(achats), green(business), gray(admin), yellow(com), orange(réunion)
+
+const TASKS = {
+  // Exemple semaine 23 — à compléter semaine par semaine
+  23: {
+    ops: [
+      [{label:'Vidaresse', color:'blue', responsable:'Anthony', equipe:['Fabian'], client:'Camping Vidaresse', priorite:'haute'}],
+      [{label:'Kouros', color:'blue', responsable:'Jonovan', equipe:[], client:'Hôtellerie Kouros', priorite:'normale'}],
+      [{label:'SAV Tikayan', color:'red', responsable:'Fabian', equipe:[], client:'Tikayan Les Cigales', priorite:'urgente'}],
+      [{label:'Bonporteau', color:'blue', responsable:'Anthony', equipe:['Jonovan'], client:'Camping Bonporteau', priorite:'normale'}],
+      [{label:'CR techs', color:'gray', responsable:'Anthony', equipe:['Fabian','Jonovan'], priorite:'basse'}],
+    ],
+    adv: [
+      [{label:'3 commandes', color:'purple', responsable:'Ambre', equipe:[], priorite:'normale'}],
+      [{label:'Factu SAV', color:'gray', responsable:'Ambre', equipe:[], priorite:'normale'}],
+      [{label:'Relance fourn.', color:'purple', responsable:'Ambre', equipe:[], priorite:'normale'}],
+      [{label:'Axonaut', color:'gray', responsable:'Ambre', equipe:[], priorite:'basse'}],
+      [{label:'Relances', color:'green', responsable:'Ambre', equipe:[], priorite:'normale'}],
+    ],
+    dir: [
+      [{label:'Relances VIP', color:'green', responsable:'Virginie', equipe:[], priorite:'haute'}],
+      [{label:'2 devis', color:'green', responsable:'Virginie', equipe:[], priorite:'haute'}],
+      [{label:'Suivi cash', color:'gray', responsable:'Virginie', equipe:['Amanda'], priorite:'normale'}],
+      [{label:'Closing', color:'green', responsable:'Virginie', equipe:[], priorite:'haute'}],
+      [{label:'Pilotage', color:'gray', responsable:'Virginie', equipe:['Amanda'], priorite:'normale'}],
+    ],
+    coord: [
+      [{label:'Visuels', color:'yellow', responsable:'Amanda', equipe:[], priorite:'normale'}],
+      [],
+      [{label:'LinkedIn', color:'yellow', responsable:'Amanda', equipe:[], priorite:'basse'}],
+      [{label:'CMS', color:'yellow', responsable:'Amanda', equipe:[], priorite:'normale'}],
+      [{label:'Newsletter', color:'orange', responsable:'Amanda', equipe:[], priorite:'normale', description:'Réunion édito'}],
+    ],
+  },
+};
+
+// Tâches ajoutées en session (non persistées)
+let sessionTasks = {};
+
+const PRIORITY_COLORS = { urgente:'red', haute:'orange', normale:'blue', basse:'gray' };
+const TYPE_COLORS = {
+  'Chantier':'blue','SAV':'red','Achats':'purple','Business':'green',
+  'Admin':'gray','Communication':'yellow','Réunion / Orga interne':'orange',
+};
+
+function renderTask(t) {
+  const resp = t.responsable ? `<span style="font-size:9px;opacity:.8">${t.responsable[0]}</span>` : '';
+  return `<div class="mini-task ${t.color}" onclick="openTaskDetail(event, ${JSON.stringify(t).replace(/"/g,'&quot;')})" style="cursor:pointer" title="${t.responsable||''}${t.equipe&&t.equipe.length?' + '+t.equipe.join(', '):''}">${t.label}${t.responsable?'<span style=\'float:right;font-size:9px;opacity:.7;margin-left:3px\'>' + t.responsable.split(' ')[0][0] + '</span>':''}</div>`;
+}
+
+function buildPlanning() {
+  const now  = new Date();
+  const week = getISOWeek(now);
+  const mon  = getMondayOf(now);
+
+  document.getElementById('badgeSemaine').textContent = `🔵 Semaine ${week}`;
+
+  const joursFr  = ['Lun','Mar','Mer','Jeu','Ven'];
+  const monthsFr = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  const todayStr = now.toDateString();
+
+  for (let i = 0; i < 5; i++) {
+    const d = new Date(mon);
+    d.setDate(mon.getDate() + i);
+    const hdr = document.getElementById(`dayHdr${i}`);
+    const isToday = d.toDateString() === todayStr;
+    const monthLabel = d.getMonth() !== now.getMonth() ? ` ${monthsFr[d.getMonth()]}` : '';
+    hdr.innerHTML = `<strong>${joursFr[i]} ${d.getDate()}${monthLabel}</strong>`;
+    if (isToday) hdr.classList.add('today'); else hdr.classList.remove('today');
+  }
+
+  const weekData = TASKS[week] || {};
+  // Fusionner avec les tâches de session
+  const sessionWeek = sessionTasks[week] || {};
+
+  const teams = ['ops','adv','dir','coord'];
+  teams.forEach(team => {
+    const baseTasks   = weekData[team] || [];
+    const sesseTasks  = sessionWeek[team] || [];
+    for (let i = 0; i < 5; i++) {
+      const cell   = document.getElementById(`cell-${team}-${i}`);
+      const base   = baseTasks[i] || [];
+      const sess   = sesseTasks[i] || [];
+      const all    = [...base, ...sess];
+      cell.innerHTML = all.length ? all.map(t => renderTask(t)).join('') : '';
+    }
+  });
+}
+
+buildPlanning();
+
+// ══════════════════════════════════════════════
+// TASK DETAIL MODAL
+// ══════════════════════════════════════════════
+
+function openTaskDetail(e, task) {
+  e.stopPropagation();
+  const typeColor = task.color || 'blue';
+  const dotColors = {
+    blue:'var(--blue1)', red:'var(--red)', purple:'var(--purple)',
+    green:'var(--green)', gray:'var(--gray)', yellow:'var(--yellow)', orange:'var(--orange)'
+  };
+
+  document.getElementById('taskModalTitle').innerHTML =
+    `<span class="task-type-dot" style="background:${dotColors[typeColor]||'var(--blue1)'}"></span>${task.label}`;
+
+  const equipeHtml = [
+    task.responsable ? `<span class="team-chip responsable"><span class="team-chip-avatar">${task.responsable[0]}</span>${task.responsable} <span style="font-size:10px;opacity:.7">(resp.)</span></span>` : '',
+    ...(task.equipe||[]).map(m => `<span class="team-chip"><span class="team-chip-avatar">${m[0]}</span>${m}</span>`)
+  ].filter(Boolean).join('');
+
+  const prioClass = task.priorite || 'normale';
+  const prioLabels = { urgente:'🔴 Urgente', haute:'🟠 Haute', normale:'🔵 Normale', basse:'⚪ Basse' };
+
+  document.getElementById('taskModalBody').innerHTML = `
+    <div class="task-form">
+      <div class="task-form-row">
+        <div class="task-field">
+          <label>Type</label>
+          <div class="task-field-value">${getTypeLabelFromColor(task.color)}</div>
+        </div>
+        <div class="task-field">
+          <label>Priorité</label>
+          <div class="task-field-value"><span class="task-priority-badge ${prioClass}">${prioLabels[prioClass]||prioClass}</span></div>
+        </div>
+      </div>
+      ${task.client ? `<div class="task-field"><label>Site / Client</label><div class="task-field-value">${task.client}</div></div>` : ''}
+      <div class="task-field">
+        <label>Équipe</label>
+        <div class="task-field-value" style="padding:8px 12px">
+          <div class="task-team-chips">${equipeHtml || '<span style="color:var(--muted);font-style:italic;font-size:13px">Non assigné</span>'}</div>
+        </div>
+      </div>
+      ${task.description ? `<div class="task-field"><label>Description / Notes</label><div class="task-field-value">${task.description}</div></div>` : ''}
+    </div>`;
+
+  document.getElementById('taskModalOverlay').classList.add('open');
+}
+
+function getTypeLabelFromColor(color) {
+  const map = {
+    blue:'Chantier', red:'SAV', purple:'Achats',
+    green:'Business', gray:'Admin', yellow:'Communication', orange:'Réunion / Orga interne'
+  };
+  return map[color] || color;
+}
+
+function closeTaskModal(e) {
+  if (e.target === document.getElementById('taskModalOverlay')) closeTaskModalDirect();
+}
+function closeTaskModalDirect() {
+  document.getElementById('taskModalOverlay').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════
+// NEW TASK MODAL
+// ══════════════════════════════════════════════
+
+const TEAM_MEMBERS = ['Virginie','Stéphane','Anthony','Fabian','Ambre','Amanda','Jonovan','Frédéric'];
+const TASK_TYPES = [
+  {label:'Chantier',   color:'blue',   icon:'🔧'},
+  {label:'SAV',        color:'red',    icon:'🚨'},
+  {label:'Achats',     color:'purple', icon:'📦'},
+  {label:'Business',   color:'green',  icon:'💼'},
+  {label:'Admin',      color:'gray',   icon:'📋'},
+  {label:'Communication', color:'yellow', icon:'📣'},
+  {label:'Réunion / Orga interne', color:'orange', icon:'🗓️'},
+];
+
+let selectedType    = null;
+let selectedResp    = null;
+let selectedEquipe  = [];
+
+function openNewTaskModal() {
+  selectedType   = null;
+  selectedResp   = null;
+  selectedEquipe = [];
+
+  document.getElementById('taskModalTitle').innerHTML = '+ Nouvelle tâche';
+
+  const typesHtml = TASK_TYPES.map(t =>
+    `<button class="task-type-btn" data-color="${t.color}" onclick="selectType(this,'${t.color}')">`+
+    `<span class="type-icon">${t.icon}</span>${t.label}</button>`
+  ).join('');
+
+  const teamHtml = TEAM_MEMBERS.map(m =>
+    `<button class="team-member-btn" data-name="${m}" onclick="toggleMember(this,'${m}')">`+
+    `<span class="mb-avatar">${m[0]}</span>${m}</button>`
+  ).join('');
+
+  // Calcul dates par défaut (aujourd'hui)
+  const today = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const todayVal = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+
+  document.getElementById('taskModalBody').innerHTML = `
+    <div class="task-form">
+      <div class="task-form-group">
+        <label>Type de tâche *</label>
+        <div class="task-types-grid" id="typeGrid">${typesHtml}</div>
+      </div>
+      <div class="task-form-group">
+        <label>Titre *</label>
+        <input type="text" id="newTaskTitle" placeholder="Ex: Déploiement Wifi — Camping X"/>
+      </div>
+      <div class="task-form-row">
+        <div class="task-form-group">
+          <label>Site / Client</label>
+          <input type="text" id="newTaskClient" placeholder="Nom du site ou client"/>
+        </div>
+        <div class="task-form-group">
+          <label>Priorité</label>
+          <select id="newTaskPrio">
+            <option value="normale">🔵 Normale</option>
+            <option value="haute">🟠 Haute</option>
+            <option value="urgente">🔴 Urgente</option>
+            <option value="basse">⚪ Basse</option>
+          </select>
+        </div>
+      </div>
+      <div class="task-form-row">
+        <div class="task-form-group">
+          <label>Date début *</label>
+          <input type="date" id="newTaskStart" value="${todayVal}"/>
+        </div>
+        <div class="task-form-group">
+          <label>Date fin</label>
+          <input type="date" id="newTaskEnd" value="${todayVal}"/>
+        </div>
+      </div>
+      <div class="task-form-group">
+        <label>Équipe — 1er clic = Responsable · 2e clic = Équipe · 3e = Désélectionner</label>
+        <div class="team-select-grid" id="teamGrid">${teamHtml}</div>
+        <div class="resp-legend" id="respLegend">Cliquer une fois pour désigner le responsable, une 2e fois pour ajouter en équipe.</div>
+      </div>
+      <div class="task-form-group">
+        <label>Description / Notes</label>
+        <textarea id="newTaskDesc" placeholder="Contexte, accès, matériel nécessaire…"></textarea>
+      </div>
+      <div class="task-form-group">
+        <label>Lien utile</label>
+        <input type="url" id="newTaskLink" placeholder="https://axonaut.com/…"/>
+      </div>
+      <div class="task-form-actions">
+        <button class="btn-cancel" onclick="closeTaskModalDirect()">Annuler</button>
+        <button class="btn-save" onclick="saveNewTask()">Enregistrer dans le planning</button>
+      </div>
+    </div>`;
+
+  document.getElementById('taskModalOverlay').classList.add('open');
+}
+
+function selectType(btn, color) {
+  document.querySelectorAll('#typeGrid .task-type-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedType = color;
+}
+
+function toggleMember(btn, name) {
+  if (btn.classList.contains('selected-resp')) {
+    // resp → équipe
+    btn.classList.remove('selected-resp');
+    btn.classList.add('selected-team');
+    selectedResp = null;
+    selectedEquipe.push(name);
+    updateRespLegend();
+  } else if (btn.classList.contains('selected-team')) {
+    // équipe → désélectionner
+    btn.classList.remove('selected-team');
+    selectedEquipe = selectedEquipe.filter(m => m !== name);
+    updateRespLegend();
+  } else {
+    // → responsable (un seul)
+    if (selectedResp) {
+      const prevBtn = document.querySelector(`#teamGrid [data-name="${selectedResp}"]`);
+      if (prevBtn) { prevBtn.classList.remove('selected-resp'); prevBtn.classList.add('selected-team'); selectedEquipe.push(selectedResp); }
+    }
+    btn.classList.add('selected-resp');
+    selectedResp = name;
+    selectedEquipe = selectedEquipe.filter(m => m !== name);
+    updateRespLegend();
+  }
+}
+
+function updateRespLegend() {
+  const el = document.getElementById('respLegend');
+  if (!el) return;
+  const parts = [];
+  if (selectedResp) parts.push(`Responsable : <strong>${selectedResp}</strong>`);
+  if (selectedEquipe.length) parts.push(`Équipe : <strong>${selectedEquipe.join(', ')}</strong>`);
+  el.innerHTML = parts.length ? parts.join(' · ') : 'Cliquer une fois pour désigner le responsable, une 2e fois pour ajouter en équipe.';
+}
+
+function getTeamFromMembers(resp, equipe) {
+  const allOps   = ['Anthony','Fabian','Jonovan','Frédéric'];
+  const allCoord = ['Amanda'];
+  const allDir   = ['Virginie','Stéphane'];
+  const allAdv   = ['Ambre'];
+  const all = [resp, ...equipe].filter(Boolean);
+  if (all.some(m => allOps.includes(m)))   return 'ops';
+  if (all.some(m => allCoord.includes(m))) return 'coord';
+  if (all.some(m => allAdv.includes(m)))   return 'adv';
+  return 'dir';
+}
+
+function saveNewTask() {
+  const title = document.getElementById('newTaskTitle').value.trim();
+  const start = document.getElementById('newTaskStart').value;
+  if (!title) { alert('Le titre est obligatoire.'); return; }
+  if (!selectedType) { alert('Veuillez choisir un type de tâche.'); return; }
+  if (!start) { alert('La date de début est obligatoire.'); return; }
+
+  const startDate = new Date(start);
+  const week = getISOWeek(startDate);
+  const mon  = getMondayOf(startDate);
+  const dayIdx = (startDate.getDay() + 6) % 7; // 0=lun
+
+  if (dayIdx > 4) { alert('Les tâches ne peuvent être planifiées que du lundi au vendredi.'); return; }
+
+  const newTask = {
+    label:       title,
+    color:       selectedType,
+    responsable: selectedResp || null,
+    equipe:      [...selectedEquipe],
+    client:      document.getElementById('newTaskClient').value.trim() || null,
+    priorite:    document.getElementById('newTaskPrio').value,
+    description: document.getElementById('newTaskDesc').value.trim() || null,
+    lien:        document.getElementById('newTaskLink').value.trim() || null,
+  };
+
+  const team = getTeamFromMembers(selectedResp, selectedEquipe) || 'dir';
+
+  if (!sessionTasks[week]) sessionTasks[week] = {};
+  if (!sessionTasks[week][team]) sessionTasks[week][team] = [[],[],[],[],[]];
+  sessionTasks[week][team][dayIdx].push(newTask);
+
+  closeTaskModalDirect();
+  buildPlanning();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeTaskModalDirect(); }
+});
 </script>
 </body>
 </html>
