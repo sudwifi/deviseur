@@ -1211,10 +1211,9 @@ body::before {
 <div class="role-strip">
   <span class="role-label">vue :</span>
   <button class="role-pill active" data-role="direction" onclick="setRole(this)">Direction</button>
-  <button class="role-pill" data-role="tech" onclick="setRole(this)">Techs (Anthony / Fabian)</button>
+  <button class="role-pill" data-role="operations" onclick="setRole(this)">Opérations (Anthony / Fabian / Jonovan / Fred)</button>
   <button class="role-pill" data-role="adv" onclick="setRole(this)">ADV (Ambre)</button>
-  <button class="role-pill" data-role="business" onclick="setRole(this)">Business (Carla)</button>
-  <button class="role-pill" data-role="marketing" onclick="setRole(this)">Communication (Amanda)</button>
+  <button class="role-pill" data-role="coordination" onclick="setRole(this)">Coordination (Amanda)</button>
 </div>
 
 <!-- MAIN -->
@@ -1285,28 +1284,56 @@ body::before {
           <div class="mini-day-header" style="display:none"></div>
           <div class="mini-day-header" style="display:none"></div>
 
-          <div class="mini-team-label">Anthony · Fabian · Jonovan · Fred</div>
-          <div class="mini-cell" id="cell-ops-0"></div>
-          <div class="mini-cell" id="cell-ops-1"></div>
-          <div class="mini-cell" id="cell-ops-2"></div>
-          <div class="mini-cell" id="cell-ops-3"></div>
-          <div class="mini-cell" id="cell-ops-4"></div>
+          <div class="mini-team-label">Anthony</div>
+          <div class="mini-cell" id="cell-anthony-0"></div>
+          <div class="mini-cell" id="cell-anthony-1"></div>
+          <div class="mini-cell" id="cell-anthony-2"></div>
+          <div class="mini-cell" id="cell-anthony-3"></div>
+          <div class="mini-cell" id="cell-anthony-4"></div>
 
-          <div class="mini-team-label">Ambre · ADV</div>
+          <div class="mini-team-label">Fabian</div>
+          <div class="mini-cell" id="cell-fabian-0"></div>
+          <div class="mini-cell" id="cell-fabian-1"></div>
+          <div class="mini-cell" id="cell-fabian-2"></div>
+          <div class="mini-cell" id="cell-fabian-3"></div>
+          <div class="mini-cell" id="cell-fabian-4"></div>
+
+          <div class="mini-team-label">Jonovan</div>
+          <div class="mini-cell" id="cell-jonovan-0"></div>
+          <div class="mini-cell" id="cell-jonovan-1"></div>
+          <div class="mini-cell" id="cell-jonovan-2"></div>
+          <div class="mini-cell" id="cell-jonovan-3"></div>
+          <div class="mini-cell" id="cell-jonovan-4"></div>
+
+          <div class="mini-team-label">Frédéric</div>
+          <div class="mini-cell" id="cell-frederic-0"></div>
+          <div class="mini-cell" id="cell-frederic-1"></div>
+          <div class="mini-cell" id="cell-frederic-2"></div>
+          <div class="mini-cell" id="cell-frederic-3"></div>
+          <div class="mini-cell" id="cell-frederic-4"></div>
+
+          <div class="mini-team-label">Ambre</div>
           <div class="mini-cell" id="cell-adv-0"></div>
           <div class="mini-cell" id="cell-adv-1"></div>
           <div class="mini-cell" id="cell-adv-2"></div>
           <div class="mini-cell" id="cell-adv-3"></div>
           <div class="mini-cell" id="cell-adv-4"></div>
 
-          <div class="mini-team-label">Virginie · Direction</div>
+          <div class="mini-team-label">Virginie</div>
           <div class="mini-cell" id="cell-dir-0"></div>
           <div class="mini-cell" id="cell-dir-1"></div>
           <div class="mini-cell" id="cell-dir-2"></div>
           <div class="mini-cell" id="cell-dir-3"></div>
           <div class="mini-cell" id="cell-dir-4"></div>
 
-          <div class="mini-team-label">Amanda · Coordination</div>
+          <div class="mini-team-label">Stéphane</div>
+          <div class="mini-cell" id="cell-stephane-0"></div>
+          <div class="mini-cell" id="cell-stephane-1"></div>
+          <div class="mini-cell" id="cell-stephane-2"></div>
+          <div class="mini-cell" id="cell-stephane-3"></div>
+          <div class="mini-cell" id="cell-stephane-4"></div>
+
+          <div class="mini-team-label">Amanda</div>
           <div class="mini-cell" id="cell-coord-0"></div>
           <div class="mini-cell" id="cell-coord-1"></div>
           <div class="mini-cell" id="cell-coord-2"></div>
@@ -1728,15 +1755,14 @@ const EMAILJS_TEMPLATE_ID = 'template_wcmew4q';
 const EMAILJS_PUBLIC_KEY  = 'lsdpSJE0qWLSF7wux';
 
 const USERS = {
-  'Virginie':  { pass: 'Renaissance@2026sudwifi!',  email: 'virginie@sudwifi.fr',  role: 'direction' },
-  'Stéphane':  { pass: 'Renaissance@2026sudwifi!',  email: 'stephane@sudwifi.fr',  role: 'direction' },
-  'Anthony':   { pass: 'anthonytoms01',   email: 'anthony@sudwifi.fr',   role: 'tech'      },
-  'Fabian':    { pass: 'ipvs01012019+-@',     email: 'fabian@sudwifi.fr',    role: 'tech'      },
-  'Ambre':     { pass: 'ipvs01012019+-@',      email: 'ambre@sudwifi.fr',     role: 'adv'       },
-  'Amanda':    { pass: 'ipvs01012019+-@',     email: 'amanda@sudwifi.fr',    role: 'marketing' },
-  'Carla':     { pass: 'ipvs01012019+-@',      email: 'carla@sudwifi.fr',     role: 'business'  },
-  'Jonovan':   { pass: 'ipvs01012019+-@',    email: 'jonovan@sudwifi.fr',   role: 'tech'      },
-  'Frédéric':  { pass: 'ipvs01012019+-@',   email: 'frederic@sudwifi.fr',  role: 'tech'      },
+  'Virginie':  { pass: 'Renaissance@2026sudwifi!', email: 'virginie@sudwifi.fr',  role: 'direction'     },
+  'Stéphane':  { pass: 'Renaissance@2026sudwifi!', email: 'stephane@sudwifi.fr',  role: 'direction'     },
+  'Anthony':   { pass: 'anthonytoms01',            email: 'anthony@sudwifi.fr',   role: 'operations'    },
+  'Fabian':    { pass: 'ipvs01012019+-@',          email: 'fabian@sudwifi.fr',    role: 'operations'    },
+  'Ambre':     { pass: 'ipvs01012019+-@',          email: 'ambre@sudwifi.fr',     role: 'adv'           },
+  'Amanda':    { pass: 'ipvs01012019+-@',          email: 'amanda@sudwifi.fr',    role: 'coordination'  },
+  'Jonovan':   { pass: 'ipvs01012019+-@',          email: 'jonovan@sudwifi.fr',   role: 'operations'    },
+  'Frédéric':  { pass: 'ipvs01012019+-@',          email: 'frederic@sudwifi.fr',  role: 'operations'    },
 };
 
 let currentOTP = '';
@@ -1879,11 +1905,10 @@ function showDashboard(userName, role) {
   if (roleBtn) roleBtn.classList.add('active');
   document.querySelector('.avatar').textContent = userName.slice(0, 2).toUpperCase();
   const roleLabels = {
-    direction:'Direction — accès complet',
-    tech:'Techniciens — chantiers & SAV',
-    adv:'ADV — commandes & coordination',
-    business:'Business — devis & relances',
-    marketing:'Communication — com & création'
+    direction:    'Direction — accès complet',
+    coordination: 'Coordination & Gestion',
+    operations:   'Opérations terrain',
+    adv:          'Administration & ADV',
   };
   modals.profil.body = `<p>Connecté en tant que <strong>${userName}</strong><br>Rôle : <strong>${roleLabels[role]||role}</strong></p>
     <div class="modal-links">
@@ -1953,14 +1978,37 @@ function getMondayOf(date) {
 // Colors  : blue(chantier), red(SAV), purple(achats), green(business), gray(admin), yellow(com), orange(réunion)
 
 const TASKS = {
-  // Exemple semaine 23 — à compléter semaine par semaine
+  // Structure : TASKS[numSemaine][cléPersonne][jourIndex] = [{label, color, responsable, equipe, client, priorite}]
+  // Clés : 'anthony','fabian','jonovan','frederic','adv'(Ambre),'dir'(Virginie),'stephane','coord'(Amanda)
+  // Exemple semaine courante — à compléter semaine par semaine
   23: {
-    ops: [
+    anthony: [
       [{label:'Vidaresse', color:'blue', responsable:'Anthony', equipe:['Fabian'], client:'Camping Vidaresse', priorite:'haute'}],
-      [{label:'Kouros', color:'blue', responsable:'Jonovan', equipe:[], client:'Hôtellerie Kouros', priorite:'normale'}],
-      [{label:'SAV Tikayan', color:'red', responsable:'Fabian', equipe:[], client:'Tikayan Les Cigales', priorite:'urgente'}],
+      [{label:'Kouros', color:'blue', responsable:'Anthony', equipe:[], client:'Hôtellerie Kouros', priorite:'normale'}],
+      [],
       [{label:'Bonporteau', color:'blue', responsable:'Anthony', equipe:['Jonovan'], client:'Camping Bonporteau', priorite:'normale'}],
-      [{label:'CR techs', color:'gray', responsable:'Anthony', equipe:['Fabian','Jonovan'], priorite:'basse'}],
+      [{label:'CR interventions', color:'gray', responsable:'Anthony', equipe:[], priorite:'basse'}],
+    ],
+    fabian: [
+      [{label:'SAV Miremer', color:'red', responsable:'Fabian', equipe:[], client:'Camping Miremer', priorite:'urgente'}],
+      [],
+      [{label:'SAV Tikayan', color:'red', responsable:'Fabian', equipe:[], client:'Tikayan Les Cigales', priorite:'urgente'}],
+      [],
+      [],
+    ],
+    jonovan: [
+      [],
+      [{label:'Kouros câblage', color:'blue', responsable:'Jonovan', equipe:[], client:'Hôtellerie Kouros', priorite:'normale'}],
+      [],
+      [{label:'Bonporteau', color:'blue', responsable:'Jonovan', equipe:['Anthony'], client:'Camping Bonporteau', priorite:'normale'}],
+      [],
+    ],
+    frederic: [
+      [],
+      [],
+      [{label:'SAV Pansard', color:'red', responsable:'Frédéric', equipe:[], client:'Camping Pansard', priorite:'normale'}],
+      [],
+      [],
     ],
     adv: [
       [{label:'3 commandes', color:'purple', responsable:'Ambre', equipe:[], priorite:'normale'}],
@@ -1972,16 +2020,23 @@ const TASKS = {
     dir: [
       [{label:'Relances VIP', color:'green', responsable:'Virginie', equipe:[], priorite:'haute'}],
       [{label:'2 devis', color:'green', responsable:'Virginie', equipe:[], priorite:'haute'}],
-      [{label:'Suivi cash', color:'gray', responsable:'Virginie', equipe:['Amanda'], priorite:'normale'}],
+      [{label:'Suivi cash', color:'gray', responsable:'Virginie', equipe:[], priorite:'normale'}],
       [{label:'Closing', color:'green', responsable:'Virginie', equipe:[], priorite:'haute'}],
-      [{label:'Pilotage', color:'gray', responsable:'Virginie', equipe:['Amanda'], priorite:'normale'}],
+      [{label:'Pilotage', color:'gray', responsable:'Virginie', equipe:[], priorite:'normale'}],
+    ],
+    stephane: [
+      [],
+      [],
+      [],
+      [{label:'Point direction', color:'orange', responsable:'Stéphane', equipe:['Virginie'], priorite:'normale', description:'RDV hebdo'}],
+      [],
     ],
     coord: [
       [{label:'Visuels', color:'yellow', responsable:'Amanda', equipe:[], priorite:'normale'}],
       [],
       [{label:'LinkedIn', color:'yellow', responsable:'Amanda', equipe:[], priorite:'basse'}],
       [{label:'CMS', color:'yellow', responsable:'Amanda', equipe:[], priorite:'normale'}],
-      [{label:'Newsletter', color:'orange', responsable:'Amanda', equipe:[], priorite:'normale', description:'Réunion édito'}],
+      [{label:'Newsletter', color:'orange', responsable:'Amanda', equipe:[], priorite:'normale'}],
     ],
   },
 };
@@ -2025,15 +2080,16 @@ function buildPlanning() {
   // Fusionner avec les tâches de session
   const sessionWeek = sessionTasks[week] || {};
 
-  const teams = ['ops','adv','dir','coord'];
+  const teams = ['anthony','fabian','jonovan','frederic','adv','dir','stephane','coord'];
   teams.forEach(team => {
-    const baseTasks   = weekData[team] || [];
-    const sesseTasks  = sessionWeek[team] || [];
+    const baseTasks  = weekData[team] || [];
+    const sesseTasks = sessionWeek[team] || [];
     for (let i = 0; i < 5; i++) {
-      const cell   = document.getElementById(`cell-${team}-${i}`);
-      const base   = baseTasks[i] || [];
-      const sess   = sesseTasks[i] || [];
-      const all    = [...base, ...sess];
+      const cell = document.getElementById(`cell-${team}-${i}`);
+      if(!cell) return;
+      const base = baseTasks[i] || [];
+      const sess = sesseTasks[i] || [];
+      const all  = [...base, ...sess];
       cell.innerHTML = all.length ? all.map(t => renderTask(t)).join('') : '';
     }
   });
