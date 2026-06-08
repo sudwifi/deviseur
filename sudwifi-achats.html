@@ -5,85 +5,106 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Sud Wifi — Achats & Stock</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&family=Montserrat:wght@400;500;600&family=Fira+Sans:wght@600;700&family=Fira+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 :root {
-  --bg:      #080e1a;
-  --s1:      #0d1525;
-  --s2:      #111e33;
-  --s3:      #172240;
-  --s4:      #1c2a4a;
-  --border:  rgba(255,255,255,.07);
-  --border2: rgba(255,255,255,.13);
-  --border3: rgba(255,255,255,.22);
-  --text:    #dde6f8;
-  --muted:   #6b80a8;
-  --muted2:  #8fa3c8;
-  --blue:    #3b82f6;
-  --red:     #ef4444;
-  --purple:  #8b5cf6;
-  --green:   #22c55e;
+  --yellow:  #fac420;
+  --blue1:   #007eb1;
+  --blue2:   #12aacc;
+  --orange:  #d6711a;
+  --bg:      #f4f7fb;
+  --s1:      #ffffff;
+  --s2:      #f0f4f9;
+  --s3:      #e4eaf3;
+  --s4:      #d8e2ef;
+  --border:  rgba(0,126,177,.10);
+  --border2: rgba(0,126,177,.22);
+  --border3: rgba(0,126,177,.38);
+  --text:    #1a2740;
+  --muted:   #6a80a0;
+  --muted2:  #4a6080;
+  --green:   #16a34a;
+  --red:     #dc2626;
+  --purple:  #7c3aed;
   --gray:    #64748b;
-  --yellow:  #f59e0b;
-  --orange:  #fb923c;
-  --teal:    #14b8a6;
-  --font:    'DM Sans', sans-serif;
-  --mono:    'DM Mono', monospace;
+  --teal:    #0891b2;
+  --font:    'Quicksand', sans-serif;
+  --title:   'Fira Sans', sans-serif;
+  --sub:     'Montserrat', sans-serif;
+  --mono:    'Fira Mono', monospace;
   --r:       16px;
   --r-sm:    10px;
+  --shadow-sm: 0 1px 4px rgba(0,126,177,.07), 0 2px 12px rgba(0,126,177,.06);
+  --shadow-md: 0 4px 20px rgba(0,126,177,.10), 0 1px 4px rgba(0,126,177,.06);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-button,select,input,textarea{font:inherit}
+button,select,input,textarea{font:inherit;color:var(--text)}
 
+/* FIX CRITIQUE : z-index:-1 pour ne pas bloquer les clics */
 body::before{
   content:'';position:fixed;inset:0;
-  background-image:linear-gradient(rgba(59,130,246,.025) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(59,130,246,.025) 1px,transparent 1px);
-  background-size:48px 48px;pointer-events:none;z-index:0
+  background-image:radial-gradient(circle,rgba(0,126,177,.07) 1px,transparent 1px);
+  background-size:32px 32px;
+  pointer-events:none;
+  z-index:-1;  /* ← CORRECTION : était 0, bloquait tous les clics */
 }
 
 /* ─── TOPBAR ─── */
 .topbar{
   position:sticky;top:0;z-index:100;
-  background:rgba(8,14,26,.92);backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
-  padding:0 24px;height:58px;
-  display:flex;align-items:center;justify-content:space-between;gap:16px
+  background:rgba(255,255,255,.92);backdrop-filter:blur(18px);
+  border-bottom:1.5px solid var(--border2);
+  padding:0 24px;height:60px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  box-shadow:var(--shadow-sm);
+}
+.topbar::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--blue1),var(--blue2),var(--yellow));
 }
 .back-btn{
   display:flex;align-items:center;gap:8px;
-  background:var(--s2);border:1px solid var(--border);
+  background:var(--s2);border:1.5px solid var(--border);
   border-radius:999px;padding:6px 14px;
-  color:var(--muted2);font-size:13px;cursor:pointer;
-  text-decoration:none;transition:all .18s
+  color:var(--muted2);font-family:var(--sub);font-size:13px;font-weight:500;
+  cursor:pointer;text-decoration:none;transition:all .18s;
 }
-.back-btn:hover{border-color:var(--border2);color:var(--text)}
-.topbar-title{font-size:16px;font-weight:600;letter-spacing:-.3px}
+.back-btn:hover{border-color:var(--blue2);color:var(--blue1)}
+.topbar-title{
+  font-family:var(--title);font-size:17px;font-weight:700;
+  letter-spacing:-.3px;color:var(--blue1);
+}
 .topbar-right{display:flex;align-items:center;gap:10px}
 .add-btn{
   display:flex;align-items:center;gap:6px;
-  background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.35);
-  color:#fcd34d;border-radius:999px;padding:7px 16px;
-  font-size:13px;font-weight:500;cursor:pointer;transition:all .18s
+  background:rgba(250,196,32,.15);border:1.5px solid rgba(250,196,32,.4);
+  color:#92660a;border-radius:999px;padding:7px 16px;
+  font-family:var(--sub);font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .18s;
 }
-.add-btn:hover{background:rgba(245,158,11,.25)}
+.add-btn:hover{background:rgba(250,196,32,.28);border-color:rgba(250,196,32,.6)}
+.add-btn.blue{
+  background:rgba(0,126,177,.10);border-color:rgba(0,126,177,.3);color:var(--blue1);
+}
+.add-btn.blue:hover{background:rgba(0,126,177,.18)}
 
 /* ─── TABS ─── */
 .tabs{
-  position:sticky;top:58px;z-index:90;
-  background:rgba(8,14,26,.88);backdrop-filter:blur(14px);
+  position:sticky;top:60px;z-index:90;
+  background:rgba(255,255,255,.90);backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);
-  padding:0 24px;display:flex;align-items:center;gap:0
+  padding:0 24px;display:flex;align-items:center;gap:0;
 }
 .tab{
-  padding:14px 20px;font-size:14px;font-weight:500;
+  padding:14px 20px;
+  font-family:var(--sub);font-size:13px;font-weight:600;
   color:var(--muted);border-bottom:2px solid transparent;
   cursor:pointer;transition:all .18s;white-space:nowrap;
-  background:none;border-top:none;border-left:none;border-right:none
+  background:none;border-top:none;border-left:none;border-right:none;
 }
 .tab:hover{color:var(--text)}
-.tab.active{color:var(--text);border-bottom-color:var(--yellow)}
+.tab.active{color:var(--blue1);border-bottom-color:var(--blue1)}
 
 /* ─── MAIN ─── */
 .main{position:relative;z-index:1;padding:24px;max-width:1400px;margin:0 auto;display:grid;gap:20px}
@@ -91,77 +112,81 @@ body::before{
 /* ─── KPI ROW ─── */
 .kpi-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
 .kpi{
-  background:var(--s1);border:1px solid var(--border);
+  background:var(--s1);border:1.5px solid var(--border);
   border-radius:var(--r-sm);padding:16px 18px;
-  display:flex;align-items:center;gap:14px
+  display:flex;align-items:center;gap:14px;
+  box-shadow:var(--shadow-sm);
 }
-.kpi-icon{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:18px;flex-shrink:0}
-.kpi .label{font-size:11px;color:var(--muted);font-family:var(--mono)}
-.kpi .value{font-size:24px;font-weight:600;letter-spacing:-.5px;margin:3px 0}
+.kpi-icon{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;font-size:18px;flex-shrink:0}
+.kpi .label{font-family:var(--sub);font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.kpi .value{font-family:var(--title);font-size:24px;font-weight:700;letter-spacing:-.5px;margin:3px 0;color:var(--text)}
 .kpi .sub{font-size:11px;color:var(--muted2)}
 
 /* ─── PANEL ─── */
-.panel{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.panel{background:var(--s1);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm)}
 .panel-header{
   padding:16px 20px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
 }
-.panel-title{font-size:15px;font-weight:600}
-.panel-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.panel-title{font-family:var(--title);font-size:15px;font-weight:700;color:var(--text)}
+.panel-sub{font-family:var(--sub);font-size:12px;color:var(--muted);margin-top:2px;font-weight:500}
 .panel-actions{display:flex;gap:8px;align-items:center}
 
 /* ─── BADGES / TAGS ─── */
 .badge{
   display:inline-flex;align-items:center;gap:5px;
-  padding:4px 10px;border-radius:999px;font-size:11px;
-  font-family:var(--mono);border:1px solid var(--border);color:var(--muted2)
+  padding:4px 10px;border-radius:999px;font-family:var(--mono);font-size:11px;
+  border:1px solid var(--border);color:var(--muted2);background:var(--s2);
 }
-.tag{padding:3px 8px;border-radius:6px;font-size:10px;font-weight:500;font-family:var(--mono)}
-.tag-ok    {background:rgba(34,197,94,.15);color:#86efac}
-.tag-warn  {background:rgba(245,158,11,.15);color:#fcd34d}
-.tag-crit  {background:rgba(239,68,68,.15);color:#fca5a5}
-.tag-info  {background:rgba(59,130,246,.15);color:#93c5fd}
-.tag-purple{background:rgba(139,92,246,.15);color:#c4b5fd}
-.tag-gray  {background:rgba(100,116,139,.18);color:#94a3b8}
+.tag{padding:3px 8px;border-radius:6px;font-family:var(--mono);font-size:10px;font-weight:500}
+.tag-ok    {background:rgba(22,163,74,.12); color:#15803d; border:1px solid rgba(22,163,74,.2)}
+.tag-warn  {background:rgba(214,113,26,.12);color:#b45309; border:1px solid rgba(214,113,26,.2)}
+.tag-crit  {background:rgba(220,38,38,.12); color:#dc2626; border:1px solid rgba(220,38,38,.2)}
+.tag-info  {background:rgba(0,126,177,.10);  color:var(--blue1); border:1px solid rgba(0,126,177,.2)}
+.tag-purple{background:rgba(124,58,237,.10);color:#6d28d9; border:1px solid rgba(124,58,237,.2)}
+.tag-gray  {background:rgba(100,116,139,.10);color:var(--gray); border:1px solid rgba(100,116,139,.2)}
 
 /* ─── STOCK TABLE ─── */
 .stock-filters{
   padding:12px 20px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:8px;flex-wrap:wrap
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--s2);
 }
 .sf-pill{
-  background:transparent;border:1px solid var(--border);
+  background:transparent;border:1.5px solid var(--border);
   color:var(--muted);border-radius:999px;
-  padding:5px 13px;font-size:12px;cursor:pointer;transition:all .15s
+  padding:5px 13px;font-family:var(--sub);font-size:12px;font-weight:500;
+  cursor:pointer;transition:all .15s;
 }
-.sf-pill:hover{border-color:var(--border2);color:var(--text)}
-.sf-pill.active{background:rgba(245,158,11,.18);border-color:rgba(245,158,11,.4);color:#fcd34d}
+.sf-pill:hover{border-color:var(--blue2);color:var(--blue1)}
+.sf-pill.active{background:rgba(0,126,177,.12);border-color:var(--blue1);color:var(--blue1)}
 .search-input{
-  background:var(--s2);border:1px solid var(--border);
+  background:var(--s1);border:1.5px solid var(--border);
   border-radius:999px;padding:6px 14px;color:var(--text);
-  font-size:12px;outline:none;width:200px;transition:border-color .15s
+  font-family:var(--font);font-size:12px;outline:none;width:200px;
+  transition:border-color .15s;
 }
-.search-input:focus{border-color:var(--border2)}
+.search-input:focus{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(18,170,204,.10)}
 .search-input::placeholder{color:var(--muted)}
 
 .stock-table{width:100%;border-collapse:collapse}
 .stock-table th{
-  padding:10px 16px;text-align:left;font-size:11px;font-family:var(--mono);
-  color:var(--muted);text-transform:uppercase;letter-spacing:.05em;
-  border-bottom:1px solid var(--border);background:var(--s2);font-weight:500
+  padding:10px 16px;text-align:left;
+  font-family:var(--sub);font-size:10px;font-weight:700;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.5px;
+  border-bottom:1.5px solid var(--border2);background:var(--s2);
 }
 .stock-table td{
   padding:12px 16px;font-size:13px;
-  border-bottom:1px solid var(--border);vertical-align:middle
+  border-bottom:1px solid var(--border);vertical-align:middle;
 }
 .stock-table tr:last-child td{border-bottom:none}
-.stock-table tr:hover td{background:rgba(255,255,255,.02)}
+.stock-table tr:hover td{background:rgba(0,126,177,.03)}
 
-.item-name{font-weight:500}
-.item-ref{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:2px}
+.item-name{font-weight:600;color:var(--text)}
+.item-ref{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px}
 .item-cat{
   display:inline-block;padding:3px 8px;border-radius:6px;
-  font-size:10px;font-family:var(--mono)
+  font-family:var(--mono);font-size:10px;
 }
 
 /* Stock bar */
@@ -169,132 +194,129 @@ body::before{
 .stock-bar-bg{flex:1;height:5px;border-radius:99px;background:var(--s3)}
 .stock-bar-fill{height:100%;border-radius:99px;transition:width .4s ease}
 .bar-ok  {background:var(--green)}
-.bar-warn{background:var(--yellow)}
+.bar-warn{background:var(--orange)}
 .bar-crit{background:var(--red)}
 .stock-num{font-family:var(--mono);font-size:12px;color:var(--muted2);min-width:52px;text-align:right}
 
 .action-btns{display:flex;gap:6px}
 .act-btn{
-  width:28px;height:28px;border-radius:7px;
-  border:1px solid var(--border);background:var(--s2);
-  color:var(--muted2);cursor:pointer;font-size:13px;
-  display:grid;place-items:center;transition:all .15s
+  width:30px;height:30px;border-radius:8px;
+  border:1.5px solid var(--border);background:var(--s2);
+  color:var(--muted2);cursor:pointer;font-size:14px;font-weight:700;
+  display:grid;place-items:center;transition:all .15s;
 }
-.act-btn:hover{border-color:var(--border2);color:var(--text)}
-.act-btn.green:hover{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.3);color:#86efac}
-.act-btn.red:hover{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.3);color:#fca5a5}
-.act-btn.blue:hover{background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.3);color:#93c5fd}
+.act-btn:hover{border-color:var(--border2);color:var(--text);background:var(--s3)}
+.act-btn.green:hover{background:rgba(22,163,74,.12);border-color:rgba(22,163,74,.3);color:var(--green)}
+.act-btn.red:hover{background:rgba(220,38,38,.12);border-color:rgba(220,38,38,.3);color:var(--red)}
+.act-btn.blue:hover{background:rgba(0,126,177,.12);border-color:rgba(0,126,177,.3);color:var(--blue1)}
 
 /* ─── MOUVEMENTS ─── */
 .mvt-list{display:grid;gap:0}
 .mvt-row{
   padding:12px 20px;border-bottom:1px solid var(--border);
   display:flex;align-items:center;gap:14px;font-size:13px;
-  transition:background .15s
+  transition:background .15s;
 }
-.mvt-row:hover{background:rgba(255,255,255,.02)}
+.mvt-row:hover{background:rgba(0,126,177,.03)}
 .mvt-row:last-child{border-bottom:none}
 .mvt-arrow{
   width:32px;height:32px;border-radius:8px;
-  display:grid;place-items:center;font-size:14px;flex-shrink:0
+  display:grid;place-items:center;font-size:14px;flex-shrink:0;
 }
-.mvt-arrow.in {background:rgba(34,197,94,.15);color:#86efac}
-.mvt-arrow.out{background:rgba(239,68,68,.15);color:#fca5a5}
+.mvt-arrow.in {background:rgba(22,163,74,.12);color:var(--green)}
+.mvt-arrow.out{background:rgba(220,38,38,.12);color:var(--red)}
 .mvt-main{flex:1;min-width:0}
-.mvt-title{font-weight:500}
-.mvt-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.mvt-title{font-weight:600;color:var(--text)}
+.mvt-sub{font-family:var(--sub);font-size:11px;color:var(--muted);margin-top:2px;font-weight:500}
 .mvt-qty{font-family:var(--mono);font-size:14px;font-weight:600;flex-shrink:0}
-.mvt-qty.in {color:#86efac}
-.mvt-qty.out{color:#fca5a5}
+.mvt-qty.in {color:var(--green)}
+.mvt-qty.out{color:var(--red)}
 .mvt-date{font-family:var(--mono);font-size:11px;color:var(--muted);flex-shrink:0}
 .mvt-who{
   width:28px;height:28px;border-radius:50%;
-  display:grid;place-items:center;font-size:10px;font-weight:700;flex-shrink:0
+  display:grid;place-items:center;font-size:10px;font-weight:700;flex-shrink:0;
 }
 
 /* ─── COMMANDES ─── */
 .cmd-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:16px}
 .cmd-card{
-  background:var(--s2);border:1px solid var(--border);
+  background:var(--s2);border:1.5px solid var(--border);
   border-radius:var(--r-sm);padding:14px;
-  transition:border-color .15s
+  transition:border-color .15s,box-shadow .15s;
 }
-.cmd-card:hover{border-color:var(--border2)}
+.cmd-card:hover{border-color:var(--border2);box-shadow:var(--shadow-sm)}
 .cmd-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
-.cmd-ref{font-size:11px;font-family:var(--mono);color:var(--muted)}
-.cmd-supplier{font-size:14px;font-weight:600;margin-top:3px}
-.cmd-items{font-size:12px;color:var(--muted2);margin-bottom:10px;line-height:1.6}
+.cmd-ref{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.cmd-supplier{font-family:var(--title);font-size:14px;font-weight:700;margin-top:3px;color:var(--text)}
+.cmd-items{font-family:var(--sub);font-size:12px;color:var(--muted2);margin-bottom:10px;line-height:1.6;font-weight:500}
 .cmd-footer{
   display:flex;align-items:center;justify-content:space-between;
-  padding-top:10px;border-top:1px solid var(--border)
+  padding-top:10px;border-top:1px solid var(--border);
 }
-.cmd-date{font-size:11px;color:var(--muted);font-family:var(--mono)}
-.cmd-amount{font-size:14px;font-weight:600;color:#fcd34d}
+.cmd-date{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.cmd-amount{font-family:var(--title);font-size:15px;font-weight:700;color:var(--blue1)}
 
 /* ─── AFFECTATIONS ─── */
 .affect-list{display:grid;gap:0}
 .affect-row{
   padding:13px 20px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:14px;font-size:13px
+  display:flex;align-items:center;gap:14px;font-size:13px;
 }
 .affect-row:last-child{border-bottom:none}
-.affect-row:hover{background:rgba(255,255,255,.02)}
+.affect-row:hover{background:rgba(0,126,177,.03)}
 .affect-site{
   width:36px;height:36px;border-radius:9px;
-  background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.2);
-  display:grid;place-items:center;font-size:14px;flex-shrink:0
+  background:rgba(0,126,177,.10);border:1.5px solid rgba(0,126,177,.2);
+  display:grid;place-items:center;font-size:14px;flex-shrink:0;
 }
 .affect-main{flex:1;min-width:0}
-.affect-title{font-weight:500}
-.affect-sub{font-size:11px;color:var(--muted);margin-top:2px}
-.affect-items{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
-.affect-chip{
-  padding:3px 8px;border-radius:6px;font-size:11px;font-family:var(--mono);
-  background:var(--s3);border:1px solid var(--border);color:var(--muted2)
-}
+.affect-title{font-weight:600;color:var(--text)}
+.affect-sub{font-family:var(--sub);font-size:11px;color:var(--muted);margin-top:2px;font-weight:500}
 .affect-who{display:flex;align-items:center;gap:6px;flex-shrink:0;font-size:12px;color:var(--muted2)}
-.affect-date{font-size:11px;font-family:var(--mono);color:var(--muted);flex-shrink:0}
+.affect-date{font-family:var(--mono);font-size:11px;color:var(--muted);flex-shrink:0}
 
 /* ─── ALERTES ─── */
 .alert-banner{
-  margin:16px 20px;padding:12px 16px;border-radius:var(--r-sm);
-  display:flex;align-items:center;gap:12px;font-size:13px
+  margin:12px 20px 0;padding:12px 16px;border-radius:var(--r-sm);
+  display:flex;align-items:center;gap:12px;font-size:13px;
 }
-.alert-banner.crit{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25)}
-.alert-banner.warn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25)}
+.alert-banner.crit{background:rgba(220,38,38,.07);border:1.5px solid rgba(220,38,38,.2)}
+.alert-banner.warn{background:rgba(214,113,26,.07);border:1.5px solid rgba(214,113,26,.2)}
 .alert-icon{font-size:18px;flex-shrink:0}
-.alert-text strong{display:block;font-weight:600;margin-bottom:2px}
-.alert-text span{color:var(--muted2);font-size:12px}
+.alert-text strong{display:block;font-weight:700;margin-bottom:2px;color:var(--text)}
+.alert-text span{font-family:var(--sub);color:var(--muted2);font-size:12px;font-weight:500}
 .alert-action{
-  margin-left:auto;padding:6px 12px;border-radius:8px;font-size:12px;
-  cursor:pointer;border:1px solid var(--border2);background:var(--s3);
-  color:var(--text);transition:all .15s;white-space:nowrap
+  margin-left:auto;padding:6px 14px;border-radius:999px;
+  font-family:var(--sub);font-size:12px;font-weight:600;
+  cursor:pointer;border:1.5px solid var(--border2);background:var(--s1);
+  color:var(--blue1);transition:all .15s;white-space:nowrap;
 }
-.alert-action:hover{background:var(--s4)}
+.alert-action:hover{background:var(--blue1);color:#fff;border-color:var(--blue1)}
 
 /* ─── MODAL ─── */
 .modal-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.75);
+  position:fixed;inset:0;background:rgba(26,39,64,.45);
   backdrop-filter:blur(8px);z-index:200;
   display:flex;align-items:center;justify-content:center;padding:20px;
-  opacity:0;pointer-events:none;transition:opacity .2s
+  opacity:0;pointer-events:none;transition:opacity .2s;
 }
 .modal-overlay.open{opacity:1;pointer-events:all}
 .modal{
-  background:var(--s1);border:1px solid var(--border2);
-  border-radius:22px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;
-  transform:translateY(18px);transition:transform .25s
+  background:var(--s1);border:1.5px solid var(--border2);
+  border-radius:20px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;
+  transform:translateY(18px);transition:transform .25s;
+  box-shadow:0 12px 40px rgba(0,126,177,.14);
 }
 .modal-overlay.open .modal{transform:translateY(0)}
 .modal-hdr{
   padding:20px 22px 16px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between
+  display:flex;align-items:center;justify-content:space-between;
 }
-.modal-hdr-title{font-size:17px;font-weight:600}
+.modal-hdr-title{font-family:var(--title);font-size:17px;font-weight:700;color:var(--text)}
 .modal-close{
   width:28px;height:28px;border-radius:50%;background:var(--s2);
-  border:1px solid var(--border);color:var(--muted);
-  cursor:pointer;display:grid;place-items:center;transition:all .15s
+  border:1.5px solid var(--border);color:var(--muted);
+  cursor:pointer;display:grid;place-items:center;transition:all .15s;font-size:14px;
 }
 .modal-close:hover{background:var(--s3);color:var(--text)}
 .modal-body{padding:18px 22px 22px}
@@ -302,66 +324,154 @@ body::before{
 .form-row.full{grid-template-columns:1fr}
 .form-row.trio{grid-template-columns:1fr 1fr 1fr}
 .form-group label{
-  display:block;font-size:11px;font-family:var(--mono);
-  color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px
+  display:block;font-family:var(--sub);font-size:10px;font-weight:700;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;
 }
 .form-input,.form-select,.form-textarea{
-  width:100%;background:var(--s2);border:1px solid var(--border);
+  width:100%;background:var(--s2);border:1.5px solid var(--border);
   border-radius:9px;padding:9px 12px;color:var(--text);
-  font-size:13px;outline:none;transition:border-color .15s;-webkit-appearance:none
+  font-family:var(--font);font-size:13px;outline:none;
+  transition:border-color .15s,box-shadow .15s;-webkit-appearance:none;
 }
-.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--border3)}
+.form-input:focus,.form-select:focus,.form-textarea:focus{
+  border-color:var(--blue2);box-shadow:0 0 0 3px rgba(18,170,204,.12);
+}
 .form-input::placeholder,.form-textarea::placeholder{color:var(--muted)}
-.form-select option{background:var(--s2)}
+.form-select option{background:var(--s1)}
 .form-textarea{resize:vertical;min-height:64px}
-.form-actions{display:flex;gap:10px;margin-top:16px}
+.form-actions{display:flex;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
 .btn-cancel{
-  flex:1;padding:10px;border-radius:10px;
-  background:var(--s2);border:1px solid var(--border);
-  color:var(--muted2);cursor:pointer;transition:all .15s
+  flex:1;padding:10px;border-radius:999px;
+  background:var(--s2);border:1.5px solid var(--border2);
+  font-family:var(--sub);font-weight:600;
+  color:var(--muted2);cursor:pointer;transition:all .15s;
 }
-.btn-cancel:hover{border-color:var(--border2);color:var(--text)}
+.btn-cancel:hover{border-color:var(--gray);color:var(--text)}
 .btn-save{
-  flex:2;padding:10px;border-radius:10px;
-  background:rgba(245,158,11,.2);border:1px solid rgba(245,158,11,.4);
-  color:#fcd34d;cursor:pointer;font-weight:500;transition:all .15s
+  flex:2;padding:10px;border-radius:999px;
+  background:var(--yellow);border:none;
+  font-family:var(--sub);font-weight:700;color:#1a2740;
+  cursor:pointer;transition:all .15s;
+  box-shadow:0 2px 8px rgba(250,196,32,.3);
 }
-.btn-save:hover{background:rgba(245,158,11,.3)}
+.btn-save:hover{filter:brightness(1.08);box-shadow:0 4px 14px rgba(250,196,32,.4)}
 .btn-save.blue{
-  background:rgba(59,130,246,.2);border-color:rgba(59,130,246,.4);color:#93c5fd
+  background:var(--blue1);color:#fff;
+  box-shadow:0 2px 8px rgba(0,126,177,.25);
 }
-.btn-save.blue:hover{background:rgba(59,130,246,.3)}
-.btn-save.red{
-  background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.4);color:#fca5a5
-}
+.btn-save.blue:hover{background:var(--blue2);box-shadow:0 4px 14px rgba(0,126,177,.35)}
+.btn-save.red{background:var(--red);color:#fff}
 
 /* Mouvement rapide */
-.mvt-quick{
-  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px
-}
+.mvt-quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .mvt-quick-btn{
-  padding:16px;border-radius:12px;border:1px solid var(--border);
-  background:var(--s2);cursor:pointer;text-align:center;transition:all .18s
+  padding:16px;border-radius:12px;border:1.5px solid var(--border);
+  background:var(--s2);cursor:pointer;text-align:center;transition:all .18s;
 }
-.mvt-quick-btn:hover{border-color:var(--border2)}
-.mvt-quick-btn.selected-in{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.4)}
-.mvt-quick-btn.selected-out{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.4)}
+.mvt-quick-btn:hover{border-color:var(--border2);background:var(--s3)}
+.mvt-quick-btn.selected-in{background:rgba(22,163,74,.10);border-color:rgba(22,163,74,.4)}
+.mvt-quick-btn.selected-out{background:rgba(220,38,38,.10);border-color:rgba(220,38,38,.4)}
 .mvt-quick-btn .qb-icon{font-size:22px;margin-bottom:6px}
-.mvt-quick-btn .qb-label{font-size:13px;font-weight:500}
-.mvt-quick-btn .qb-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.mvt-quick-btn .qb-label{font-family:var(--sub);font-size:13px;font-weight:700;color:var(--text)}
+.mvt-quick-btn .qb-sub{font-family:var(--sub);font-size:11px;color:var(--muted);margin-top:2px;font-weight:500}
 
 /* ─── TOAST ─── */
 .toast{
   position:fixed;bottom:20px;right:24px;z-index:300;
-  background:var(--s2);border:1px solid var(--border2);
-  border-radius:999px;padding:10px 18px;font-size:13px;
+  background:var(--s1);border:1.5px solid var(--border2);
+  border-radius:999px;padding:10px 18px;font-family:var(--sub);font-size:13px;font-weight:600;
   display:flex;align-items:center;gap:8px;
-  opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none
+  opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;
+  box-shadow:var(--shadow-md);
 }
 .toast.show{opacity:1;transform:translateY(0)}
 .toast-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
-.toast-dot.warn{background:var(--yellow)}
+.toast-dot.warn{background:var(--orange)}
 .toast-dot.err{background:var(--red)}
+
+/* ─── SCAN ─── */
+.scan-banner{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  z-index:250;background:var(--blue1);color:#fff;
+  border-radius:999px;padding:10px 22px;
+  font-family:var(--sub);font-size:13px;font-weight:700;
+  display:flex;align-items:center;gap:10px;
+  box-shadow:0 4px 20px rgba(0,126,177,.4);
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.scan-banner.show{opacity:1}
+.scan-banner .scan-dot{
+  width:8px;height:8px;border-radius:50%;background:#fff;
+  animation:scanpulse 1s ease-in-out infinite;
+}
+@keyframes scanpulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.6)}}
+
+.sn-input-wrap{
+  display:flex;align-items:center;gap:8px;margin-bottom:6px;
+}
+.sn-input{
+  flex:1;background:var(--s2);border:1.5px solid var(--border);
+  border-radius:8px;padding:8px 12px;color:var(--text);
+  font-family:var(--mono);font-size:13px;outline:none;
+  transition:border-color .15s,box-shadow .15s;
+}
+.sn-input:focus{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(18,170,204,.12)}
+.sn-input::placeholder{color:var(--muted);font-family:var(--sub)}
+.sn-scan-btn{
+  width:36px;height:36px;border-radius:8px;flex-shrink:0;
+  background:var(--blue1);border:none;color:#fff;
+  font-size:16px;cursor:pointer;display:grid;place-items:center;
+  transition:background .15s;
+}
+.sn-scan-btn:hover{background:var(--blue2)}
+.sn-add-btn{
+  background:transparent;border:1.5px dashed var(--border2);
+  border-radius:8px;padding:7px 12px;width:100%;
+  font-family:var(--sub);font-size:12px;font-weight:600;color:var(--muted2);
+  cursor:pointer;transition:all .15s;text-align:center;margin-top:4px;
+}
+.sn-add-btn:hover{border-color:var(--blue2);color:var(--blue1);background:rgba(0,126,177,.05)}
+.sn-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(0,126,177,.08);border:1.5px solid rgba(0,126,177,.2);
+  border-radius:6px;padding:3px 8px;
+  font-family:var(--mono);font-size:11px;color:var(--blue1);
+  margin:2px;
+}
+.sn-chip button{
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  font-size:12px;padding:0;line-height:1;
+}
+.sn-chip button:hover{color:var(--red)}
+.sn-chips-wrap{display:flex;flex-wrap:wrap;gap:2px;margin-top:4px;min-height:0}
+
+/* Camera modal */
+.cam-overlay{
+  position:fixed;inset:0;z-index:300;background:#000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.cam-overlay.open{opacity:1;pointer-events:all}
+.cam-video{width:100%;max-width:480px;border-radius:12px;object-fit:cover}
+.cam-frame{
+  position:relative;width:100%;max-width:480px;
+}
+.cam-frame::after{
+  content:'';position:absolute;
+  top:50%;left:10%;right:10%;
+  transform:translateY(-50%);
+  height:2px;background:var(--blue2);
+  box-shadow:0 0 12px var(--blue2);
+  animation:camscan 2s ease-in-out infinite;
+}
+@keyframes camscan{0%,100%{top:30%}50%{top:70%}}
+.cam-hint{color:#fff;font-family:var(--sub);font-size:13px;font-weight:500;margin-top:16px;opacity:.8}
+.cam-close{
+  position:absolute;top:20px;right:20px;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.2);border:none;color:#fff;
+  font-size:18px;cursor:pointer;display:grid;place-items:center;
+}
 
 /* ─── RESPONSIVE ─── */
 @media(max-width:1100px){
@@ -395,7 +505,7 @@ body::before{
   <div class="topbar-title">📦 Achats & Stock</div>
   <div class="topbar-right">
     <button class="add-btn" onclick="openModal('article')">+ Article</button>
-    <button class="add-btn" style="background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.35);color:#93c5fd" onclick="openModal('commande')">+ Commande</button>
+    <button class="add-btn blue" onclick="openModal('commande')">+ Commande</button>
   </div>
 </header>
 
@@ -423,8 +533,21 @@ body::before{
           <input class="form-input" id="aName" placeholder="Ex: AP EAP670 Outdoor"/>
         </div>
         <div class="form-group">
-          <label>Référence</label>
+          <label>Référence interne</label>
           <input class="form-input" id="aRef" placeholder="Ex: EAP670-OUT"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>EAN-13 <span style="font-weight:400;text-transform:none;letter-spacing:0">(code-barres boîte)</span></label>
+          <div class="sn-input-wrap" style="margin-bottom:0">
+            <input class="form-input" id="aEan" placeholder="Ex: 8885020627077" style="font-family:var(--mono)"/>
+            <button class="sn-scan-btn" onclick="openCameraForEan()" title="Scanner l'EAN">📷</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Fournisseur</label>
+          <input class="form-input" id="aSupplier" placeholder="Ex: TP-Link, Ubiquiti…"/>
         </div>
       </div>
       <div class="form-row">
@@ -439,10 +562,6 @@ body::before{
             <option value="fixation">Fixation / accessoires</option>
             <option value="autre">Autre</option>
           </select>
-        </div>
-        <div class="form-group">
-          <label>Fournisseur</label>
-          <input class="form-input" id="aSupplier" placeholder="Ex: TP-Link, Ubiquiti…"/>
         </div>
       </div>
       <div class="form-row trio">
@@ -516,11 +635,12 @@ body::before{
           <select class="form-select" id="mvtWho">
             <option>Anthony</option>
             <option>Fabian</option>
-            <option>Ambre</option>
-            <option>Virginie</option>
-            <option>Stéphane</option>
             <option>Jonovan</option>
             <option>Frédéric</option>
+            <option>Ambre</option>
+            <option>Amanda</option>
+            <option>Virginie</option>
+            <option>Stéphane</option>
           </select>
         </div>
         <div class="form-group">
@@ -532,6 +652,18 @@ body::before{
         <div class="form-group">
           <label>Chantier / site affecté</label>
           <input class="form-input" id="mvtChantier" placeholder="Ex: Camping Bonporteau"/>
+        </div>
+      </div>
+      <div class="form-row full" id="mvtSnRow">
+        <div class="form-group">
+          <label>Numéros de série <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(scanner ou saisir — 1 par appareil)</span></label>
+          <div class="sn-input-wrap">
+            <input class="sn-input" id="mvtSnInput" placeholder="Scanner ou taper le SN…" autocomplete="off" onkeydown="snInputKey(event)"/>
+            <button class="sn-scan-btn" onclick="openCamera('mvtSnInput')" title="Scanner avec la caméra">📷</button>
+            <button class="sn-scan-btn" style="background:var(--s3);color:var(--muted2);border:1.5px solid var(--border2)" onclick="addSnFromInput()" title="Ajouter">+</button>
+          </div>
+          <div class="sn-chips-wrap" id="mvtSnChips"></div>
+          <input type="hidden" id="mvtSnList" value=""/>
         </div>
       </div>
       <div class="form-row full">
@@ -612,6 +744,21 @@ body::before{
   </div>
 </div>
 
+<!-- SCAN BANNER -->
+<div class="scan-banner" id="scanBanner">
+  <span class="scan-dot"></span>
+  <span id="scanBannerMsg">Scan détecté…</span>
+</div>
+
+<!-- CAMERA OVERLAY -->
+<div class="cam-overlay" id="camOverlay">
+  <button class="cam-close" onclick="closeCamera()">✕</button>
+  <div class="cam-frame">
+    <video class="cam-video" id="camVideo" autoplay playsinline muted></video>
+  </div>
+  <div class="cam-hint">Pointez la caméra vers le code-barres</div>
+</div>
+
 <div class="toast" id="toast">
   <div class="toast-dot" id="toastDot"></div>
   <span id="toastMsg"></span>
@@ -621,22 +768,22 @@ body::before{
 // ══════════════════════════════════════════════════════
 //  DATA
 // ══════════════════════════════════════════════════════
-let articles    = loadLS('sw_articles')    || getDemoArticles();
-let mouvements  = loadLS('sw_mouvements')  || getDemoMouvements();
-let commandes   = loadLS('sw_commandes')   || getDemoCommandes();
+let articles   = loadLS('sw_articles')   || getDemoArticles();
+let mouvements = loadLS('sw_mouvements') || getDemoMouvements();
+let commandes  = loadLS('sw_commandes')  || getDemoCommandes();
 
-let currentTab = 'stock';
+let currentTab  = 'stock';
 let stockFilter = 'all';
 let stockSearch = '';
 
 const catConfig = {
-  borne:        {label:'Borne Wifi',   bg:'rgba(59,130,246,.15)',  color:'#93c5fd'},
-  switch:       {label:'Switch',       bg:'rgba(139,92,246,.15)', color:'#c4b5fd'},
-  routeur:      {label:'Routeur',      bg:'rgba(20,184,166,.15)', color:'#5eead4'},
-  cable:        {label:'Câblage',      bg:'rgba(100,116,139,.18)',color:'#94a3b8'},
-  alimentation: {label:'Alim / PoE',  bg:'rgba(245,158,11,.15)', color:'#fcd34d'},
-  fixation:     {label:'Fixation',     bg:'rgba(34,197,94,.15)',  color:'#86efac'},
-  autre:        {label:'Autre',        bg:'rgba(100,116,139,.18)',color:'#94a3b8'},
+  borne:        {label:'Borne Wifi',  bg:'rgba(0,126,177,.12)',  color:' #007eb1'},
+  switch:       {label:'Switch',      bg:'rgba(124,58,237,.12)', color:'#6d28d9'},
+  routeur:      {label:'Routeur',     bg:'rgba(8,145,178,.12)',  color:'#0e7490'},
+  cable:        {label:'Câblage',     bg:'rgba(100,116,139,.12)',color:'#475569'},
+  alimentation: {label:'Alim / PoE', bg:'rgba(214,113,26,.12)', color:'#b45309'},
+  fixation:     {label:'Fixation',    bg:'rgba(22,163,74,.12)',  color:'#15803d'},
+  autre:        {label:'Autre',       bg:'rgba(100,116,139,.12)',color:'#475569'},
 };
 
 const cmdStatusConfig = {
@@ -648,8 +795,8 @@ const cmdStatusConfig = {
 };
 
 const ownerColors = {
-  Anthony:'#3b82f6',Fabian:'#06b6d4',Ambre:'#8b5cf6',
-  Virginie:'#22c55e',Stéphane:'#ef4444',Jonovan:'#fb923c',Frédéric:'#a78bfa'
+  Anthony:'#007eb1', Fabian:'#0891b2', Jonovan:'#7c3aed', Frédéric:'#d6711a',
+  Ambre:'#6d28d9',   Amanda:'#0e7490', Virginie:'#16a34a', Stéphane:'#dc2626',
 };
 
 // ══════════════════════════════════════════════════════
@@ -663,7 +810,7 @@ function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth
 function fmtDate(s){if(!s)return'—';const d=new Date(s+'T12:00:00');const m=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];return d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear()}
 
 // ══════════════════════════════════════════════════════
-//  TABS & FILTERS
+//  TABS
 // ══════════════════════════════════════════════════════
 function setTab(tab,btn){
   currentTab=tab;
@@ -676,28 +823,18 @@ function setTab(tab,btn){
 //  RENDER
 // ══════════════════════════════════════════════════════
 function render(){
-  renderKpis();
-  if(currentTab==='stock')        renderStock();
-  else if(currentTab==='mouvements')  renderMouvements();
-  else if(currentTab==='commandes')   renderCommandes();
-  else if(currentTab==='affectations') renderAffectations();
-}
-
-// ── KPIs ──
-function renderKpis(){
   const alerts  = articles.filter(a=>a.qty<=a.min);
   const ruptures = articles.filter(a=>a.qty===0);
   const cmdOpen  = commandes.filter(c=>c.status!=='reçu'&&c.status!=='annulé');
   const mvtWeek  = mouvements.filter(m=>{
     const d=new Date(m.date+'T12:00:00');
-    const now=new Date();
-    return (now-d)<7*24*3600*1000;
+    return (new Date()-d)<7*24*3600*1000;
   });
 
   document.getElementById('mainContent').innerHTML=`
-  <div class="kpi-row" id="kpiRow">
+  <div class="kpi-row">
     <div class="kpi">
-      <div class="kpi-icon" style="background:rgba(59,130,246,.12)">📦</div>
+      <div class="kpi-icon" style="background:rgba(0,126,177,.10)">📦</div>
       <div>
         <div class="label">références en stock</div>
         <div class="value">${articles.length}</div>
@@ -705,23 +842,23 @@ function renderKpis(){
       </div>
     </div>
     <div class="kpi">
-      <div class="kpi-icon" style="background:rgba(239,68,68,.12)">🚨</div>
+      <div class="kpi-icon" style="background:rgba(220,38,38,.10)">🚨</div>
       <div>
         <div class="label">alertes stock</div>
-        <div class="value" style="color:${alerts.length?'#fca5a5':'#86efac'}">${alerts.length}</div>
+        <div class="value" style="color:${alerts.length?'var(--red)':'var(--green)'}">${alerts.length}</div>
         <div class="sub">${ruptures.length} rupture${ruptures.length!==1?'s':''} · ${alerts.length-ruptures.length} bas</div>
       </div>
     </div>
     <div class="kpi">
-      <div class="kpi-icon" style="background:rgba(245,158,11,.12)">🛒</div>
+      <div class="kpi-icon" style="background:rgba(250,196,32,.12)">🛒</div>
       <div>
         <div class="label">commandes en cours</div>
-        <div class="value" style="color:#fcd34d">${cmdOpen.length}</div>
+        <div class="value" style="color:var(--orange)">${cmdOpen.length}</div>
         <div class="sub">${cmdOpen.filter(c=>c.status==='expédié').length} expédiée${cmdOpen.filter(c=>c.status==='expédié').length!==1?'s':''}</div>
       </div>
     </div>
     <div class="kpi">
-      <div class="kpi-icon" style="background:rgba(34,197,94,.12)">🔄</div>
+      <div class="kpi-icon" style="background:rgba(22,163,74,.10)">🔄</div>
       <div>
         <div class="label">mouvements (7j)</div>
         <div class="value">${mvtWeek.length}</div>
@@ -731,7 +868,7 @@ function renderKpis(){
   </div>
   <div id="tabContent"></div>`;
 
-  if(currentTab==='stock')         renderStock();
+  if(currentTab==='stock')             renderStock();
   else if(currentTab==='mouvements')   renderMouvements();
   else if(currentTab==='commandes')    renderCommandes();
   else if(currentTab==='affectations') renderAffectations();
@@ -739,37 +876,34 @@ function renderKpis(){
 
 // ── STOCK ──
 function renderStock(){
-  const alerts = articles.filter(a=>a.qty<=a.min);
   let filtered = articles.filter(a=>{
-    const catOk = stockFilter==='all'||a.cat===stockFilter;
+    const catOk  = stockFilter==='all'||a.cat===stockFilter;
     const srchOk = !stockSearch||a.name.toLowerCase().includes(stockSearch.toLowerCase())||a.ref.toLowerCase().includes(stockSearch.toLowerCase());
     return catOk&&srchOk;
   });
 
   let html=`<div class="panel">`;
 
-  // Alertes
   articles.filter(a=>a.qty===0).forEach(a=>{
     html+=`<div class="alert-banner crit">
       <div class="alert-icon">⛔</div>
-      <div class="alert-text"><strong>RUPTURE — ${esc(a.name)}</strong><span>Stock à 0 — commande urgente requise</span></div>
-      <button class="alert-action" onclick="openModal('commande')">Commander</button>
+      <div class="alert-text"><strong>RUPTURE — ${esc(a.name)}</strong><span>Stock à 0 · commande urgente requise</span></div>
+      <button class="alert-action" onclick="openModal('commande')">Commander →</button>
     </div>`;
   });
   articles.filter(a=>a.qty>0&&a.qty<=a.min).forEach(a=>{
     html+=`<div class="alert-banner warn">
       <div class="alert-icon">⚠️</div>
       <div class="alert-text"><strong>Stock bas — ${esc(a.name)}</strong><span>${a.qty} restant${a.qty>1?'s':''} · seuil : ${a.min}</span></div>
-      <button class="alert-action" onclick="openModal('commande')">Commander</button>
+      <button class="alert-action" onclick="openModal('commande')">Commander →</button>
     </div>`;
   });
 
-  // Filters
   html+=`<div class="stock-filters">
     <button class="sf-pill ${stockFilter==='all'?'active':''}" onclick="stockFilter='all';render()">Tout</button>
     ${Object.entries(catConfig).map(([k,v])=>`<button class="sf-pill ${stockFilter===k?'active':''}" onclick="stockFilter='${k}';render()">${v.label}</button>`).join('')}
     <input class="search-input" placeholder="Rechercher…" value="${esc(stockSearch)}" oninput="stockSearch=this.value;renderStock()"/>
-    <button class="sf-pill" style="margin-left:auto;color:var(--teal);border-color:rgba(20,184,166,.3)" onclick="openModal('mouvement')">📤 Sortie rapide</button>
+    <button class="sf-pill" style="margin-left:auto;color:var(--blue2);border-color:rgba(18,170,204,.3)" onclick="openModal('mouvement')">📤 Sortie rapide</button>
   </div>`;
 
   html+=`<div style="overflow-x:auto"><table class="stock-table">
@@ -783,12 +917,11 @@ function renderStock(){
   }
 
   filtered.forEach(a=>{
-    const pct = a.max>0?Math.min(100,Math.round(a.qty/a.max*100)):0;
-    const state = a.qty===0?'crit':a.qty<=a.min?'warn':'ok';
+    const pct    = a.max>0?Math.min(100,Math.round(a.qty/a.max*100)):0;
     const barCls = a.qty===0?'bar-crit':a.qty<=a.min?'bar-warn':'bar-ok';
     const tagCls = a.qty===0?'tag-crit':a.qty<=a.min?'tag-warn':'tag-ok';
-    const tagLabel = a.qty===0?'RUPTURE':a.qty<=a.min?'BAS':'OK';
-    const cat = catConfig[a.cat]||catConfig.autre;
+    const tagLbl = a.qty===0?'RUPTURE':a.qty<=a.min?'BAS':'OK';
+    const cat    = catConfig[a.cat]||catConfig.autre;
 
     html+=`<tr>
       <td>
@@ -797,9 +930,9 @@ function renderStock(){
       </td>
       <td><span class="item-cat" style="background:${cat.bg};color:${cat.color}">${cat.label}</span></td>
       <td>
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-family:var(--mono);font-size:14px;font-weight:600">${a.qty}</span>
-          <span class="tag ${tagCls}">${tagLabel}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--mono);font-size:14px;font-weight:700">${a.qty}</span>
+          <span class="tag ${tagCls}">${tagLbl}</span>
         </div>
       </td>
       <td>
@@ -831,22 +964,24 @@ function renderMouvements(){
     <div class="panel-header">
       <div><div class="panel-title">Historique des mouvements</div>
       <div class="panel-sub">Toutes les entrées et sorties de stock</div></div>
-      <button class="add-btn" style="background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.35);color:#93c5fd" onclick="openModal('mouvement')">+ Mouvement</button>
+      <button class="add-btn blue" onclick="openModal('mouvement')">+ Mouvement</button>
     </div>
     <div class="mvt-list">`;
 
-  if(!sorted.length){
-    html+=`<div style="padding:32px;text-align:center;color:var(--muted)">Aucun mouvement enregistré.</div>`;
-  }
+  if(!sorted.length) html+=`<div style="padding:32px;text-align:center;color:var(--muted)">Aucun mouvement enregistré.</div>`;
 
   sorted.forEach(m=>{
     const art = articles.find(a=>a.id===m.articleId);
     const oc  = ownerColors[m.who]||'#8fa3c8';
+    const snHtml = m.serials&&m.serials.length
+      ? `<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px">${m.serials.map(s=>`<span class="sn-chip" style="margin:0">${esc(s)}</span>`).join('')}</div>`
+      : '';
     html+=`<div class="mvt-row">
       <div class="mvt-arrow ${m.type}">${m.type==='in'?'↓':'↑'}</div>
       <div class="mvt-main">
         <div class="mvt-title">${esc(art?art.name:m.articleName||'Article supprimé')}</div>
         <div class="mvt-sub">${m.chantier?'🏗 '+esc(m.chantier)+' · ':''}${esc(m.note||'')}</div>
+        ${snHtml}
       </div>
       <div class="mvt-qty ${m.type}">${m.type==='in'?'+':'−'}${m.qty}</div>
       <div class="mvt-who" style="background:${oc}22;color:${oc}" title="${esc(m.who)}">${(m.who||'?')[0]}</div>
@@ -868,9 +1003,7 @@ function renderCommandes(){
     </div>
     <div class="cmd-grid">`;
 
-  if(!commandes.length){
-    html+=`<div style="padding:32px;text-align:center;color:var(--muted);grid-column:1/-1">Aucune commande.</div>`;
-  }
+  if(!commandes.length) html+=`<div style="padding:32px;text-align:center;color:var(--muted);grid-column:1/-1">Aucune commande.</div>`;
 
   [...commandes].sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(c=>{
     const sc = cmdStatusConfig[c.status]||cmdStatusConfig.en_attente;
@@ -888,7 +1021,7 @@ function renderCommandes(){
           ${c.date?'Cmd : '+fmtDate(c.date):''}
           ${c.delivery?'<br>Livr : '+fmtDate(c.delivery):''}
         </div>
-        <div class="cmd-amount">${c.amount?Number(c.amount).toLocaleString('fr-FR')+'€':''}</div>
+        <div class="cmd-amount">${c.amount?Number(c.amount).toLocaleString('fr-FR')+' €':''}</div>
       </div>
       <div style="display:flex;gap:6px;margin-top:10px">
         ${c.status!=='reçu'?`<button class="act-btn blue" style="width:auto;padding:0 10px;font-size:11px" onclick="markCmdRecu('${c.id}')">✓ Reçu</button>`:''}
@@ -903,7 +1036,6 @@ function renderCommandes(){
 
 // ── AFFECTATIONS ──
 function renderAffectations(){
-  // Grouper les sorties par chantier
   const chantiers = {};
   mouvements.filter(m=>m.type==='out'&&m.chantier).forEach(m=>{
     const k = m.chantier;
@@ -923,9 +1055,7 @@ function renderAffectations(){
     </div>
     <div class="affect-list">`;
 
-  if(!list.length){
-    html+=`<div style="padding:32px;text-align:center;color:var(--muted)">Aucune sortie avec chantier associé.</div>`;
-  }
+  if(!list.length) html+=`<div style="padding:32px;text-align:center;color:var(--muted)">Aucune sortie avec chantier associé.</div>`;
 
   list.forEach(c=>{
     const whoArr = Array.from(c.who);
@@ -933,7 +1063,7 @@ function renderAffectations(){
       <div class="affect-site">🏗</div>
       <div class="affect-main">
         <div class="affect-title">${esc(c.name)}</div>
-        <div class="affect-sub">${c.items.length} sortie${c.items.length>1?'s'} · dernière le ${fmtDate(c.lastDate)}</div>
+        <div class="affect-sub">${c.items.length} sortie${c.items.length>1?'s':''} · dernière le ${fmtDate(c.lastDate)}</div>
         <div style="margin-top:6px;display:grid;gap:3px">
           ${c.items.map(i=>`<div style="font-size:11px;color:var(--muted2)">
             ${esc(i.name)} × ${i.qty}
@@ -953,12 +1083,12 @@ function renderAffectations(){
 }
 
 // ══════════════════════════════════════════════════════
-//  ACTIONS STOCK
+//  ACTIONS
 // ══════════════════════════════════════════════════════
 function quickMvt(articleId, type){
   document.getElementById('mvtArticle').value = articleId;
-  document.getElementById('mvtType').value = type;
-  document.getElementById('mvtDate').value = today();
+  document.getElementById('mvtType').value    = type;
+  document.getElementById('mvtDate').value    = today();
   selectMvtType(type);
   openModal('mouvement');
 }
@@ -971,6 +1101,7 @@ function saveArticle(){
     id:       editId||uid(),
     name,
     ref:      document.getElementById('aRef').value.trim(),
+    ean:      document.getElementById('aEan').value.trim(),
     cat:      document.getElementById('aCat').value,
     supplier: document.getElementById('aSupplier').value.trim(),
     qty:      parseInt(document.getElementById('aQty').value)||0,
@@ -981,60 +1112,56 @@ function saveArticle(){
   };
   if(editId){const i=articles.findIndex(a=>a.id===editId);if(i>=0)articles[i]=obj;else articles.push(obj);}
   else articles.push(obj);
-  saveAll(); closeModal('modalArticle'); render(); toast('Article enregistré');
+  saveAll(); closeModal('modalArticle'); render(); toast('Article enregistré ✓');
 }
 
 function editArticle(id){
   const a = articles.find(x=>x.id===id);
   if(!a)return;
-  document.getElementById('aEditId').value=a.id;
-  document.getElementById('modalArticleTitle').textContent='Modifier l\'article';
-  document.getElementById('aName').value=a.name||'';
-  document.getElementById('aRef').value=a.ref||'';
-  document.getElementById('aCat').value=a.cat||'autre';
-  document.getElementById('aSupplier').value=a.supplier||'';
-  document.getElementById('aQty').value=a.qty||0;
-  document.getElementById('aMin').value=a.min||2;
-  document.getElementById('aMax').value=a.max||10;
-  document.getElementById('aLocation').value=a.location||'';
-  document.getElementById('aNotes').value=a.notes||'';
+  document.getElementById('aEditId').value     = a.id;
+  document.getElementById('modalArticleTitle').textContent = 'Modifier l\'article';
+  document.getElementById('aName').value       = a.name||'';
+  document.getElementById('aRef').value        = a.ref||'';
+  document.getElementById('aEan').value        = a.ean||'';
+  document.getElementById('aCat').value        = a.cat||'autre';
+  document.getElementById('aSupplier').value   = a.supplier||'';
+  document.getElementById('aQty').value        = a.qty||0;
+  document.getElementById('aMin').value        = a.min||2;
+  document.getElementById('aMax').value        = a.max||10;
+  document.getElementById('aLocation').value   = a.location||'';
+  document.getElementById('aNotes').value      = a.notes||'';
   openModal('article');
 }
 
 function saveMouvement(){
   const articleId = document.getElementById('mvtArticle').value;
-  const qty = parseInt(document.getElementById('mvtQty').value)||1;
+  const qty  = parseInt(document.getElementById('mvtQty').value)||1;
   const type = document.getElementById('mvtType').value;
   if(!articleId){alert('Sélectionner un article.');return;}
-
   const art = articles.find(a=>a.id===articleId);
   if(type==='out'&&art&&art.qty<qty){
     if(!confirm(`Stock insuffisant (${art.qty} disponible). Continuer quand même ?`))return;
   }
+  // Récupérer les numéros de série
+  const snRaw = document.getElementById('mvtSnList').value;
+  const serials = snRaw ? snRaw.split('||').filter(Boolean) : [];
 
   const mvt = {
-    id:        uid(),
+    id:          uid(),
     articleId,
     articleName: art?art.name:'',
-    qty,
-    type,
-    who:       document.getElementById('mvtWho').value,
-    date:      document.getElementById('mvtDate').value||today(),
-    chantier:  document.getElementById('mvtChantier').value.trim(),
-    note:      document.getElementById('mvtNote').value.trim(),
+    qty, type,
+    who:      document.getElementById('mvtWho').value,
+    date:     document.getElementById('mvtDate').value||today(),
+    chantier: document.getElementById('mvtChantier').value.trim(),
+    note:     document.getElementById('mvtNote').value.trim(),
+    serials,  // ← numéros de série
   };
-
   mouvements.push(mvt);
-
-  // MAJ stock
-  if(art){
-    art.qty = type==='in' ? art.qty+qty : Math.max(0,art.qty-qty);
-  }
-
-  saveAll();
-  closeModal('modalMvt');
-  render();
-  toast(type==='in'?`+${qty} en stock`:`−${qty} sorti · ${mvt.chantier||'stock'}`, type==='in'?'ok':'warn');
+  if(art) art.qty = type==='in'?art.qty+qty:Math.max(0,art.qty-qty);
+  saveAll(); closeModal('modalMvt'); render();
+  const snInfo = serials.length ? ` · ${serials.length} SN enregistré${serials.length>1?'s':''}` : '';
+  toast(type==='in'?`+${qty} en stock ✓${snInfo}`:`−${qty} sorti · ${mvt.chantier||'stock'}${snInfo}`, type==='in'?'ok':'warn');
 }
 
 function saveCommande(){
@@ -1052,12 +1179,12 @@ function saveCommande(){
     notes:    document.getElementById('cmdNotes').value.trim(),
   };
   commandes.push(cmd);
-  saveAll(); closeModal('modalCommande'); render(); toast('Commande enregistrée');
+  saveAll(); closeModal('modalCommande'); render(); toast('Commande enregistrée ✓');
 }
 
 function markCmdRecu(id){
   const c=commandes.find(x=>x.id===id);
-  if(c){c.status='reçu';saveAll();render();toast('Commande marquée reçue ✓');}
+  if(c){c.status='reçu';saveAll();render();toast('Commande reçue ✓');}
 }
 
 function deleteCommande(id){
@@ -1068,9 +1195,11 @@ function deleteCommande(id){
 
 function selectMvtType(type){
   document.getElementById('mvtType').value=type;
-  document.getElementById('qbIn').className='mvt-quick-btn'+(type==='in'?' selected-in':'');
+  document.getElementById('qbIn').className ='mvt-quick-btn'+(type==='in'?' selected-in':'');
   document.getElementById('qbOut').className='mvt-quick-btn'+(type==='out'?' selected-out':'');
   document.getElementById('mvtChantierRow').style.display=type==='out'?'':'none';
+  // SN toujours visible (utile en entrée ET en sortie)
+  document.getElementById('mvtSnRow').style.display='';
 }
 
 // ══════════════════════════════════════════════════════
@@ -1080,22 +1209,25 @@ function openModal(type){
   if(type==='article'){
     document.getElementById('aEditId').value='';
     document.getElementById('modalArticleTitle').textContent='Nouvel article';
-    ['aName','aRef','aSupplier','aLocation','aNotes'].forEach(id=>document.getElementById(id).value='');
+    ['aName','aRef','aEan','aSupplier','aLocation','aNotes'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('aQty').value=0;
     document.getElementById('aMin').value=2;
     document.getElementById('aMax').value=10;
     document.getElementById('aCat').value='borne';
     document.getElementById('modalArticle').classList.add('open');
   } else if(type==='mouvement'){
-    // Populate article select
     const sel=document.getElementById('mvtArticle');
     sel.innerHTML=articles.map(a=>`<option value="${a.id}">${esc(a.name)} (${a.qty} en stock)</option>`).join('');
     document.getElementById('mvtDate').value=today();
     document.getElementById('mvtQty').value=1;
     document.getElementById('mvtChantier').value='';
     document.getElementById('mvtNote').value='';
+    document.getElementById('mvtSnInput').value='';
+    document.getElementById('mvtSnList').value='';
+    document.getElementById('mvtSnChips').innerHTML='';
     selectMvtType('out');
     document.getElementById('modalMvt').classList.add('open');
+    setTimeout(()=>document.getElementById('mvtSnInput').focus&&null,100);
   } else if(type==='commande'){
     ['cmdSupplier','cmdRef','cmdItems','cmdNotes'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('cmdDate').value=today();
@@ -1108,7 +1240,9 @@ function openModal(type){
 
 function closeModal(id){document.getElementById(id).classList.remove('open')}
 function closeModalOutside(e,id){if(e.target===document.getElementById(id))closeModal(id)}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){['modalArticle','modalMvt','modalCommande'].forEach(closeModal)}});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){['modalArticle','modalMvt','modalCommande'].forEach(closeModal)}
+});
 
 // ══════════════════════════════════════════════════════
 //  TOAST
@@ -1124,10 +1258,9 @@ function toast(msg,state='ok'){
   toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-// ══════════════════════════════════════════════════════
-//  ESC HTML
-// ══════════════════════════════════════════════════════
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function esc(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 // ══════════════════════════════════════════════════════
 //  DEMO DATA
@@ -1148,11 +1281,11 @@ function getDemoArticles(){
 function getDemoMouvements(){
   const d=(n)=>{const x=new Date();x.setDate(x.getDate()-n);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
   return [
-    {id:'m1',articleId:'a1',articleName:'AP EAP670 Outdoor',qty:3,type:'in',who:'Ambre',date:d(5),chantier:'',note:'Réception commande CMD-2026-038'},
-    {id:'m2',articleId:'a1',articleName:'AP EAP670 Outdoor',qty:2,type:'out',who:'Anthony',date:d(3),chantier:'Camping Vidaresse',note:'Déploiement bornes zone piscine'},
+    {id:'m1',articleId:'a1',articleName:'AP EAP670 Outdoor',qty:3,type:'in',who:'Ambre',date:d(5),chantier:'',note:'Réception CMD-2026-038'},
+    {id:'m2',articleId:'a1',articleName:'AP EAP670 Outdoor',qty:2,type:'out',who:'Anthony',date:d(3),chantier:'Camping Vidaresse',note:'Déploiement zone piscine'},
     {id:'m3',articleId:'a3',articleName:'Switch TL-SG108E',qty:2,type:'out',who:'Fabian',date:d(3),chantier:'Camping Bonporteau',note:'Remplacement switch défaillant'},
     {id:'m4',articleId:'a6',articleName:'Câble FTP Cat6',qty:30,type:'out',who:'Anthony',date:d(2),chantier:'Camping Vidaresse',note:'Tirage réseau local'},
-    {id:'m5',articleId:'a5',articleName:'Injecteur PoE 48V',qty:2,type:'out',who:'Fabian',date:d(1),chantier:'Tikayan Les Cigales',note:'Injecteurs défectueux à remplacer'},
+    {id:'m5',articleId:'a5',articleName:'Injecteur PoE 48V',qty:2,type:'out',who:'Fabian',date:d(1),chantier:'Tikayan Les Cigales',note:'Injecteurs défectueux'},
     {id:'m6',articleId:'a7',articleName:'Routeur ER605',qty:1,type:'out',who:'Anthony',date:d(1),chantier:'Hôtellerie Kouros',note:'Remplacement routeur'},
     {id:'m7',articleId:'a2',articleName:'AP EAP225 Outdoor',qty:1,type:'out',who:'Fabian',date:d(0),chantier:'Camping Miremer',note:'SAV zone premium'},
   ];
@@ -1166,6 +1299,295 @@ function getDemoCommandes(){
     {id:'c2',supplier:'Generic PoE',ref:'CMD-2026-042',date:p(1),delivery:d(5),items:'4× Injecteur PoE 48V',amount:180,status:'commandé',notes:'Rupture urgente'},
     {id:'c3',supplier:'Legrand Pro',ref:'CMD-2026-039',date:p(7),delivery:p(1),items:'100m Câble FTP Cat6\n20× Support mural AP',amount:320,status:'reçu',notes:''},
   ];
+}
+
+// ══════════════════════════════════════════════════════
+//  NUMÉROS DE SÉRIE — GESTION CHIPS
+// ══════════════════════════════════════════════════════
+function getSnList(){
+  const v = document.getElementById('mvtSnList').value;
+  return v ? v.split('||').filter(Boolean) : [];
+}
+
+function setSnList(arr){
+  document.getElementById('mvtSnList').value = arr.join('||');
+  renderSnChips(arr);
+  // Mettre à jour la quantité automatiquement
+  const qtyEl = document.getElementById('mvtQty');
+  if(arr.length > 0) qtyEl.value = arr.length;
+}
+
+function renderSnChips(arr){
+  const wrap = document.getElementById('mvtSnChips');
+  if(!wrap) return;
+  wrap.innerHTML = arr.map((sn,i) =>
+    `<span class="sn-chip">${esc(sn)}<button onclick="removeSn(${i})" title="Supprimer">×</button></span>`
+  ).join('');
+}
+
+function removeSn(idx){
+  const list = getSnList();
+  list.splice(idx,1);
+  setSnList(list);
+}
+
+function addSnFromInput(){
+  const inp = document.getElementById('mvtSnInput');
+  const val = inp.value.trim();
+  if(!val) return;
+  const list = getSnList();
+  if(list.includes(val)){ toast('SN déjà ajouté','warn'); inp.value=''; return; }
+  list.push(val);
+  setSnList(list);
+  inp.value='';
+  inp.focus();
+  toast(`SN ${val} ajouté ✓`);
+}
+
+function snInputKey(e){
+  // Enter ou Tab → ajouter le SN
+  if(e.key==='Enter'||e.key==='Tab'){
+    e.preventDefault();
+    addSnFromInput();
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  DOUCHETTE BLUETOOTH — DÉTECTION SAISIE RAPIDE
+// ══════════════════════════════════════════════════════
+// La douchette envoie les caractères très vite (< 50ms entre chaque)
+// puis un Enter final. On détecte ça vs saisie humaine normale.
+
+let scanBuffer = '';
+let scanTimer  = null;
+let lastKeyTime = 0;
+const SCAN_SPEED_THRESHOLD = 50; // ms — plus rapide = douchette
+const SCAN_MIN_LEN = 6;          // longueur min pour considérer comme scan valide
+
+document.addEventListener('keydown', (e) => {
+  // Ignorer si on est dans un champ de saisie (sauf le champ SN dédié)
+  const active = document.activeElement;
+  const isSNField = active && active.id === 'mvtSnInput';
+  const isOtherInput = active && ['INPUT','SELECT','TEXTAREA'].includes(active.tagName) && !isSNField;
+
+  if(isOtherInput) return;
+
+  const now = Date.now();
+  const delta = now - lastKeyTime;
+  lastKeyTime = now;
+
+  if(e.key === 'Enter') {
+    if(scanBuffer.length >= SCAN_MIN_LEN) {
+      handleScan(scanBuffer);
+    }
+    scanBuffer = '';
+    clearTimeout(scanTimer);
+    return;
+  }
+
+  // Caractère imprimable
+  if(e.key.length === 1) {
+    // Si trop lent → c'est une saisie humaine, on vide le buffer
+    if(delta > 200 && scanBuffer.length > 0) {
+      scanBuffer = '';
+    }
+    scanBuffer += e.key;
+
+    // Timer de sécurité : si pas de Enter dans 500ms, vider
+    clearTimeout(scanTimer);
+    scanTimer = setTimeout(() => { scanBuffer = ''; }, 500);
+  }
+});
+
+function handleScan(code){
+  code = code.trim();
+  if(!code) return;
+
+  // Afficher la bannière
+  showScanBanner(code);
+
+  // Si la modale mouvement est ouverte → ajouter comme SN
+  const mvtModal = document.getElementById('modalMvt');
+  if(mvtModal && mvtModal.classList.contains('open')){
+    const list = getSnList();
+    if(!list.includes(code)){
+      list.push(code);
+      setSnList(list);
+      toast(`SN scanné : ${code}`);
+    } else {
+      toast('SN déjà enregistré','warn');
+    }
+    return;
+  }
+
+  // Sinon → chercher l'article par EAN ou référence
+  const art = articles.find(a =>
+    a.ean === code || a.ref === code ||
+    a.name.toLowerCase().includes(code.toLowerCase())
+  );
+
+  if(art){
+    // Ouvrir directement la modale mouvement avec cet article
+    quickMvt(art.id, 'out');
+    toast(`📦 ${art.name} — choisissez le type de mouvement`);
+  } else {
+    // Article inconnu → proposer de créer
+    toast(`Code inconnu : ${code} — créez l'article d'abord`, 'warn');
+    // Pré-remplir la ref dans le formulaire article
+    openModal('article');
+    setTimeout(()=>{
+      document.getElementById('aRef').value = code;
+    }, 100);
+  }
+}
+
+let scanBannerTimer;
+function showScanBanner(code){
+  const el = document.getElementById('scanBanner');
+  document.getElementById('scanBannerMsg').textContent = `Scan : ${code}`;
+  el.classList.add('show');
+  clearTimeout(scanBannerTimer);
+  scanBannerTimer = setTimeout(()=>el.classList.remove('show'), 2000);
+}
+
+// ══════════════════════════════════════════════════════
+//  CAMÉRA PWA (iOS Safari + Android Chrome)
+// ══════════════════════════════════════════════════════
+let camStream = null;
+let camTargetInput = null;
+let camScanInterval = null;
+
+async function openCamera(targetInputId){
+  camTargetInput = targetInputId;
+  const overlay = document.getElementById('camOverlay');
+  const video   = document.getElementById('camVideo');
+
+  overlay.classList.add('open');
+
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width:{ideal:1280}, height:{ideal:720} }
+    });
+    video.srcObject = camStream;
+
+    // Utiliser BarcodeDetector si disponible (Android Chrome)
+    if('BarcodeDetector' in window){
+      const detector = new BarcodeDetector({formats:['ean_13','code_128','qr_code','data_matrix']});
+      camScanInterval = setInterval(async ()=>{
+        try{
+          const codes = await detector.detect(video);
+          if(codes.length > 0){
+            const code = codes[0].rawValue;
+            closeCamera();
+            handleCameraResult(code);
+          }
+        }catch(e){}
+      }, 300);
+    } else {
+      // Fallback iOS / navigateurs sans BarcodeDetector
+      // Afficher bouton capture manuelle
+      showManualCapture();
+    }
+  } catch(err){
+    closeCamera();
+    toast('Caméra inaccessible — vérifiez les permissions', 'err');
+  }
+}
+
+function showManualCapture(){
+  const hint = document.querySelector('.cam-hint');
+  if(!hint) return;
+  hint.innerHTML = `Scan automatique non disponible sur cet appareil.<br>
+    <button onclick="manualCapture()" style="margin-top:12px;background:var(--blue1);color:#fff;border:none;border-radius:999px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer">
+      📷 Capturer
+    </button>`;
+}
+
+async function manualCapture(){
+  // Sur iOS on utilise un input file avec capture
+  const input = document.createElement('input');
+  input.type='file'; input.accept='image/*'; input.capture='environment';
+  input.onchange = async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    if('BarcodeDetector' in window){
+      const img = await createImageBitmap(file);
+      const detector = new BarcodeDetector({formats:['ean_13','code_128','qr_code']});
+      try{
+        const codes = await detector.detect(img);
+        if(codes.length>0){ closeCamera(); handleCameraResult(codes[0].rawValue); }
+        else toast('Aucun code détecté — réessayez','warn');
+      }catch(e){ toast('Erreur lecture code','err'); }
+    } else {
+      // Fallback : saisie manuelle du SN après photo
+      closeCamera();
+      toast('Saisissez le SN manuellement','warn');
+    }
+  };
+  input.click();
+}
+
+function handleCameraResult(code){
+  code = code.trim();
+  if(!code) return;
+  showScanBanner(code);
+
+  // Si modale mouvement ouverte → ajouter SN
+  const mvtModal = document.getElementById('modalMvt');
+  if(mvtModal && mvtModal.classList.contains('open')){
+    const list = getSnList();
+    if(!list.includes(code)){ list.push(code); setSnList(list); toast(`SN scanné : ${code}`); }
+    else toast('SN déjà enregistré','warn');
+    return;
+  }
+  // Sinon → recherche article
+  handleScan(code);
+}
+
+function closeCamera(){
+  const overlay = document.getElementById('camOverlay');
+  overlay.classList.remove('open');
+  if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+  clearInterval(camScanInterval); camScanInterval=null;
+  // Restaurer le hint
+  const hint = document.querySelector('.cam-hint');
+  if(hint) hint.textContent = 'Pointez la caméra vers le code-barres';
+}
+
+function openCameraForEan(){
+  // Ouvrir la caméra et mettre le résultat dans le champ EAN
+  camTargetInput = 'aEan';
+  const overlay = document.getElementById('camOverlay');
+  const video   = document.getElementById('camVideo');
+  overlay.classList.add('open');
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
+    .then(stream=>{
+      camStream = stream;
+      video.srcObject = stream;
+      if('BarcodeDetector' in window){
+        const detector = new BarcodeDetector({formats:['ean_13','code_128']});
+        camScanInterval = setInterval(async()=>{
+          try{
+            const codes = await detector.detect(video);
+            if(codes.length>0){
+              const code = codes[0].rawValue;
+              closeCamera();
+              document.getElementById('aEan').value = code;
+              toast(`EAN scanné : ${code}`);
+            }
+          }catch(e){}
+        },300);
+      } else { showManualCapture(); }
+    })
+    .catch(()=>{ closeCamera(); toast('Caméra inaccessible','err'); });
+}
+
+// ── Ajouter EAN à la structure article ──
+// (pour que handleScan puisse matcher par EAN)
+// L'EAN est stocké dans article.ean — on l'ajoute au formulaire article
+function addEanToArticleForm(){
+  // Déjà géré via le champ 'ref' — si la ref est un EAN-13, ça matche directement
+  // On peut aussi ajouter un champ EAN séparé plus tard dans sudwifi-parc-materiel.html
 }
 
 // ══════════════════════════════════════════════════════
