@@ -209,36 +209,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 @media(max-width:1100px){.view-layout{grid-template-columns:1fr}.side-panel{position:static}.day-columns{grid-template-columns:1fr 1fr}.semester-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.main{padding:12px 14px}.topbar{padding:0 14px}.quick-btns{display:none}.week-grid{grid-template-columns:80px repeat(5,minmax(0,1fr))}.day-columns{grid-template-columns:1fr}.semester-grid{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}.form-row.trio{grid-template-columns:1fr 1fr}.type-selector{grid-template-columns:repeat(4,1fr)}.absence-types{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:480px){.view-tabs{overflow-x:auto;scrollbar-width:none}.view-tabs::-webkit-scrollbar{display:none}.filters-strip{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}.filters-strip::-webkit-scrollbar{display:none}}
-/* ── MULTI-PERSON SELECTOR ── */
-.person-select-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-.person-btn{
-  display:inline-flex;align-items:center;gap:5px;
-  border-radius:999px;padding:5px 11px;
-  font-size:12px;font-weight:500;cursor:pointer;
-  border:1px solid var(--border);background:var(--s3);
-  color:var(--muted2);transition:all .15s;
-}
-.person-btn:hover{border-color:var(--border2);color:var(--text)}
-.person-btn .pb-av{
-  width:18px;height:18px;border-radius:50%;
-  background:var(--s4);color:var(--muted);
-  font-size:9px;font-weight:700;
-  display:grid;place-items:center;flex-shrink:0;
-}
-.person-btn.is-resp{
-  background:rgba(59,130,246,.18);
-  border-color:rgba(59,130,246,.5);color:#93c5fd;
-}
-.person-btn.is-resp .pb-av{background:#3b82f6;color:#fff}
-.person-btn.is-team{
-  background:rgba(20,184,166,.12);
-  border-color:rgba(20,184,166,.4);color:var(--teal);
-}
-.person-btn.is-team .pb-av{background:var(--teal);color:#fff}
-.person-legend{
-  font-size:10px;color:var(--muted);font-family:var(--mono);
-  margin-top:5px;line-height:1.5;
-}
 .main>*{animation:fadeUp .35s ease both}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 </style>
@@ -273,7 +243,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <button class="f-pill active" data-role="direction" onclick="setRole(this)">Direction</button>
   <button class="f-pill" data-role="operations" onclick="setRole(this)">Opérations</button>
   <button class="f-pill" data-role="adv" onclick="setRole(this)">ADV</button>
-  <button class="f-pill" data-role="coordination" onclick="setRole(this)">Coordination</button>
+  <button class="f-pill" data-role="coordination" onclick="setRole(this)">Gestion & coordination (Amanda)</button>
   <div class="f-divider"></div>
   <span class="filter-label">type</span>
   <button class="f-pill" data-type="chantier" onclick="toggleType(this)">Chantier</button>
@@ -317,6 +287,15 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       </div>
       <div class="form-row">
         <div class="form-group">
+          <label>Responsable</label>
+          <select class="form-select" id="fOwner">
+            <option>Virginie</option><option>Stéphane</option>
+            <option>Anthony</option><option>Fabian</option>
+            <option>Jonovan</option><option>Fred</option>
+            <option>Ambre</option><option>Amanda</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label>Urgence</label>
           <select class="form-select" id="fUrgency">
             <option value="normal">Normal</option>
@@ -324,6 +303,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
             <option value="critical">Critique</option>
           </select>
         </div>
+      </div>
+      <div class="form-row">
         <div class="form-group">
           <label>Statut</label>
           <select class="form-select" id="fStatus">
@@ -331,15 +312,18 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
             <option>En cours</option><option>Bloqué</option><option>Terminé</option>
           </select>
         </div>
-      </div>
-      <div class="form-row full">
         <div class="form-group">
-          <label>Équipe — 1er clic = Responsable · 2e clic = Participant · 3e = Désélectionner</label>
-          <div class="person-select-grid" id="personGrid"></div>
-          <div class="person-legend" id="personLegend">Sélectionnez le responsable puis les participants.</div>
-          <input type="hidden" id="fOwner" value=""/>
-          <input type="hidden" id="fTeam"  value=""/>
-          <input type="hidden" id="fEquipe" value=""/>
+          <label>Affecter à</label>
+          <select class="form-select" id="fTeam">
+            <option value="anthony">Anthony</option>
+            <option value="fabian">Fabian</option>
+            <option value="jonovan">Jonovan</option>
+            <option value="fred">Fred</option>
+            <option value="ambre">Ambre</option>
+            <option value="virginie">Virginie</option>
+            <option value="stephane">Stéphane</option>
+            <option value="amanda">Amanda</option>
+          </select>
         </div>
       </div>
       <div class="form-row full"><div class="form-group"><label>Description</label><textarea class="form-textarea" id="fDesc" placeholder="Détails, consignes, contexte…"></textarea></div></div>
@@ -374,7 +358,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
           <select class="form-select" id="absPerson">
             <option>Virginie</option><option>Stéphane</option>
             <option>Anthony</option><option>Fabian</option>
-            <option>Jonovan</option><option>Frédéric</option>
+            <option>Jonovan</option><option>Fred</option>
             <option>Ambre</option><option>Amanda</option>
           </select>
         </div>
@@ -420,7 +404,7 @@ const teamLabels={
   anthony: 'Anthony',
   fabian:  'Fabian',
   jonovan: 'Jonovan',
-  frederic:'Frédéric',
+  fred:'Fred',
   ambre:   'Ambre',
   stephane:'Stéphane',
   virginie:'Virginie',
@@ -428,14 +412,14 @@ const teamLabels={
 };
 
 const poleMembers={
-  direction:   ['anthony','fabian','jonovan','frederic','ambre','stephane','virginie','amanda'],
-  operations:  ['anthony','fabian','jonovan','frederic'],
+  direction:   ['anthony','fabian','jonovan','fred','ambre','stephane','virginie','amanda'],
+  operations:  ['anthony','fabian','jonovan','fred','stephane'],
   adv:         ['ambre'],
   coordination:['amanda'],
 };
 
 const ownerColors={
-  Anthony:'#007eb1', Fabian:'#12aacc', Jonovan:'#7c3aed', 'Frédéric':'#d6711a',
+  Anthony:'#007eb1', Fabian:'#12aacc', Jonovan:'#7c3aed', 'Fred':'#d6711a',
   Ambre:'#8b5cf6',   Amanda:'#0891b2', Virginie:'#16a34a', 'Stéphane':'#dc2626',
 };
 
@@ -599,11 +583,6 @@ function renderSemaine(){
 
   if(selTask){
     const cfg=typeConfig[selTask.type]||typeConfig.admin,dur=taskDuration(selTask);
-    let equipeNames=[];
-    try{const eq=JSON.parse(selTask.equipe||'[]');equipeNames=eq.map(k=>{const m=TEAM_MEMBERS.find(x=>x.key===k);return m?m.name:k;});}catch(e){}
-    const equipeHtml=equipeNames.length
-      ?equipeNames.map(n=>{const oc=ownerColors[n]||'#8fa3c8';return `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;background:${oc}18;color:${oc};font-size:10px;border:1px solid ${oc}44">${n[0]} ${n}</span>`;}).join('')
-      :'<span style="color:var(--muted);font-size:11px">—</span>';
     html+=`<div style="margin-top:10px">
       <div class="td-grid">
         <div class="td-block"><div class="td-k">Titre</div><div class="td-v">${esc(selTask.title)}</div></div>
@@ -613,7 +592,6 @@ function renderSemaine(){
         <div class="td-block"><div class="td-k">Statut</div><div class="td-v">${esc(selTask.status)}</div></div>
         <div class="td-block"><div class="td-k">Durée</div><div class="td-v" style="color:var(--teal)">${dur} jour${dur>1?'s':''}</div></div>
       </div>
-      ${equipeNames.length?`<div class="td-block" style="margin-bottom:8px"><div class="td-k">Participants</div><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">${equipeHtml}</div></div>`:''}
       ${selTask.description?`<div class="td-desc">${esc(selTask.description)}</div>`:''}
       <div class="td-actions">
         <button class="td-btn primary" onclick="openEditModal('${selTask.id}')">✏️</button>
@@ -706,130 +684,18 @@ function deleteTask(id){if(!confirm('Supprimer cette tâche ?'))return;tasks=tas
 
 function quickAdd(type){
   openAddModal();selectType(type);
-  if(type==='sav'){
-    document.getElementById('fUrgency').value='critical';
-    setPersonResp('fabian');
-  } else if(type==='chantier'){
-    setPersonResp('anthony');
-  } else if(type==='achats'){
-    setPersonResp('ambre');
-  }
-}
-
-// ── MULTI-PERSON SELECTOR STATE ──
-const TEAM_MEMBERS=[
-  {name:'Virginie', key:'virginie'},
-  {name:'Stéphane', key:'stephane'},
-  {name:'Anthony',  key:'anthony'},
-  {name:'Fabian',   key:'fabian'},
-  {name:'Jonovan',  key:'jonovan'},
-  {name:'Frédéric', key:'frederic'},
-  {name:'Ambre',    key:'ambre'},
-  {name:'Amanda',   key:'amanda'},
-];
-let pSelectedResp  = null;   // clé (ex: 'anthony')
-let pSelectedEquipe= [];     // tableau de clés
-
-function buildPersonGrid(){
-  const grid=document.getElementById('personGrid');
-  if(!grid)return;
-  grid.innerHTML=TEAM_MEMBERS.map(m=>{
-    const oc=ownerColors[m.name]||'#8fa3c8';
-    return `<button class="person-btn" data-key="${m.key}" data-name="${m.name}"
-      onclick="togglePerson('${m.key}','${m.name}')"
-      style="--pcolor:${oc}">
-      <span class="pb-av">${m.name[0]}</span>${m.name}
-    </button>`;
-  }).join('');
-  refreshPersonGrid();
-}
-
-function togglePerson(key,name){
-  if(pSelectedResp===key){
-    // resp → équipe
-    pSelectedResp=null;
-    if(!pSelectedEquipe.includes(key)) pSelectedEquipe.push(key);
-  } else if(pSelectedEquipe.includes(key)){
-    // équipe → désélectionner
-    pSelectedEquipe=pSelectedEquipe.filter(k=>k!==key);
-  } else {
-    // → responsable (un seul)
-    if(pSelectedResp&&!pSelectedEquipe.includes(pSelectedResp)){
-      pSelectedEquipe.push(pSelectedResp);
-    }
-    pSelectedEquipe=pSelectedEquipe.filter(k=>k!==key);
-    pSelectedResp=key;
-  }
-  refreshPersonGrid();
-  syncPersonHiddenFields();
-}
-
-function refreshPersonGrid(){
-  document.querySelectorAll('#personGrid .person-btn').forEach(btn=>{
-    const key=btn.dataset.key,name=btn.dataset.name;
-    const oc=ownerColors[name]||'#8fa3c8';
-    btn.classList.remove('is-resp','is-team');
-    if(key===pSelectedResp){
-      btn.classList.add('is-resp');
-      btn.querySelector('.pb-av').style.background='#3b82f6';
-      btn.querySelector('.pb-av').style.color='#fff';
-    } else if(pSelectedEquipe.includes(key)){
-      btn.classList.add('is-team');
-      btn.querySelector('.pb-av').style.background=oc;
-      btn.querySelector('.pb-av').style.color='#fff';
-    } else {
-      btn.querySelector('.pb-av').style.background='';
-      btn.querySelector('.pb-av').style.color='';
-    }
-  });
-  // Légende
-  const leg=document.getElementById('personLegend');
-  if(!leg)return;
-  const parts=[];
-  if(pSelectedResp){
-    const m=TEAM_MEMBERS.find(x=>x.key===pSelectedResp);
-    parts.push(`Responsable : <strong>${m?m.name:pSelectedResp}</strong>`);
-  }
-  if(pSelectedEquipe.length){
-    const names=pSelectedEquipe.map(k=>{const m=TEAM_MEMBERS.find(x=>x.key===k);return m?m.name:k;});
-    parts.push(`Participants : <strong>${names.join(', ')}</strong>`);
-  }
-  leg.innerHTML=parts.length?parts.join(' · '):'Sélectionnez le responsable puis les participants.';
-}
-
-function syncPersonHiddenFields(){
-  // fOwner = nom du responsable (compat existant)
-  const respName=pSelectedResp?(TEAM_MEMBERS.find(x=>x.key===pSelectedResp)||{}).name||pSelectedResp:'';
-  document.getElementById('fOwner').value=respName;
-  // fTeam = clé du responsable (pour la ligne planning)
-  document.getElementById('fTeam').value=pSelectedResp||'';
-  // fEquipe = JSON des participants (clés)
-  document.getElementById('fEquipe').value=JSON.stringify(pSelectedEquipe);
-}
-
-function setPersonResp(key){
-  pSelectedResp=key;
-  pSelectedEquipe=pSelectedEquipe.filter(k=>k!==key);
-  refreshPersonGrid();
-  syncPersonHiddenFields();
-}
-
-function resetPersonGrid(){
-  pSelectedResp=null;
-  pSelectedEquipe=[];
-  refreshPersonGrid();
-  syncPersonHiddenFields();
+  if(type==='sav'){document.getElementById('fUrgency').value='critical';document.getElementById('fTeam').value='fabian';document.getElementById('fOwner').value='Fabian';}
+  else if(type==='chantier'){document.getElementById('fTeam').value='anthony';document.getElementById('fOwner').value='Anthony';}
+  else if(type==='achats'){document.getElementById('fTeam').value='ambre';document.getElementById('fOwner').value='Ambre';}
 }
 
 function openAddModal(){
   document.getElementById('editId').value='';document.getElementById('modalTaskTitle').textContent='Nouvelle tâche';
   document.getElementById('fTitle').value='';document.getElementById('fSite').value='';
   document.getElementById('fDateStart').value=selectedDay||today();document.getElementById('fDateEnd').value='';
-  document.getElementById('fUrgency').value='normal';
-  document.getElementById('fStatus').value='À faire';
+  document.getElementById('fOwner').value='Virginie';document.getElementById('fUrgency').value='normal';
+  document.getElementById('fStatus').value='À faire';document.getElementById('fTeam').value='anthony';
   document.getElementById('fDesc').value='';document.getElementById('fLink').value='';
-  resetPersonGrid();
-  buildPersonGrid();
   selectType('chantier');document.getElementById('modalTask').classList.add('open');
 }
 
@@ -838,14 +704,9 @@ function openEditModal(id){
   document.getElementById('editId').value=t.id;document.getElementById('modalTaskTitle').textContent='Modifier la tâche';
   document.getElementById('fTitle').value=t.title||'';document.getElementById('fSite').value=t.site||'';
   document.getElementById('fDateStart').value=t.date_start||t.date||'';document.getElementById('fDateEnd').value=t.date_end||'';
-  document.getElementById('fUrgency').value=t.urgency||'normal';
-  document.getElementById('fStatus').value=t.status||'À faire';
+  document.getElementById('fOwner').value=t.owner||'Virginie';document.getElementById('fUrgency').value=t.urgency||'normal';
+  document.getElementById('fStatus').value=t.status||'À faire';document.getElementById('fTeam').value=t.team||'anthony';
   document.getElementById('fDesc').value=t.description||'';document.getElementById('fLink').value=t.link||'';
-  // Restaurer la sélection des personnes
-  pSelectedResp=t.team||null;
-  try{ pSelectedEquipe=JSON.parse(t.equipe||'[]'); }catch(e){ pSelectedEquipe=[]; }
-  pSelectedEquipe=pSelectedEquipe.filter(k=>k!==pSelectedResp);
-  buildPersonGrid();
   selectType(t.type||'chantier');document.getElementById('modalTask').classList.add('open');
 }
 
@@ -854,24 +715,8 @@ function selectType(type){document.getElementById('fType').value=type;document.q
 function saveTask(){
   const title=document.getElementById('fTitle').value.trim(),dateStart=document.getElementById('fDateStart').value;
   if(!title){alert('Le titre est obligatoire.');return;}if(!dateStart){alert('La date de début est obligatoire.');return;}
-  if(!pSelectedResp){alert('Veuillez sélectionner un responsable.');return;}
-  const dateEnd=document.getElementById('fDateEnd').value,editId=document.getElementById('editId').value;
-  const team=document.getElementById('fTeam').value;
-  const owner=document.getElementById('fOwner').value;
-  const equipe=document.getElementById('fEquipe').value;
-  const obj={
-    id:editId||uid(),title,
-    site:document.getElementById('fSite').value.trim(),
-    type:document.getElementById('fType').value,
-    urgency:document.getElementById('fUrgency').value,
-    date_start:dateStart,date_end:dateEnd||dateStart,date:dateStart,
-    owner,team,equipe,
-    status:document.getElementById('fStatus').value,
-    description:document.getElementById('fDesc').value.trim(),
-    link:document.getElementById('fLink').value.trim(),
-    subtitle:document.getElementById('fSite').value.trim(),
-    roles:[team,'direction'],
-  };
+  const dateEnd=document.getElementById('fDateEnd').value,editId=document.getElementById('editId').value,team=document.getElementById('fTeam').value;
+  const obj={id:editId||uid(),title,site:document.getElementById('fSite').value.trim(),type:document.getElementById('fType').value,urgency:document.getElementById('fUrgency').value,date_start:dateStart,date_end:dateEnd||dateStart,date:dateStart,owner:document.getElementById('fOwner').value,status:document.getElementById('fStatus').value,team,description:document.getElementById('fDesc').value.trim(),link:document.getElementById('fLink').value.trim(),subtitle:document.getElementById('fSite').value.trim(),roles:[team,'direction']};
   if(editId){const i=tasks.findIndex(x=>x.id===editId);if(i>=0)tasks[i]=obj;else tasks.push(obj);}else tasks.push(obj);
   selectedTaskId=obj.id;selectedDay=dateStart;saveAll();closeModal('modalTask');render();showSync('Tâche enregistrée');
   if(APPS_SCRIPT_URL)pushToSheets(obj);
@@ -916,11 +761,11 @@ function getDemoTasks(){
     add(3,3,{team:'amanda',  type:'marketing', urgency:'normal',  title:'Newsletter',          site:'Interne',                owner:'Amanda',   status:'Planifié', description:'Validation newsletter.'}),
     add(4,4,{team:'anthony', type:'admin',     urgency:'normal',  title:'CR interventions',    site:'Interne',                owner:'Anthony',  status:'À faire',  description:'Photos + fiches sites.'}),
     add(0,1,{team:'jonovan', type:'chantier',  urgency:'normal',  title:'Bonporteau câblage',  site:'Camping Bonporteau',     owner:'Jonovan',  status:'Planifié', description:'Tirage réseau.'}),
-    add(0,0,{team:'frederic',type:'sav',       urgency:'normal',  title:'SAV Pansard',         site:'Camping Pansard',        owner:'Frédéric', status:'À faire',  description:'Vérification routeur.'}),
+    add(0,0,{team:'fred',type:'sav',       urgency:'normal',  title:'SAV Pansard',         site:'Camping Pansard',        owner:'Fred', status:'À faire',  description:'Vérification routeur.'}),
     add(3,3,{team:'stephane',type:'reunion',   urgency:'normal',  title:'Point direction',     site:'Interne',                owner:'Stéphane', status:'Planifié', description:'RDV hebdo direction.'}),
   ];
 }
-function getDemoAbsences(){const w=getWeekStart(0);return [{id:'abs1',person:'Fabian',type:'conge',start:addDays(w,5),end:addDays(w,9),note:'Congés été'}];}
+function getDemoAbsences(){const w=getWeekStart(0);return [{id:'abs1',person:'Fabian',type:'conge',start:addDays(w,5),end:addDays(w,9),note:'Congés été'},{id:'abs2',person:'Anthony',type:'conge',start:'2025-06-14',end:'2025-07-14',note:'Congé paternité — naissance ~14/06'}];}
 
 window.addDays=addDays;
 selectedDay=today();
