@@ -211,6 +211,43 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 @media(max-width:480px){.view-tabs{overflow-x:auto;scrollbar-width:none}.view-tabs::-webkit-scrollbar{display:none}.filters-strip{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}.filters-strip::-webkit-scrollbar{display:none}}
 .main>*{animation:fadeUp .35s ease both}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+/* ── MODULE HEURES ── */
+.h-section{display:none}.h-section.active{display:block}
+.h-tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.h-tab{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:999px;padding:6px 14px;font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.h-tab:hover{border-color:var(--border2);color:var(--text)}
+.h-tab.active{background:rgba(20,184,166,.15);border-color:rgba(20,184,166,.4);color:var(--teal)}
+.h-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.h-card-hdr{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.h-card-title{font-size:13px;font-weight:600}
+.h-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.h-metric{background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;text-align:center}
+.h-metric .val{font-size:22px;font-weight:600;letter-spacing:-.5px}
+.h-metric .lbl{font-size:11px;color:var(--muted);margin-top:3px}
+.h-metric .sub{font-size:10px;margin-top:2px;font-family:var(--mono)}
+.h-table{width:100%;border-collapse:collapse;font-size:12px}
+.h-table th{text-align:left;padding:7px 10px;font-weight:500;font-size:10px;color:var(--muted);border-bottom:1px solid var(--border);font-family:var(--mono);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.h-table td{padding:6px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+.h-table tr:last-child td{border-bottom:none}
+.h-table tr:hover td{background:rgba(255,255,255,.02)}
+.h-input{width:54px;padding:4px 6px;background:var(--s3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;text-align:center;font-family:var(--mono);outline:none;transition:border-color .15s}
+.h-input:focus{border-color:var(--teal)}
+.h-badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:500;font-family:var(--mono)}
+.h-badge-ok{background:rgba(34,197,94,.12);color:#86efac;border:1px solid rgba(34,197,94,.25)}
+.h-badge-warn{background:rgba(245,158,11,.12);color:#fcd34d;border:1px solid rgba(245,158,11,.25)}
+.h-badge-danger{background:rgba(239,68,68,.12);color:#fca5a5;border:1px solid rgba(239,68,68,.25)}
+.h-badge-info{background:rgba(20,184,166,.12);color:var(--teal);border:1px solid rgba(20,184,166,.25)}
+.h-badge-gray{background:rgba(100,116,139,.15);color:#94a3b8;border:1px solid rgba(100,116,139,.3)}
+.h-person-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.h-week-nav{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.h-week-lbl{font-size:13px;font-weight:600;padding:0 6px}
+.h-prog{height:5px;border-radius:3px;background:var(--s3);overflow:hidden;margin-top:5px}
+.h-prog-fill{height:100%;border-radius:3px;transition:width .4s}
+.h-note{background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.18);border-radius:var(--r-sm);padding:10px 14px;font-size:11px;color:var(--muted2);line-height:1.6;margin-top:12px}
+.h-note strong{color:var(--teal)}
+.h-sel{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;color:var(--text);font-size:12px;outline:none}
+.h-solde-pos{color:#86efac;font-weight:600;font-family:var(--mono)}
+.h-solde-zero{color:var(--muted);font-family:var(--mono)}
 </style>
 </head>
 <body>
@@ -234,6 +271,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <button class="view-tab active" onclick="setView('semaine',this)">Semaine</button>
   <button class="view-tab" onclick="setView('jour',this)">Jour</button>
   <button class="view-tab" onclick="setView('semestre',this)">Semestre</button>
+  <button class="view-tab" onclick="setView('heures',this)" style="color:var(--teal)">⏱ Heures &amp; RCR</button>
   <div class="view-tab-spacer"></div>
   <button class="sync-pill" id="syncBtn" onclick="syncFromSheets()">⟳ Sync</button>
 </div>
@@ -463,7 +501,7 @@ updateClock();setInterval(updateClock,10000);
 function setView(v,btn){currentView=v;document.querySelectorAll('.view-tab').forEach(t=>t.classList.remove('active'));if(btn)btn.classList.add('active');render()}
 function setRole(btn){document.querySelectorAll('[data-role]').forEach(p=>p.classList.remove('active'));btn.classList.add('active');selectedRole=btn.dataset.role;render()}
 function toggleType(btn){const t=btn.dataset.type;if(activeTypes.has(t)){activeTypes.delete(t);btn.classList.remove('active');}else{activeTypes.add(t);btn.classList.add('active');}render()}
-function render(){if(currentView==='semaine')renderSemaine();else if(currentView==='jour')renderJour();else renderSemestre()}
+function render(){if(currentView==='semaine')renderSemaine();else if(currentView==='jour')renderJour();else if(currentView==='heures')renderHeures();else renderSemestre()}
 
 function renderSemaine(){
   const ws=getWeekStart(weekOffset);
@@ -766,6 +804,301 @@ function getDemoTasks(){
   ];
 }
 function getDemoAbsences(){const w=getWeekStart(0);return [{id:'abs1',person:'Fabian',type:'conge',start:addDays(w,5),end:addDays(w,9),note:'Congés été'},{id:'abs2',person:'Anthony',type:'conge',start:'2025-06-14',end:'2025-07-14',note:'Congé paternité — naissance ~14/06'}];}
+
+
+// ═══════════════════════════════════════════════
+// MODULE HEURES & RCR
+// ═══════════════════════════════════════════════
+const H_TEAM=[
+  {id:'virginie', name:'Virginie', contrat:35, role:'Gérante',   color:'#16a34a'},
+  {id:'stephane', name:'Stéphane', contrat:35, role:'Gérant',    color:'#dc2626'},
+  {id:'anthony',  name:'Anthony',  contrat:42, role:'Forfait 42h',color:'#007eb1'},
+  {id:'amanda',   name:'Amanda',   contrat:35, role:'35h',        color:'#0891b2'},
+  {id:'ambre',    name:'Ambre',    contrat:35, role:'35h',        color:'#8b5cf6'},
+  {id:'fabian',   name:'Fabian',   contrat:39, role:'39h',        color:'#12aacc'},
+  {id:'fred',     name:'Fred',     contrat:42, role:'Forfait 42h',color:'#d6711a'},
+  {id:'jonovan',  name:'Jonovan',  contrat:42, role:'Forfait 42h',color:'#7c3aed'},
+];
+
+let hWeekOffset=0;
+let hData=loadLocal('sw_heures_v1')||{};
+
+function hSaveAll(){saveLocal('sw_heures_v1',hData);}
+
+function hWeekKey(off){
+  const days=hGetWeekDates(off);
+  const d=days[0];
+  const yr=d.getFullYear();
+  const wn=hIsoWeek(d);
+  return yr+'W'+String(wn).padStart(2,'0');
+}
+
+function hGetWeekDates(off){
+  const now=new Date();
+  const day=now.getDay();
+  const diff=(day===0?-6:1-day);
+  const mon=new Date(now);
+  mon.setDate(now.getDate()+diff+(off*7));
+  const days=[];
+  for(let i=0;i<6;i++){
+    const d=new Date(mon);
+    d.setDate(mon.getDate()+i);
+    days.push(d);
+  }
+  return days;
+}
+
+function hIsoWeek(date){
+  const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
+  const dayNum=d.getUTCDay()||7;
+  d.setUTCDate(d.getUTCDate()+4-dayNum);
+  const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d-yearStart)/86400000)+1)/7);
+}
+
+function hFmtDate(d){
+  return d.getDate().toString().padStart(2,'0')+'/'+(d.getMonth()+1).toString().padStart(2,'0');
+}
+
+function hGetVal(wk,pid,jour){
+  return (hData[wk]&&hData[wk][pid]&&hData[wk][pid][jour]!==undefined)?hData[wk][pid][jour]:'';
+}
+
+function hSetVal(wk,pid,jour,val){
+  if(!hData[wk])hData[wk]={};
+  if(!hData[wk][pid])hData[wk][pid]={};
+  hData[wk][pid][jour]=val;
+  hSaveAll();
+}
+
+function hTotalSem(wk,pid){
+  let t=0;
+  for(let j=0;j<6;j++){
+    const v=parseFloat(hGetVal(wk,pid,j));
+    if(!isNaN(v))t+=v;
+  }
+  return +t.toFixed(2);
+}
+
+function hCalcRCR(hs,contrat){
+  if(hs<=0)return 0;
+  if(contrat===42)return +hs.toFixed(2);
+  const seuil=Math.max(35,contrat);
+  const t1=Math.min(hs,43-seuil);
+  const t2=Math.max(0,hs-(43-seuil));
+  return +(t1*1.25+t2*1.5).toFixed(2);
+}
+
+function hCheckMaxDay(wk,pid){
+  for(let j=0;j<6;j++){
+    const v=parseFloat(hGetVal(wk,pid,j));
+    if(!isNaN(v)&&v>10)return true;
+  }
+  return false;
+}
+
+function hWeekFromNum(year,week){
+  const d=new Date(year,0,1);
+  const day=d.getDay()||7;
+  if(day!==4)d.setHours(0,0,0,0);
+  d.setDate(d.getDate()+(4-day)-(7*(day>4?1:0)));
+  d.setDate(d.getDate()-3+7*week);
+  return d;
+}
+
+function hUpdateCell(wk,pid,jour,val){
+  const v=val===''?'':parseFloat(val);
+  hSetVal(wk,pid,jour,isNaN(v)?'':v);
+  renderHeures();
+}
+
+function hChangeWeek(d){hWeekOffset+=d;renderHeures();}
+function hShowSection(s){
+  document.querySelectorAll('.h-section').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.h-tab').forEach(x=>x.classList.remove('active'));
+  const sec=document.getElementById('hs-'+s);
+  if(sec)sec.classList.add('active');
+  const tabs=document.querySelectorAll('[data-hsec="'+s+'"]');
+  tabs.forEach(t=>t.classList.add('active'));
+}
+
+function renderHeures(){
+  const wk=hWeekKey(hWeekOffset);
+  const days=hGetWeekDates(hWeekOffset);
+  const mn=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  const dn=['Lun','Mar','Mer','Jeu','Ven','Sam'];
+  const weekLabel='Semaine du '+hFmtDate(days[0])+' au '+hFmtDate(days[5])+' (S'+hIsoWeek(days[0])+')';
+
+  // ── Calcul des soldes globaux ──
+  let totalRCR={};
+  H_TEAM.forEach(p=>{
+    let t=0;
+    Object.keys(hData).forEach(w=>{
+      const tot=hTotalSem(w,p.id);
+      const hs=Math.max(0,tot-p.contrat);
+      t+=hCalcRCR(hs,p.contrat);
+    });
+    totalRCR[p.id]=+t.toFixed(2);
+  });
+
+  let html=`<div class="h-tabs">
+    <button class="h-tab active" data-hsec="saisie" onclick="hShowSection('saisie')">Saisie semaine</button>
+    <button class="h-tab" data-hsec="mensuel" onclick="hShowSection('mensuel')">Cumul mensuel</button>
+    <button class="h-tab" data-hsec="soldes" onclick="hShowSection('soldes')">Soldes RCR</button>
+  </div>`;
+
+  // ── SECTION SAISIE ──
+  html+=`<div id="hs-saisie" class="h-section active">`;
+  html+=`<div class="h-week-nav">
+    <button class="nav-btn" onclick="hChangeWeek(-1)">‹</button>
+    <span class="h-week-lbl">${weekLabel}</span>
+    <button class="nav-btn" onclick="hChangeWeek(1)">›</button>
+    <button class="today-btn" onclick="hWeekOffset=0;renderHeures()" style="margin-left:8px">Cette semaine</button>
+  </div>`;
+  html+=`<div class="h-card"><div style="overflow-x:auto"><table class="h-table">
+    <thead><tr>
+      <th style="min-width:90px">Salarié</th>
+      <th>Contrat</th>`;
+  days.forEach((d,i)=>{
+    html+=`<th style="text-align:center">${dn[i]}<br><span style="font-family:var(--mono);font-size:9px;opacity:.7">${hFmtDate(d)}</span></th>`;
+  });
+  html+=`<th>Total</th><th>HS brutes</th><th>RCR dû</th><th>Statut</th></tr></thead><tbody>`;
+
+  H_TEAM.forEach(p=>{
+    const tot=hTotalSem(wk,p.id);
+    const hs=Math.max(0,+(tot-p.contrat).toFixed(2));
+    const rcr=hCalcRCR(hs,p.contrat);
+    const alertDay=hCheckMaxDay(wk,p.id);
+    const alertWeek=tot>48;
+    let badge='';
+    if(alertDay||alertWeek){
+      const msg=(alertDay?'⚠ >10h/j ':'')+( alertWeek?'⚠ >48h':'');
+      badge=`<span class="h-badge h-badge-danger">${msg.trim()}</span>`;
+    }else if(hs>0){
+      badge=`<span class="h-badge h-badge-warn">+${hs}h HS</span>`;
+    }else if(tot>0){
+      badge=`<span class="h-badge h-badge-ok">OK</span>`;
+    }else{
+      badge=`<span class="h-badge h-badge-gray">—</span>`;
+    }
+    html+=`<tr>
+      <td><span class="h-person-dot" style="background:${p.color}"></span><strong>${p.name}</strong></td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--muted)">${p.contrat}h<br><span style="font-size:9px">${p.role}</span></td>`;
+    for(let j=0;j<6;j++){
+      const v=hGetVal(wk,p.id,j);
+      html+=`<td style="text-align:center"><input class="h-input" type="number" min="0" max="14" step="0.5" value="${v}" onchange="hUpdateCell('${wk}','${p.id}',${j},this.value)"></td>`;
+    }
+    html+=`<td style="font-family:var(--mono);font-weight:600">${tot>0?tot+'h':'—'}</td>`;
+    html+=`<td style="font-family:var(--mono);color:#fcd34d">${hs>0?'+'+hs+'h':'—'}</td>`;
+    html+=`<td style="font-family:var(--mono);color:#86efac">${rcr>0?'+'+rcr+'h':'—'}</td>`;
+    html+=`<td>${badge}</td></tr>`;
+  });
+  html+=`</tbody></table></div></div>`;
+  html+=`<div class="h-note"><strong>Repos compensateur de remplacement (RCR) :</strong> les heures supp ne sont pas majorées en salaire mais récupérées en repos avec majoration.<br>
+    <strong>35h (Virginie, Stéphane, Ambre, Amanda) :</strong> HS à partir de 35h01 · +25% jusqu'à la 43e heure (1h supp = 1h15 repos) · +50% au-delà (1h = 1h30).<br>
+    <strong>Fabian (39h) :</strong> HS à partir de 39h01, même barème de majoration.<br>
+    <strong>Anthony, Fred, Jonovan (42h forfait) :</strong> suivi informatif — 1h supp = 1h de repos.<br>
+    <strong>Maxima légaux :</strong> 10h/jour · 48h/semaine · délai de prise de RCR : 2 mois après acquisition (art. D3121-18 CT).
+  </div></div>`;
+
+  // ── SECTION MENSUEL ──
+  const now2=new Date();
+  html+=`<div id="hs-mensuel" class="h-section">`;
+  const moisNoms=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  let mSelOpts='',ySelOpts='';
+  moisNoms.forEach((m,i)=>{mSelOpts+=`<option value="${i}"${i===now2.getMonth()?' selected':''}>${m}</option>`;});
+  for(let y=now2.getFullYear()-1;y<=now2.getFullYear()+1;y++){ySelOpts+=`<option value="${y}"${y===now2.getFullYear()?' selected':''}>${y}</option>`;}
+  html+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+    <select class="h-sel" id="hSelMonth" onchange="hRenderMensuel()">${mSelOpts}</select>
+    <select class="h-sel" id="hSelYear" onchange="hRenderMensuel()">${ySelOpts}</select>
+  </div>`;
+  html+=`<div class="h-card"><div style="overflow-x:auto"><table class="h-table" id="hMensuelTable">
+    <thead><tr><th>Salarié</th><th>H contrat (est.)</th><th>H travaillées</th><th>HS brutes</th><th>RCR acquis (mois)</th><th>Solde cumulé</th><th>Alerte légale</th></tr></thead>
+    <tbody id="hMensuelBody"><tr><td colspan="7" style="color:var(--muted);font-style:italic;padding:16px">Cliquez sur le mois voulu pour calculer…</td></tr></tbody>
+  </table></div></div></div>`;
+
+  // ── SECTION SOLDES ──
+  html+=`<div id="hs-soldes" class="h-section">`;
+  html+=`<div class="h-metrics">`;
+  H_TEAM.forEach(p=>{
+    const rcr=totalRCR[p.id]||0;
+    const cls=rcr>0?'#86efac':rcr<0?'#fca5a5':mn[0];
+    const txtColor=rcr>0?'#86efac':rcr===0?'var(--muted)':'#fca5a5';
+    const pct=Math.min(100,rcr/20*100);
+    html+=`<div class="h-metric">
+      <div class="val" style="color:${txtColor}">${rcr>0?'+':''}${rcr}h</div>
+      <div class="lbl">${p.name}</div>
+      <div class="sub" style="color:var(--muted)">${p.contrat}h · ${p.role}</div>
+      <div class="h-prog"><div class="h-prog-fill" style="width:${pct}%;background:${rcr>0?'var(--teal)':'var(--gray)'}"></div></div>
+    </div>`;
+  });
+  html+=`</div>`;
+
+  // Historique des semaines
+  const allWeeks=Object.keys(hData).sort();
+  html+=`<div class="h-card"><div class="h-card-hdr"><span class="h-card-title">Historique semaine par semaine</span></div><div style="overflow-x:auto"><table class="h-table"><thead><tr><th>Semaine</th>`;
+  H_TEAM.forEach(p=>{html+=`<th><span class="h-person-dot" style="background:${p.color}"></span>${p.name}</th>`;});
+  html+=`</tr></thead><tbody>`;
+  if(allWeeks.length===0){
+    html+=`<tr><td colspan="${H_TEAM.length+1}" style="color:var(--muted);font-style:italic;padding:16px">Aucune saisie pour le moment — commencez par l'onglet "Saisie semaine".</td></tr>`;
+  }else{
+    allWeeks.forEach(w=>{
+      html+=`<tr><td style="font-family:var(--mono);font-size:11px">S${w.split('W')[1]} ${w.split('W')[0]}</td>`;
+      H_TEAM.forEach(p=>{
+        const tot=hTotalSem(w,p.id);
+        const hs=Math.max(0,tot-p.contrat);
+        const rcr=hCalcRCR(hs,p.contrat);
+        html+=`<td>${rcr>0?`<span class="h-solde-pos">+${rcr}h</span>`:tot>0?`<span class="h-solde-zero">—</span>`:''}</td>`;
+      });
+      html+=`</tr>`;
+    });
+  }
+  html+=`</tbody></table></div></div>`;
+  html+=`<div class="h-note"><strong>Rappel légal :</strong> Le solde RCR accumulé doit être pris dans un délai maximum de <strong>2 mois</strong> après acquisition (article D3121-18 du Code du travail). Planifiez les récupérations dans l'onglet Planning.</div>`;
+  html+=`</div>`;
+
+  document.getElementById('mainContent').innerHTML=html;
+}
+
+function hRenderMensuel(){
+  const selM=parseInt(document.getElementById('hSelMonth').value);
+  const selY=parseInt(document.getElementById('hSelYear').value);
+  const body=document.getElementById('hMensuelBody');
+  if(!body)return;
+  body.innerHTML='';
+  const allWeeks=Object.keys(hData);
+
+  H_TEAM.forEach(p=>{
+    let totH=0,totHS=0,alertMax=false;
+    allWeeks.forEach(wk=>{
+      const yr=parseInt(wk.split('W')[0]);
+      const wkn=parseInt(wk.split('W')[1]);
+      const d=hWeekFromNum(yr,wkn);
+      if(d.getMonth()===selM&&d.getFullYear()===selY){
+        const t=hTotalSem(wk,p.id);
+        totH+=t;
+        totHS+=Math.max(0,t-p.contrat);
+        if(hCheckMaxDay(wk,p.id)||t>48)alertMax=true;
+      }
+    });
+    const hContrat=Math.round(p.contrat*4.33);
+    const rcr=hCalcRCR(totHS,p.contrat);
+    // solde cumulé tous mois confondus
+    let soldeTotal=0;
+    allWeeks.forEach(wk=>{const t=hTotalSem(wk,p.id);const hs=Math.max(0,t-p.contrat);soldeTotal+=hCalcRCR(hs,p.contrat);});
+    soldeTotal=+soldeTotal.toFixed(2);
+    const alertBadge=alertMax?`<span class="h-badge h-badge-danger">Dépassement</span>`:totH>0?`<span class="h-badge h-badge-ok">RAS</span>`:'—';
+    body.innerHTML+=`<tr>
+      <td><span class="h-person-dot" style="background:${p.color}"></span><strong>${p.name}</strong><br><span style="font-size:10px;color:var(--muted)">${p.role}</span></td>
+      <td style="font-family:var(--mono)">${hContrat}h est.</td>
+      <td style="font-family:var(--mono)">${totH>0?+totH.toFixed(1)+'h':'—'}</td>
+      <td style="font-family:var(--mono);color:#fcd34d">${totHS>0?'+'+totHS.toFixed(1)+'h':'—'}</td>
+      <td style="font-family:var(--mono);color:#86efac">${rcr>0?'+'+rcr.toFixed(2)+'h RCR':'—'}</td>
+      <td style="font-family:var(--mono);color:${soldeTotal>0?'#86efac':'var(--muted)'}">${soldeTotal>0?'+':''}<strong>${soldeTotal}h</strong></td>
+      <td>${alertBadge}</td>
+    </tr>`;
+  });
+}
 
 window.addDays=addDays;
 selectedDay=today();
