@@ -1229,12 +1229,12 @@ body::before {
         <div class="sub">Accès direct supervision →</div>
       </div>
     </a>
-    <a class="kpi-card kpi-link" href="https://app.crisp.chat/initiate/login/" target="_blank">
-      <div class="kpi-icon" style="background:rgba(220,38,38,.10)">🎧</div>
+    <a class="kpi-card kpi-link" href="https://outlook.office.com/mail/support@sudwifi.fr/" target="_blank">
+      <div class="kpi-icon" style="background:rgba(220,38,38,.10)">📧</div>
       <div class="kpi-text">
         <div class="label">support clients</div>
-        <div class="kpi-title">Crisp Pro</div>
-        <div class="sub">Tickets & conversations →</div>
+        <div class="kpi-title">support@sudwifi.fr</div>
+        <div class="sub">Boîte mail partagée →</div>
       </div>
     </a>
     <a class="kpi-card kpi-link" href="https://app.crisp.chat/initiate/login/" target="_blank">
@@ -1270,7 +1270,7 @@ body::before {
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
           <span class="pavé-badge" id="badgeSemaine">🔵 Semaine —</span>
-          <button class="pavé-badge" id="btnNouvelleTache" style="cursor:pointer;color:var(--blue1);border-color:rgba(0,126,177,.25);background:rgba(0,126,177,.07);font-family:var(--sub);font-weight:600" onclick="openNewTaskModal();event.stopPropagation()">+ Nouvelle tâche</button>
+          <button class="pavé-badge" id="btnNouvelleTache" style="cursor:pointer;color:var(--blue1);border-color:rgba(0,126,177,.25);background:rgba(0,126,177,.07);font-family:var(--sub);font-weight:600" onclick="window.open('https://sudwifi.github.io/deviseur/sudwifi-planning-v2.html','_blank');event.stopPropagation()">+ Nouvelle tâche</button>
         </div>
       </div>
       <div class="pavé-body">
@@ -1363,37 +1363,37 @@ body::before {
             <div class="pavé-desc">État du parc en temps réel</div>
           </div>
         </div>
-        <span class="pavé-badge" style="color:var(--green);border-color:rgba(22,163,74,.2);background:rgba(22,163,74,.07)">42/47 OK</span>
+        <span class="pavé-badge" style="color:var(--green);border-color:rgba(22,163,74,.2);background:rgba(22,163,74,.07)">temps réel</span>
       </div>
       <div class="pavé-body">
         <div class="status-list">
-          <div class="status-item">
+          <div class="status-item" onclick="window.open('https://sudwifi.github.io/deviseur/noc.html','_blank');event.stopPropagation()" style="cursor:pointer">
             <div class="status-left">
               <div class="status-dot ok"></div>
-              <div><div class="status-name">Camping Vidaresse</div><div class="status-sub">Omada · 12 bornes</div></div>
+              <div><div class="status-name">Bornes WiFi Campings</div><div class="status-sub">Plans de sites · ping bornes Omada</div></div>
             </div>
-            <div class="status-right"><span class="latency">12ms</span><span class="tag ok">UP</span></div>
+            <div class="status-right"><span class="tag ok">NOC</span></div>
           </div>
-          <div class="status-item">
-            <div class="status-left">
-              <div class="status-dot warn"></div>
-              <div><div class="status-name">Tikayan Les Cigales</div><div class="status-sub">Portail captif instable</div></div>
-            </div>
-            <div class="status-right"><span class="latency">340ms</span><span class="tag warn">ALERTE</span></div>
-          </div>
-          <div class="status-item">
-            <div class="status-left">
-              <div class="status-dot error"></div>
-              <div><div class="status-name">Camping Miremer</div><div class="status-sub">Signal faible zone premium</div></div>
-            </div>
-            <div class="status-right"><span class="latency">—</span><span class="tag error">SAV</span></div>
-          </div>
-          <div class="status-item">
+          <div class="status-item" onclick="window.open('https://sudwifi.github.io/deviseur/telmat.html','_blank');event.stopPropagation()" style="cursor:pointer">
             <div class="status-left">
               <div class="status-dot ok"></div>
-              <div><div class="status-name">Hôtellerie Kouros</div><div class="status-sub">Omada · 8 bornes</div></div>
+              <div><div class="status-name">Portails Telmat</div><div class="status-sub">78 interfaces d'administration</div></div>
             </div>
-            <div class="status-right"><span class="latency">8ms</span><span class="tag ok">UP</span></div>
+            <div class="status-right"><span class="tag info">ACCÈS</span></div>
+          </div>
+          <div class="status-item" onclick="window.open('https://sudwifi.github.io/deviseur/routeurs-tg.html','_blank');event.stopPropagation()" style="cursor:pointer">
+            <div class="status-left">
+              <div class="status-dot ok"></div>
+              <div><div class="status-name">Routeurs TG</div><div class="status-sub">Passerelles clients · ping parallèle</div></div>
+            </div>
+            <div class="status-right"><span class="tag info">ACCÈS</span></div>
+          </div>
+          <div class="status-item" onclick="openModal('noc');event.stopPropagation()" style="cursor:pointer">
+            <div class="status-left">
+              <div class="status-dot ok"></div>
+              <div><div class="status-name">VoIP · Vidéosurveillance</div><div class="status-sub">LucyPulse · Hikvision · VIGI · Synology</div></div>
+            </div>
+            <div class="status-right"><span class="tag info">NOC</span></div>
           </div>
         </div>
       </div>
@@ -1414,31 +1414,32 @@ body::before {
             <div class="pavé-desc">Devis · Relances · Axonaut</div>
           </div>
         </div>
-        <span class="pavé-badge">7 actions</span>
+        <span class="pavé-badge">Axonaut</span>
       </div>
       <div class="pavé-body">
         <div class="metric-grid">
           <div class="metric-card">
             <div class="metric-label">devis en cours</div>
-            <div class="metric-value" style="color:var(--blue1)">4</div>
-            <div class="metric-trend up">↑ 2 cette semaine</div>
+            <div class="metric-value" style="color:var(--blue1)">—</div>
+            <div class="metric-trend">via Axonaut</div>
           </div>
           <div class="metric-card">
             <div class="metric-label">relances à faire</div>
-            <div class="metric-value" style="color:var(--orange)">6</div>
-            <div class="metric-trend">dont 2 VIP</div>
+            <div class="metric-value" style="color:var(--orange)">—</div>
+            <div class="metric-trend">via Axonaut</div>
           </div>
           <div class="metric-card">
             <div class="metric-label">CA signé / mois</div>
-            <div class="metric-value" style="color:var(--green)">18k</div>
-            <div class="metric-trend up">↑ vs mois dernier</div>
+            <div class="metric-value" style="color:var(--green)">—</div>
+            <div class="metric-trend">via Axonaut</div>
           </div>
           <div class="metric-card">
             <div class="metric-label">prospects chauds</div>
-            <div class="metric-value">3</div>
-            <div class="metric-trend">à rappeler J+1</div>
+            <div class="metric-value">—</div>
+            <div class="metric-trend">via Axonaut</div>
           </div>
         </div>
+        <div style="margin-top:10px;font-family:var(--sub);font-size:11px;color:var(--muted);font-weight:500;text-align:center">Compteurs temps réel à venir — connexion API Axonaut</div>
       </div>
       <div class="pavé-open">
         <button class="open-btn" onclick="window.open('https://axonaut.com/fr/login','_blank');event.stopPropagation()">Ouvrir Business →</button>
@@ -1455,90 +1456,40 @@ body::before {
             <div class="pavé-desc">Commandes · Entrées/sorties · Alertes seuil</div>
           </div>
         </div>
-        <span class="pavé-badge" style="color:var(--orange);border-color:rgba(214,113,26,.2);background:rgba(214,113,26,.07)">2 alertes</span>
+        <span class="pavé-badge" id="achatsBadge">—</span>
       </div>
       <div class="pavé-body">
-        <div class="stock-list">
-          <div class="stock-item">
-            <div class="stock-bar-wrap">
-              <div class="stock-name">AP EAP670 Outdoor</div>
-              <div class="stock-bar-bg"><div class="stock-bar-fill ok" style="width:70%"></div></div>
-            </div>
-            <div class="stock-count">7 / 10</div>
-            <span class="tag ok">OK</span>
-          </div>
-          <div class="stock-item">
-            <div class="stock-bar-wrap">
-              <div class="stock-name">Switch TL-SG108E</div>
-              <div class="stock-bar-bg"><div class="stock-bar-fill warn" style="width:20%"></div></div>
-            </div>
-            <div class="stock-count">1 / 5</div>
-            <span class="tag warn">BAS</span>
-          </div>
-          <div class="stock-item">
-            <div class="stock-bar-wrap">
-              <div class="stock-name">Câble FTP Cat6 (m)</div>
-              <div class="stock-bar-bg"><div class="stock-bar-fill ok" style="width:55%"></div></div>
-            </div>
-            <div class="stock-count">55 / 100</div>
-            <span class="tag ok">OK</span>
-          </div>
-          <div class="stock-item">
-            <div class="stock-bar-wrap">
-              <div class="stock-name">Injecteur PoE 48V</div>
-              <div class="stock-bar-bg"><div class="stock-bar-fill crit" style="width:0%"></div></div>
-            </div>
-            <div class="stock-count">0 / 4</div>
-            <span class="tag error">RUPTURE</span>
-          </div>
-        </div>
+        <div class="stock-list" id="stockPaveList"></div>
       </div>
       <div class="pavé-open">
         <button class="open-btn" onclick="window.open('https://sudwifi.github.io/deviseur/sudwifi-achats.html','_blank');event.stopPropagation()">Ouvrir Achats & Stock →</button>
       </div>
     </div>
 
-    <!-- 5. CRISP PRO -->
+    <!-- 5. SUPPORT CLIENTS -->
     <div class="pavé pavé-crisp-pro" onclick="openModal('crisp-pro')">
       <div class="pavé-header">
         <div class="pavé-title-block">
           <div class="pavé-icon crisp-pro">🎧</div>
           <div>
-            <div class="pavé-name">Crisp Pro</div>
-            <div class="pavé-desc">Support clients professionnels</div>
+            <div class="pavé-name">Support Clients</div>
+            <div class="pavé-desc">Boîte mail partagée · Tickets Axonaut</div>
           </div>
         </div>
-        <span class="pavé-badge" style="color:var(--red);border-color:rgba(220,38,38,.2);background:rgba(220,38,38,.06)">9 ouvertes</span>
       </div>
       <div class="pavé-body">
-        <div class="crisp-stats">
-          <div class="crisp-stat"><div class="n" style="color:var(--red)">3</div><div class="l">urgentes</div></div>
-          <div class="crisp-stat"><div class="n" style="color:var(--orange)">4</div><div class="l">en attente</div></div>
-          <div class="crisp-stat"><div class="n" style="color:var(--green)">2</div><div class="l">résolues</div></div>
-        </div>
-        <div class="conv-list">
-          <div class="conv-item">
-            <div class="conv-avatar" style="background:rgba(220,38,38,.12);color:#dc2626">MR</div>
-            <div><div class="conv-name">Miremer — SAV signal</div><div style="font-family:var(--sub);font-size:10px;color:var(--muted);font-weight:500">Fabian assigné</div></div>
-            <span class="tag error">URGENT</span>
-            <div class="conv-time">09:14</div>
-          </div>
-          <div class="conv-item">
-            <div class="conv-avatar" style="background:rgba(214,113,26,.12);color:#d6711a">TK</div>
-            <div><div class="conv-name">Tikayan — portail captif</div><div style="font-family:var(--sub);font-size:10px;color:var(--muted);font-weight:500">Non assigné</div></div>
-            <span class="tag warn">ALERTE</span>
-            <div class="conv-time">08:32</div>
-          </div>
-          <div class="conv-item">
-            <div class="conv-avatar" style="background:rgba(0,126,177,.12);color:#007eb1">BP</div>
-            <div><div class="conv-name">Bonporteau — RDV terrain</div><div style="font-family:var(--sub);font-size:10px;color:var(--muted);font-weight:500">Anthony assigné</div></div>
-            <span class="tag info">PLANIFIÉ</span>
-            <div class="conv-time">hier</div>
-          </div>
+        <div class="modal-links">
+          <a class="modal-link" href="https://outlook.office.com/mail/support@sudwifi.fr/" target="_blank" onclick="event.stopPropagation()">
+            <div class="modal-link-left"><span class="modal-link-icon">📧</span><div><div class="modal-link-name">support@sudwifi.fr</div><div class="modal-link-sub">Boîte partagée · Outlook webmail</div></div></div><span>↗</span>
+          </a>
+          <a class="modal-link" href="https://axonaut.com/fr/login" target="_blank" onclick="event.stopPropagation()">
+            <div class="modal-link-left"><span class="modal-link-icon">📋</span><div><div class="modal-link-name">Suivi tickets</div><div class="modal-link-sub">Axonaut · SAV</div></div></div><span>↗</span>
+          </a>
         </div>
       </div>
       <div class="pavé-open">
-        <button class="open-btn" onclick="window.open('https://app.crisp.chat/initiate/login/','_blank');event.stopPropagation()">Ouvrir Crisp Pro →</button>
+        <button class="open-btn" onclick="window.open('https://outlook.office.com/mail/support@sudwifi.fr/','_blank');event.stopPropagation()">Boîte support →</button>
+        <button class="open-btn" onclick="window.open('https://axonaut.com/fr/login','_blank');event.stopPropagation()">Suivi tickets Axonaut →</button>
       </div>
     </div>
 
@@ -1552,34 +1503,15 @@ body::before {
             <div class="pavé-desc">Support campers · Bot IA</div>
           </div>
         </div>
-        <span class="pavé-badge">31 conv.</span>
+        <span class="pavé-badge">Crisp</span>
       </div>
       <div class="pavé-body">
         <div class="crisp-stats">
-          <div class="crisp-stat"><div class="n">31</div><div class="l">total</div></div>
-          <div class="crisp-stat"><div class="n" style="color:var(--green)">24</div><div class="l">bot résolu</div></div>
-          <div class="crisp-stat"><div class="n" style="color:var(--orange)">7</div><div class="l">humain requis</div></div>
+          <div class="crisp-stat"><div class="n">—</div><div class="l">total</div></div>
+          <div class="crisp-stat"><div class="n" style="color:var(--green)">—</div><div class="l">bot résolu</div></div>
+          <div class="crisp-stat"><div class="n" style="color:var(--orange)">—</div><div class="l">humain requis</div></div>
         </div>
-        <div class="conv-list">
-          <div class="conv-item">
-            <div class="conv-avatar" style="background:rgba(18,170,204,.12);color:#12aacc">V1</div>
-            <div><div class="conv-name">Vidaresse — code Wifi</div><div style="font-family:var(--sub);font-size:10px;color:var(--muted);font-weight:500">Bot → résolu</div></div>
-            <span class="tag ok">AUTO</span>
-            <div class="conv-time">11:02</div>
-          </div>
-          <div class="conv-item">
-            <div class="conv-avatar" style="background:rgba(0,126,177,.12);color:#007eb1">KC</div>
-            <div><div class="conv-name">Kouros — débit lent</div><div style="font-family:var(--sub);font-size:10px;color:var(--muted);font-weight:500">Escalade humain</div></div>
-            <span class="tag warn">ESCALADE</span>
-            <div class="conv-time">10:47</div>
-          </div>
-          <div class="conv-item">
-            <div class="conv-avatar" style="background:rgba(18,170,204,.12);color:#12aacc">BP</div>
-            <div><div class="conv-name">Bonporteau — connexion</div><div style="font-family:var(--sub);font-size:10px;color:var(--muted);font-weight:500">Bot → résolu</div></div>
-            <span class="tag ok">AUTO</span>
-            <div class="conv-time">10:21</div>
-          </div>
-        </div>
+        <div style="font-family:var(--sub);font-size:11px;color:var(--muted);font-weight:500;text-align:center;padding:6px 0 2px">Compteurs temps réel à venir — connexion API Crisp</div>
       </div>
       <div class="pavé-open">
         <button class="open-btn" onclick="window.open('https://app.crisp.chat/initiate/login/','_blank');event.stopPropagation()">Ouvrir Crisp Vacanciers →</button>
@@ -1596,16 +1528,16 @@ body::before {
             <div class="pavé-desc">Référentiel sites · Fiches clients · Docs</div>
           </div>
         </div>
-        <span class="pavé-badge" style="color:var(--blue2);border-color:rgba(18,170,204,.2);background:rgba(18,170,204,.07)">47 sites</span>
+        <span class="pavé-badge" style="color:var(--blue2);border-color:rgba(18,170,204,.2);background:rgba(18,170,204,.07)">185 fiches</span>
       </div>
       <div class="pavé-body">
-        <div class="parc-grid">
-          <div class="site-card"><div class="site-dot ok"></div><div><div class="site-name">Camping Vidaresse</div><div class="site-type">camping · premium</div></div></div>
-          <div class="site-card"><div class="site-dot error"></div><div><div class="site-name">Camping Miremer</div><div class="site-type">camping · SAV actif</div></div></div>
-          <div class="site-card"><div class="site-dot warn"></div><div><div class="site-name">Tikayan Les Cigales</div><div class="site-type">résidence · alerte</div></div></div>
-          <div class="site-card"><div class="site-dot ok"></div><div><div class="site-name">Hôtellerie Kouros</div><div class="site-type">hôtel · actif</div></div></div>
-          <div class="site-card"><div class="site-dot ok"></div><div><div class="site-name">Camping Bonporteau</div><div class="site-type">camping · chantier</div></div></div>
-          <div class="site-card"><div class="site-dot ok"></div><div><div class="site-name">+ 42 autres sites</div><div class="site-type">voir Google Sheets</div></div></div>
+        <div class="modal-links">
+          <a class="modal-link" href="https://docs.google.com/spreadsheets/d/1bSDZO4nDU1pTpmeYOwHseP_I-1A7lXLVm8mUBsesBko/edit?gid=1444419048#gid=1444419048" target="_blank" onclick="event.stopPropagation()">
+            <div class="modal-link-left"><span class="modal-link-icon">📊</span><div><div class="modal-link-name">Base Parc consolidée</div><div class="modal-link-sub">Google Sheets · 185 fiches clients · 37 colonnes</div></div></div><span>↗</span>
+          </a>
+          <a class="modal-link" href="https://axonaut.com/fr/login" target="_blank" onclick="event.stopPropagation()">
+            <div class="modal-link-left"><span class="modal-link-icon">📋</span><div><div class="modal-link-name">Fiches clients Axonaut</div><div class="modal-link-sub">CRM · contrats · facturation</div></div></div><span>↗</span>
+          </a>
         </div>
       </div>
       <div class="pavé-open">
@@ -1686,10 +1618,11 @@ const modals = {
     </div>`
   },
   'crisp-pro': {
-    title: '🎧 Crisp Pro',
-    body: `<p>Support clients professionnels. Tickets, conversations urgentes et escalades techniques.</p>
+    title: '🎧 Support Clients',
+    body: `<p>Support clients professionnels : boîte mail partagée <strong>support@sudwifi.fr</strong> et suivi des tickets dans Axonaut.</p>
     <div class="modal-links">
-      <a class="modal-link" href="https://app.crisp.chat/initiate/login/" target="_blank"><div class="modal-link-left"><span class="modal-link-icon">💬</span><div><div class="modal-link-name">Crisp Pro</div><div class="modal-link-sub">Support clients professionnels</div></div></div><span>↗</span></a>
+      <a class="modal-link" href="https://outlook.office.com/mail/support@sudwifi.fr/" target="_blank"><div class="modal-link-left"><span class="modal-link-icon">📧</span><div><div class="modal-link-name">Boîte support — Outlook webmail</div><div class="modal-link-sub">support@sudwifi.fr · boîte partagée</div></div></div><span>↗</span></a>
+      <a class="modal-link" href="mailto:support@sudwifi.fr"><div class="modal-link-left"><span class="modal-link-icon">✉️</span><div><div class="modal-link-name">Écrire au support</div><div class="modal-link-sub">Ouvrir dans l'application mail</div></div></div><span>↗</span></a>
       <a class="modal-link" href="https://axonaut.com/fr/login" target="_blank"><div class="modal-link-left"><span class="modal-link-icon">📋</span><div><div class="modal-link-name">Axonaut</div><div class="modal-link-sub">Suivi tickets SAV</div></div></div><span>↗</span></a>
     </div>`
   },
@@ -1710,10 +1643,10 @@ const modals = {
   },
   urgences: {
     title: '⚠️ Urgences actives',
-    body: `<div class="modal-links">
-      <a class="modal-link" href="#" style="border-color:rgba(220,38,38,.3)"><div class="modal-link-left"><span class="modal-link-icon">🔴</span><div><div class="modal-link-name">SAV Miremer — Signal faible zone premium</div><div class="modal-link-sub">Assigné Fabian · Ouvert 08:14</div></div></div><span class="tag error">CRITIQUE</span></a>
-      <a class="modal-link" href="#" style="border-color:rgba(220,38,38,.3)"><div class="modal-link-left"><span class="modal-link-icon">🔴</span><div><div class="modal-link-name">Tikayan — Portail captif instable</div><div class="modal-link-sub">Non assigné · Ouvert 07:55</div></div></div><span class="tag error">CRITIQUE</span></a>
-      <a class="modal-link" href="#" style="border-color:rgba(214,113,26,.25)"><div class="modal-link-left"><span class="modal-link-icon">🟡</span><div><div class="modal-link-name">Bonporteau — Switch manquant avant départ</div><div class="modal-link-sub">Assigné Fabian · À traiter</div></div></div><span class="tag warn">PRIORITAIRE</span></a>
+    body: `<p>Aucune urgence enregistrée pour le moment. Les urgences remonteront ici lorsqu'elles seront connectées aux sources réelles (NOC, boîte support, Axonaut).</p>
+    <div class="modal-links">
+      <a class="modal-link" href="https://outlook.office.com/mail/support@sudwifi.fr/" target="_blank"><div class="modal-link-left"><span class="modal-link-icon">📧</span><div><div class="modal-link-name">Boîte support</div><div class="modal-link-sub">support@sudwifi.fr · Outlook</div></div></div><span>↗</span></a>
+      <a class="modal-link" href="https://axonaut.com/fr/login" target="_blank"><div class="modal-link-left"><span class="modal-link-icon">📋</span><div><div class="modal-link-name">Tickets SAV</div><div class="modal-link-sub">Axonaut</div></div></div><span>↗</span></a>
     </div>`
   },
   profil: {
@@ -1970,382 +1903,226 @@ function getMondayOf(date) {
   return d;
 }
 
-// ── Structure tâche enrichie ──
-// { label, color, responsable, equipe:[], client:'', priorite:'normale', description:'' }
-// Équipes : 'ops', 'adv', 'dir', 'coord'
-// Colors  : blue(chantier), red(SAV), purple(achats), green(business), gray(admin), yellow(com), orange(réunion)
+// ══════════════════════════════════════════════
+// REMONTÉE DES TÂCHES — PLANNING V2 (consultation)
+// Sources : localStorage 'sw_tasks_v2' (partagé avec
+// sudwifi-planning-v2.html, même origine GitHub Pages)
+// + synchronisation Google Sheets via Apps Script (JSONP)
+// ══════════════════════════════════════════════
 
-const TASKS = {
-  // Structure : TASKS[numSemaine][cléPersonne][jourIndex] = [{label, color, responsable, equipe, client, priorite}]
-  // Clés : 'anthony','fabian','jonovan','fred','adv'(Ambre),'dir'(Virginie),'stephane','coord'(Amanda)
-  // Exemple semaine courante — à compléter semaine par semaine
-  23: {
-    anthony: [
-      [{label:'Vidaresse', color:'blue', responsable:'Anthony', equipe:['Fabian'], client:'Camping Vidaresse', priorite:'haute'}],
-      [{label:'Kouros', color:'blue', responsable:'Anthony', equipe:[], client:'Hôtellerie Kouros', priorite:'normale'}],
-      [],
-      [{label:'Bonporteau', color:'blue', responsable:'Anthony', equipe:['Jonovan'], client:'Camping Bonporteau', priorite:'normale'}],
-      [{label:'CR interventions', color:'gray', responsable:'Anthony', equipe:[], priorite:'basse'}],
-    ],
-    fabian: [
-      [{label:'SAV Miremer', color:'red', responsable:'Fabian', equipe:[], client:'Camping Miremer', priorite:'urgente'}],
-      [],
-      [{label:'SAV Tikayan', color:'red', responsable:'Fabian', equipe:[], client:'Tikayan Les Cigales', priorite:'urgente'}],
-      [],
-      [],
-    ],
-    jonovan: [
-      [],
-      [{label:'Kouros câblage', color:'blue', responsable:'Jonovan', equipe:[], client:'Hôtellerie Kouros', priorite:'normale'}],
-      [],
-      [{label:'Bonporteau', color:'blue', responsable:'Jonovan', equipe:['Anthony'], client:'Camping Bonporteau', priorite:'normale'}],
-      [],
-    ],
-    fred: [
-      [],
-      [],
-      [{label:'SAV Pansard', color:'red', responsable:'Fred', equipe:[], client:'Camping Pansard', priorite:'normale'}],
-      [],
-      [],
-    ],
-    adv: [
-      [{label:'3 commandes', color:'purple', responsable:'Ambre', equipe:[], priorite:'normale'}],
-      [{label:'Factu SAV', color:'gray', responsable:'Ambre', equipe:[], priorite:'normale'}],
-      [{label:'Relance fourn.', color:'purple', responsable:'Ambre', equipe:[], priorite:'normale'}],
-      [{label:'Axonaut', color:'gray', responsable:'Ambre', equipe:[], priorite:'basse'}],
-      [{label:'Relances', color:'green', responsable:'Ambre', equipe:[], priorite:'normale'}],
-    ],
-    dir: [
-      [{label:'Relances VIP', color:'green', responsable:'Virginie', equipe:[], priorite:'haute'}],
-      [{label:'2 devis', color:'green', responsable:'Virginie', equipe:[], priorite:'haute'}],
-      [{label:'Suivi cash', color:'gray', responsable:'Virginie', equipe:[], priorite:'normale'}],
-      [{label:'Closing', color:'green', responsable:'Virginie', equipe:[], priorite:'haute'}],
-      [{label:'Pilotage', color:'gray', responsable:'Virginie', equipe:[], priorite:'normale'}],
-    ],
-    stephane: [
-      [],
-      [],
-      [],
-      [{label:'Point direction', color:'orange', responsable:'Stéphane', equipe:['Virginie'], priorite:'normale', description:'RDV hebdo'}],
-      [],
-    ],
-    coord: [
-      [{label:'Visuels', color:'yellow', responsable:'Amanda', equipe:[], priorite:'normale'}],
-      [],
-      [{label:'LinkedIn', color:'yellow', responsable:'Amanda', equipe:[], priorite:'basse'}],
-      [{label:'CMS', color:'yellow', responsable:'Amanda', equipe:[], priorite:'normale'}],
-      [{label:'Newsletter', color:'orange', responsable:'Amanda', equipe:[], priorite:'normale'}],
-    ],
-  },
-};
+const PLANNING_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbye5ghdeGfjeAaQGLkRgTDzGVGaXkvntKXL1VDcxwRQ5oxaGgHzJGNefm68KDT_ZXZh/exec';
 
-// Tâches ajoutées en session (non persistées)
-let sessionTasks = {};
+// clé "team" du planning V2 → id de ligne du mini-planning
+const TEAM_ROW_MAP = { anthony:'anthony', fabian:'fabian', jonovan:'jonovan', fred:'frederic', frederic:'frederic', ambre:'adv', virginie:'dir', stephane:'stephane', amanda:'coord' };
 
-const PRIORITY_COLORS = { urgente:'red', haute:'orange', normale:'blue', basse:'gray' };
-const TYPE_COLORS = {
-  'Chantier':'blue','SAV':'red','Achats':'purple','Business':'green',
-  'Admin':'gray','Communication':'yellow','Réunion / Orga interne':'orange',
-};
+const TYPE_COLOR_MAP  = { chantier:'blue', sav:'red', achats:'purple', business:'green', admin:'gray', marketing:'yellow', com:'yellow', communication:'yellow', reunion:'orange' };
+const TYPE_LABELS_MAP = { chantier:'Chantier', sav:'SAV', achats:'Achats', business:'Business', admin:'Admin', marketing:'Communication', com:'Communication', communication:'Communication', reunion:'Réunion / Orga interne' };
 
-function renderTask(t) {
-  const resp = t.responsable ? `<span style="font-size:9px;opacity:.8">${t.responsable[0]}</span>` : '';
-  return `<div class="mini-task ${t.color}" onclick="openTaskDetail(event, ${JSON.stringify(t).replace(/"/g,'&quot;')})" style="cursor:pointer" title="${t.responsable||''}${t.equipe&&t.equipe.length?' + '+t.equipe.join(', '):''}">${t.label}${t.responsable?'<span style=\'float:right;font-size:9px;opacity:.7;margin-left:3px\'>' + t.responsable.split(' ')[0][0] + '</span>':''}</div>`;
+let planningTasks = [];
+
+function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function fmtDayKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function planningTaskOnDay(t, ds){
+  const s=(t.date_start||t.date||'').substring(0,10);
+  const e=(t.date_end||s).substring(0,10);
+  return s && ds>=s && ds<=e;
 }
 
-function buildPlanning() {
-  const now  = new Date();
-  const week = getISOWeek(now);
-  const mon  = getMondayOf(now);
+function loadPlanningLocal(){
+  try{ const raw = localStorage.getItem('sw_tasks_v2'); planningTasks = raw ? JSON.parse(raw) : []; }
+  catch(e){ planningTasks = []; }
+  if(!Array.isArray(planningTasks)) planningTasks = [];
+}
 
-  document.getElementById('badgeSemaine').textContent = `🔵 Semaine ${week}`;
+function syncPlanningFromSheets(){
+  if(!PLANNING_APPS_SCRIPT_URL) return;
+  const old = document.getElementById('dash_jsonp'); if(old) old.remove();
+  window._dashJsonpCb = function(data){
+    if(data && Array.isArray(data.tasks)){
+      planningTasks = data.tasks.map(t => ({...t,
+        date_start: String(t.date_start||t.date||'').substring(0,10),
+        date_end:   String(t.date_end||t.date_start||t.date||'').substring(0,10)
+      }));
+      try{ localStorage.setItem('sw_tasks_v2', JSON.stringify(planningTasks)); }catch(e){}
+      buildPlanning();
+    }
+  };
+  const s = document.createElement('script');
+  s.id  = 'dash_jsonp';
+  s.src = PLANNING_APPS_SCRIPT_URL + '?action=getTasks&callback=_dashJsonpCb';
+  s.onerror = () => {};
+  document.head.appendChild(s);
+}
 
+function renderMiniTask(t){
+  const color = TYPE_COLOR_MAP[(t.type||'').toLowerCase()] || 'blue';
+  const done  = (t.status === 'Terminé' || t.status === 'Fait') ? 'opacity:.45;text-decoration:line-through;' : '';
+  const owner = t.owner ? `<span style="float:right;font-size:9px;opacity:.7;margin-left:3px">${escHtml(String(t.owner).charAt(0))}</span>` : '';
+  return `<div class="mini-task ${color}" onclick="openTaskDetail(event,'${escHtml(t.id)}')" style="cursor:pointer;${done}" title="${escHtml(t.title)}${t.owner ? ' · ' + escHtml(t.owner) : ''}${t.site ? ' · ' + escHtml(t.site) : ''}">${escHtml(t.title)}${owner}</div>`;
+}
+
+function buildPlanning(){
+  const now = new Date(), week = getISOWeek(now), mon = getMondayOf(now);
   const joursFr  = ['Lun','Mar','Mer','Jeu','Ven'];
   const monthsFr = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
   const todayStr = now.toDateString();
+  const dayKeys  = [];
 
-  for (let i = 0; i < 5; i++) {
-    const d = new Date(mon);
-    d.setDate(mon.getDate() + i);
+  for(let i = 0; i < 5; i++){
+    const d2 = new Date(mon); d2.setDate(mon.getDate() + i);
+    dayKeys.push(fmtDayKey(d2));
     const hdr = document.getElementById(`dayHdr${i}`);
-    const isToday = d.toDateString() === todayStr;
-    const monthLabel = d.getMonth() !== now.getMonth() ? ` ${monthsFr[d.getMonth()]}` : '';
-    hdr.innerHTML = `<strong>${joursFr[i]} ${d.getDate()}${monthLabel}</strong>`;
-    if (isToday) hdr.classList.add('today'); else hdr.classList.remove('today');
+    if(!hdr) continue;
+    const isToday    = d2.toDateString() === todayStr;
+    const monthLabel = d2.getMonth() !== now.getMonth() ? ` ${monthsFr[d2.getMonth()]}` : '';
+    hdr.innerHTML = `<strong>${joursFr[i]} ${d2.getDate()}${monthLabel}</strong>`;
+    hdr.classList.toggle('today', isToday);
   }
 
-  const weekData = TASKS[week] || {};
-  // Fusionner avec les tâches de session
-  const sessionWeek = sessionTasks[week] || {};
+  document.querySelectorAll('.mini-cell').forEach(c => c.innerHTML = '');
 
-  const teams = ['anthony','fabian','jonovan','fred','adv','dir','stephane','coord'];
-  teams.forEach(team => {
-    const baseTasks  = weekData[team] || [];
-    const sesseTasks = sessionWeek[team] || [];
-    for (let i = 0; i < 5; i++) {
-      const cell = document.getElementById(`cell-${team}-${i}`);
-      if(!cell) return;
-      const base = baseTasks[i] || [];
-      const sess = sesseTasks[i] || [];
-      const all  = [...base, ...sess];
-      cell.innerHTML = all.length ? all.map(t => renderTask(t)).join('') : '';
+  let count = 0;
+  planningTasks.forEach(t => {
+    if(!t || (t.type||'') === 'absence') return;
+    const row = TEAM_ROW_MAP[(t.team||'').toLowerCase()];
+    if(!row) return;
+    for(let i = 0; i < 5; i++){
+      if(planningTaskOnDay(t, dayKeys[i])){
+        const cell = document.getElementById(`cell-${row}-${i}`);
+        if(cell){ cell.insertAdjacentHTML('beforeend', renderMiniTask(t)); count++; }
+      }
     }
   });
+
+  const badge = document.getElementById('badgeSemaine');
+  if(badge) badge.textContent = `🔵 Semaine ${week}` + (count === 0 ? ' · aucune tâche' : '');
 }
 
-buildPlanning();
-
 // ══════════════════════════════════════════════
-// TASK DETAIL MODAL
+// FICHE TÂCHE (consultation)
 // ══════════════════════════════════════════════
 
-function openTaskDetail(e, task) {
+function openTaskDetail(e, id){
   e.stopPropagation();
-  const typeColor = task.color || 'blue';
+  const task = planningTasks.find(t => t && t.id === id);
+  if(!task) return;
+
+  const color = TYPE_COLOR_MAP[(task.type||'').toLowerCase()] || 'blue';
   const dotColors = {
     blue:'var(--blue1)', red:'var(--red)', purple:'var(--purple)',
     green:'var(--green)', gray:'var(--gray)', yellow:'var(--yellow)', orange:'var(--orange)'
   };
+  const urgLabels = { critical:'🔴 Critique', high:'🟠 Haute', normal:'🔵 Normale', low:'⚪ Basse' };
+  const urgClass  = { critical:'urgente', high:'haute', normal:'normale', low:'basse' };
+  const urg = (task.urgency||'normal').toLowerCase();
 
   document.getElementById('taskModalTitle').innerHTML =
-    `<span class="task-type-dot" style="background:${dotColors[typeColor]||'var(--blue1)'}"></span>${task.label}`;
+    `<span class="task-type-dot" style="background:${dotColors[color]||'var(--blue1)'}"></span>${escHtml(task.title)}`;
 
-  const equipeHtml = [
-    task.responsable ? `<span class="team-chip responsable"><span class="team-chip-avatar">${task.responsable[0]}</span>${task.responsable} <span style="font-size:10px;opacity:.7">(resp.)</span></span>` : '',
-    ...(task.equipe||[]).map(m => `<span class="team-chip"><span class="team-chip-avatar">${m[0]}</span>${m}</span>`)
-  ].filter(Boolean).join('');
-
-  const prioClass = task.priorite || 'normale';
-  const prioLabels = { urgente:'🔴 Urgente', haute:'🟠 Haute', normale:'🔵 Normale', basse:'⚪ Basse' };
+  const periode = task.date_start
+    ? (task.date_end && task.date_end !== task.date_start ? `${task.date_start} → ${task.date_end}` : task.date_start)
+    : '';
 
   document.getElementById('taskModalBody').innerHTML = `
     <div class="task-form">
       <div class="task-form-row">
         <div class="task-field">
           <label>Type</label>
-          <div class="task-field-value">${getTypeLabelFromColor(task.color)}</div>
+          <div class="task-field-value">${TYPE_LABELS_MAP[(task.type||'').toLowerCase()] || escHtml(task.type||'—')}</div>
         </div>
         <div class="task-field">
           <label>Priorité</label>
-          <div class="task-field-value"><span class="task-priority-badge ${prioClass}">${prioLabels[prioClass]||prioClass}</span></div>
+          <div class="task-field-value"><span class="task-priority-badge ${urgClass[urg]||'normale'}">${urgLabels[urg]||escHtml(task.urgency||'Normale')}</span></div>
         </div>
       </div>
-      ${task.client ? `<div class="task-field"><label>Site / Client</label><div class="task-field-value">${task.client}</div></div>` : ''}
-      <div class="task-field">
-        <label>Équipe</label>
-        <div class="task-field-value" style="padding:8px 12px">
-          <div class="task-team-chips">${equipeHtml || '<span style="color:var(--muted);font-style:italic;font-size:13px">Non assigné</span>'}</div>
+      <div class="task-form-row">
+        <div class="task-field">
+          <label>Responsable</label>
+          <div class="task-field-value${task.owner?'':' empty'}">${task.owner ? `<span class="team-chip responsable"><span class="team-chip-avatar">${escHtml(String(task.owner).charAt(0))}</span>${escHtml(task.owner)}</span>` : 'Non assigné'}</div>
+        </div>
+        <div class="task-field">
+          <label>Statut</label>
+          <div class="task-field-value">${escHtml(task.status||'À faire')}</div>
         </div>
       </div>
-      ${task.description ? `<div class="task-field"><label>Description / Notes</label><div class="task-field-value">${task.description}</div></div>` : ''}
+      ${task.site ? `<div class="task-field"><label>Site / Client</label><div class="task-field-value">${escHtml(task.site)}</div></div>` : ''}
+      ${periode ? `<div class="task-field"><label>Période</label><div class="task-field-value">${escHtml(periode)}</div></div>` : ''}
+      ${task.description ? `<div class="task-field"><label>Description / Notes</label><div class="task-field-value">${escHtml(task.description)}</div></div>` : ''}
+      ${task.link ? `<div class="task-field"><label>Lien</label><div class="task-field-value"><a href="${escHtml(task.link)}" target="_blank" style="color:var(--blue1)">${escHtml(task.link)}</a></div></div>` : ''}
+      <div class="task-form-actions">
+        <button class="btn-save" onclick="window.open('https://sudwifi.github.io/deviseur/sudwifi-planning-v2.html','_blank')">Modifier dans le planning →</button>
+      </div>
     </div>`;
 
   document.getElementById('taskModalOverlay').classList.add('open');
 }
 
-function getTypeLabelFromColor(color) {
-  const map = {
-    blue:'Chantier', red:'SAV', purple:'Achats',
-    green:'Business', gray:'Admin', yellow:'Communication', orange:'Réunion / Orga interne'
-  };
-  return map[color] || color;
+function closeTaskModal(e){
+  if(e.target === document.getElementById('taskModalOverlay')) closeTaskModalDirect();
 }
-
-function closeTaskModal(e) {
-  if (e.target === document.getElementById('taskModalOverlay')) closeTaskModalDirect();
-}
-function closeTaskModalDirect() {
+function closeTaskModalDirect(){
   document.getElementById('taskModalOverlay').classList.remove('open');
 }
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeTaskModalDirect(); });
 
 // ══════════════════════════════════════════════
-// NEW TASK MODAL
+// PAVÉ ACHATS · STOCK — données réelles
+// Source : localStorage 'sw_articles' (module
+// sudwifi-achats.html, même origine GitHub Pages)
 // ══════════════════════════════════════════════
 
-const TEAM_MEMBERS = ['Virginie','Stéphane','Anthony','Fabian','Ambre','Amanda','Jonovan','Fred'];
-const TASK_TYPES = [
-  {label:'Chantier',   color:'blue',   icon:'🔧'},
-  {label:'SAV',        color:'red',    icon:'🚨'},
-  {label:'Achats',     color:'purple', icon:'📦'},
-  {label:'Business',   color:'green',  icon:'💼'},
-  {label:'Admin',      color:'gray',   icon:'📋'},
-  {label:'Communication', color:'yellow', icon:'📣'},
-  {label:'Réunion / Orga interne', color:'orange', icon:'🗓️'},
-];
+function renderStockPave(){
+  const el    = document.getElementById('stockPaveList');
+  const badge = document.getElementById('achatsBadge');
+  if(!el) return;
 
-let selectedType    = null;
-let selectedResp    = null;
-let selectedEquipe  = [];
+  let arts = [];
+  try{ arts = JSON.parse(localStorage.getItem('sw_articles') || '[]'); }catch(e){}
+  if(!Array.isArray(arts)) arts = [];
 
-function openNewTaskModal() {
-  selectedType   = null;
-  selectedResp   = null;
-  selectedEquipe = [];
-
-  document.getElementById('taskModalTitle').innerHTML = '+ Nouvelle tâche';
-
-  const typesHtml = TASK_TYPES.map(t =>
-    `<button class="task-type-btn" data-color="${t.color}" onclick="selectType(this,'${t.color}')">`+
-    `<span class="type-icon">${t.icon}</span>${t.label}</button>`
-  ).join('');
-
-  const teamHtml = TEAM_MEMBERS.map(m =>
-    `<button class="team-member-btn" data-name="${m}" onclick="toggleMember(this,'${m}')">`+
-    `<span class="mb-avatar">${m[0]}</span>${m}</button>`
-  ).join('');
-
-  // Calcul dates par défaut (aujourd'hui)
-  const today = new Date();
-  const pad = n => String(n).padStart(2,'0');
-  const todayVal = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
-
-  document.getElementById('taskModalBody').innerHTML = `
-    <div class="task-form">
-      <div class="task-form-group">
-        <label>Type de tâche *</label>
-        <div class="task-types-grid" id="typeGrid">${typesHtml}</div>
-      </div>
-      <div class="task-form-group">
-        <label>Titre *</label>
-        <input type="text" id="newTaskTitle" placeholder="Ex: Déploiement Wifi — Camping X"/>
-      </div>
-      <div class="task-form-row">
-        <div class="task-form-group">
-          <label>Site / Client</label>
-          <input type="text" id="newTaskClient" placeholder="Nom du site ou client"/>
-        </div>
-        <div class="task-form-group">
-          <label>Priorité</label>
-          <select id="newTaskPrio">
-            <option value="normale">🔵 Normale</option>
-            <option value="haute">🟠 Haute</option>
-            <option value="urgente">🔴 Urgente</option>
-            <option value="basse">⚪ Basse</option>
-          </select>
-        </div>
-      </div>
-      <div class="task-form-row">
-        <div class="task-form-group">
-          <label>Date début *</label>
-          <input type="date" id="newTaskStart" value="${todayVal}"/>
-        </div>
-        <div class="task-form-group">
-          <label>Date fin</label>
-          <input type="date" id="newTaskEnd" value="${todayVal}"/>
-        </div>
-      </div>
-      <div class="task-form-group">
-        <label>Équipe — 1er clic = Responsable · 2e clic = Équipe · 3e = Désélectionner</label>
-        <div class="team-select-grid" id="teamGrid">${teamHtml}</div>
-        <div class="resp-legend" id="respLegend">Cliquer une fois pour désigner le responsable, une 2e fois pour ajouter en équipe.</div>
-      </div>
-      <div class="task-form-group">
-        <label>Description / Notes</label>
-        <textarea id="newTaskDesc" placeholder="Contexte, accès, matériel nécessaire…"></textarea>
-      </div>
-      <div class="task-form-group">
-        <label>Lien utile</label>
-        <input type="url" id="newTaskLink" placeholder="https://axonaut.com/…"/>
-      </div>
-      <div class="task-form-actions">
-        <button class="btn-cancel" onclick="closeTaskModalDirect()">Annuler</button>
-        <button class="btn-save" onclick="saveNewTask()">Enregistrer dans le planning</button>
-      </div>
-    </div>`;
-
-  document.getElementById('taskModalOverlay').classList.add('open');
-}
-
-function selectType(btn, color) {
-  document.querySelectorAll('#typeGrid .task-type-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  selectedType = color;
-}
-
-function toggleMember(btn, name) {
-  if (btn.classList.contains('selected-resp')) {
-    // resp → équipe
-    btn.classList.remove('selected-resp');
-    btn.classList.add('selected-team');
-    selectedResp = null;
-    selectedEquipe.push(name);
-    updateRespLegend();
-  } else if (btn.classList.contains('selected-team')) {
-    // équipe → désélectionner
-    btn.classList.remove('selected-team');
-    selectedEquipe = selectedEquipe.filter(m => m !== name);
-    updateRespLegend();
-  } else {
-    // → responsable (un seul)
-    if (selectedResp) {
-      const prevBtn = document.querySelector(`#teamGrid [data-name="${selectedResp}"]`);
-      if (prevBtn) { prevBtn.classList.remove('selected-resp'); prevBtn.classList.add('selected-team'); selectedEquipe.push(selectedResp); }
-    }
-    btn.classList.add('selected-resp');
-    selectedResp = name;
-    selectedEquipe = selectedEquipe.filter(m => m !== name);
-    updateRespLegend();
+  if(arts.length === 0){
+    el.innerHTML = '<div class="status-item" style="justify-content:center;color:var(--muted);font-family:var(--sub);font-size:12px;font-weight:500;text-align:center">Aucune référence en stock pour le moment.<br>Ajoutez vos articles (ou scannez-les) dans le module Achats & Stock.</div>';
+    if(badge) badge.textContent = 'stock vide';
+    return;
   }
+
+  const alerts = arts.filter(a => (+a.qty||0) <= (+a.min||0));
+  if(badge){
+    badge.textContent = alerts.length
+      ? `${alerts.length} alerte${alerts.length>1?'s':''}`
+      : `${arts.length} réf. · OK`;
+    badge.style.color       = alerts.length ? 'var(--orange)' : 'var(--green)';
+    badge.style.borderColor = alerts.length ? 'rgba(214,113,26,.2)' : 'rgba(22,163,74,.2)';
+    badge.style.background  = alerts.length ? 'rgba(214,113,26,.07)' : 'rgba(22,163,74,.07)';
+  }
+
+  const sorted = [...arts].sort((a,b) =>
+    ((+a.qty||0) / Math.max(1, +a.min||1)) - ((+b.qty||0) / Math.max(1, +b.min||1))
+  ).slice(0, 4);
+
+  el.innerHTML = sorted.map(a => {
+    const qty = +a.qty||0, min = +a.min||0, max = Math.max(+a.max||0, qty, min, 1);
+    const pct = Math.min(100, Math.round(qty / max * 100));
+    const cls = qty === 0 ? 'crit' : (qty <= min ? 'warn' : 'ok');
+    const tag = qty === 0 ? '<span class="tag error">RUPTURE</span>'
+              : qty <= min ? '<span class="tag warn">BAS</span>'
+              : '<span class="tag ok">OK</span>';
+    return `<div class="stock-item"><div class="stock-bar-wrap"><div class="stock-name">${escHtml(a.name||a.ref||'—')}</div><div class="stock-bar-bg"><div class="stock-bar-fill ${cls}" style="width:${pct}%"></div></div></div><div class="stock-count">${qty} / ${max}</div>${tag}</div>`;
+  }).join('');
 }
 
-function updateRespLegend() {
-  const el = document.getElementById('respLegend');
-  if (!el) return;
-  const parts = [];
-  if (selectedResp) parts.push(`Responsable : <strong>${selectedResp}</strong>`);
-  if (selectedEquipe.length) parts.push(`Équipe : <strong>${selectedEquipe.join(', ')}</strong>`);
-  el.innerHTML = parts.length ? parts.join(' · ') : 'Cliquer une fois pour désigner le responsable, une 2e fois pour ajouter en équipe.';
-}
+// ══════════════════════════════════════════════
+// INIT + rafraîchissement inter-onglets
+// ══════════════════════════════════════════════
 
-function getTeamFromMembers(resp, equipe) {
-  const allOps   = ['Anthony','Fabian','Jonovan','Fred','Stéphane'];
-  const allCoord = ['Amanda'];
-  const allDir   = ['Virginie','Stéphane'];
-  const allAdv   = ['Ambre'];
-  const all = [resp, ...equipe].filter(Boolean);
-  if (all.some(m => allOps.includes(m)))   return 'ops';
-  if (all.some(m => allCoord.includes(m))) return 'coord';
-  if (all.some(m => allAdv.includes(m)))   return 'adv';
-  return 'dir';
-}
+loadPlanningLocal();
+buildPlanning();
+renderStockPave();
+syncPlanningFromSheets();
 
-function saveNewTask() {
-  const title = document.getElementById('newTaskTitle').value.trim();
-  const start = document.getElementById('newTaskStart').value;
-  if (!title) { alert('Le titre est obligatoire.'); return; }
-  if (!selectedType) { alert('Veuillez choisir un type de tâche.'); return; }
-  if (!start) { alert('La date de début est obligatoire.'); return; }
-
-  const startDate = new Date(start);
-  const week = getISOWeek(startDate);
-  const mon  = getMondayOf(startDate);
-  const dayIdx = (startDate.getDay() + 6) % 7; // 0=lun
-
-  if (dayIdx > 4) { alert('Les tâches ne peuvent être planifiées que du lundi au vendredi.'); return; }
-
-  const newTask = {
-    label:       title,
-    color:       selectedType,
-    responsable: selectedResp || null,
-    equipe:      [...selectedEquipe],
-    client:      document.getElementById('newTaskClient').value.trim() || null,
-    priorite:    document.getElementById('newTaskPrio').value,
-    description: document.getElementById('newTaskDesc').value.trim() || null,
-    lien:        document.getElementById('newTaskLink').value.trim() || null,
-  };
-
-  const team = getTeamFromMembers(selectedResp, selectedEquipe) || 'dir';
-
-  if (!sessionTasks[week]) sessionTasks[week] = {};
-  if (!sessionTasks[week][team]) sessionTasks[week][team] = [[],[],[],[],[]];
-  sessionTasks[week][team][dayIdx].push(newTask);
-
-  closeTaskModalDirect();
-  buildPlanning();
-}
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeTaskModalDirect(); }
+window.addEventListener('storage', ev => {
+  if(ev.key === 'sw_tasks_v2'){ loadPlanningLocal(); buildPlanning(); }
+  if(ev.key === 'sw_articles'){ renderStockPave(); }
 });
 </script>
 </body>
