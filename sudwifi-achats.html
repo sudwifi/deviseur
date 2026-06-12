@@ -768,9 +768,18 @@ body::before{
 // ══════════════════════════════════════════════════════
 //  DATA
 // ══════════════════════════════════════════════════════
-let articles   = loadLS('sw_articles')   || getDemoArticles();
-let mouvements = loadLS('sw_mouvements') || getDemoMouvements();
-let commandes  = loadLS('sw_commandes')  || getDemoCommandes();
+// Données réelles uniquement — plus aucune donnée de démonstration.
+// Purge unique des anciens enregistrements démo (ids a1–a8 / m1–m7 / c1–c3)
+// tout en conservant les données réelles (ids générés "s_…", scans inclus).
+const DEMO_ID_RE = /^(a[1-8]|m[1-7]|c[1-3])$/;
+function purgeDemo(list){
+  return Array.isArray(list) ? list.filter(x => !(x && typeof x.id === 'string' && DEMO_ID_RE.test(x.id))) : [];
+}
+let articles   = purgeDemo(loadLS('sw_articles')   || []);
+let mouvements = purgeDemo(loadLS('sw_mouvements') || []);
+let commandes  = purgeDemo(loadLS('sw_commandes')  || []);
+// Réécrire le stockage nettoyé
+try{ saveAll(); }catch(e){}
 
 let currentTab  = 'stock';
 let stockFilter = 'all';
@@ -1265,41 +1274,8 @@ function esc(s){
 // ══════════════════════════════════════════════════════
 //  DEMO DATA
 // ══════════════════════════════════════════════════════
-function getDemoArticles(){
-  return [
-    {id:'a1',name:'AP EAP670 Outdoor',ref:'EAP670-OUT',cat:'borne',supplier:'TP-Link',qty:7,min:3,max:10,location:'Étagère A1'},
-    {id:'a2',name:'AP EAP225 Outdoor',ref:'EAP225-OUT',cat:'borne',supplier:'TP-Link',qty:2,min:3,max:8,location:'Étagère A1'},
-    {id:'a3',name:'Switch TL-SG108E',ref:'SG108E',cat:'switch',supplier:'TP-Link',qty:1,min:2,max:5,location:'Étagère B2'},
-    {id:'a4',name:'Switch TL-SG1024',ref:'SG1024',cat:'switch',supplier:'TP-Link',qty:3,min:2,max:6,location:'Étagère B2'},
-    {id:'a5',name:'Injecteur PoE 48V',ref:'POE48V',cat:'alimentation',supplier:'Generic',qty:0,min:2,max:4,location:'Tiroir C1'},
-    {id:'a6',name:'Câble FTP Cat6 (m)',ref:'CAT6-FTP',cat:'cable',supplier:'Legrand',qty:55,min:20,max:100,location:'Rouleau R1'},
-    {id:'a7',name:'Routeur ER605',ref:'ER605',cat:'routeur',supplier:'TP-Link',qty:4,min:2,max:6,location:'Étagère A3'},
-    {id:'a8',name:'Support mural AP',ref:'MOUNT-AP',cat:'fixation',supplier:'Generic',qty:12,min:5,max:20,location:'Carton F1'},
-  ];
-}
 
-function getDemoMouvements(){
-  const d=(n)=>{const x=new Date();x.setDate(x.getDate()-n);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
-  return [
-    {id:'m1',articleId:'a1',articleName:'AP EAP670 Outdoor',qty:3,type:'in',who:'Ambre',date:d(5),chantier:'',note:'Réception CMD-2026-038'},
-    {id:'m2',articleId:'a1',articleName:'AP EAP670 Outdoor',qty:2,type:'out',who:'Anthony',date:d(3),chantier:'Camping Vidaresse',note:'Déploiement zone piscine'},
-    {id:'m3',articleId:'a3',articleName:'Switch TL-SG108E',qty:2,type:'out',who:'Fabian',date:d(3),chantier:'Camping Bonporteau',note:'Remplacement switch défaillant'},
-    {id:'m4',articleId:'a6',articleName:'Câble FTP Cat6',qty:30,type:'out',who:'Anthony',date:d(2),chantier:'Camping Vidaresse',note:'Tirage réseau local'},
-    {id:'m5',articleId:'a5',articleName:'Injecteur PoE 48V',qty:2,type:'out',who:'Fabian',date:d(1),chantier:'Tikayan Les Cigales',note:'Injecteurs défectueux'},
-    {id:'m6',articleId:'a7',articleName:'Routeur ER605',qty:1,type:'out',who:'Anthony',date:d(1),chantier:'Hôtellerie Kouros',note:'Remplacement routeur'},
-    {id:'m7',articleId:'a2',articleName:'AP EAP225 Outdoor',qty:1,type:'out',who:'Fabian',date:d(0),chantier:'Camping Miremer',note:'SAV zone premium'},
-  ];
-}
 
-function getDemoCommandes(){
-  const d=(n)=>{const x=new Date();x.setDate(x.getDate()+n);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
-  const p=(n)=>{const x=new Date();x.setDate(x.getDate()-n);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
-  return [
-    {id:'c1',supplier:'TP-Link France',ref:'CMD-2026-041',date:p(2),delivery:d(3),items:'4× AP EAP670 Outdoor\n2× Switch TL-SG108E',amount:1240,status:'expédié',notes:'Suivi DHL : 1Z999AA'},
-    {id:'c2',supplier:'Generic PoE',ref:'CMD-2026-042',date:p(1),delivery:d(5),items:'4× Injecteur PoE 48V',amount:180,status:'commandé',notes:'Rupture urgente'},
-    {id:'c3',supplier:'Legrand Pro',ref:'CMD-2026-039',date:p(7),delivery:p(1),items:'100m Câble FTP Cat6\n20× Support mural AP',amount:320,status:'reçu',notes:''},
-  ];
-}
 
 // ══════════════════════════════════════════════════════
 //  NUMÉROS DE SÉRIE — GESTION CHIPS
@@ -1431,12 +1407,14 @@ function handleScan(code){
     quickMvt(art.id, 'out');
     toast(`📦 ${art.name} — choisissez le type de mouvement`);
   } else {
-    // Article inconnu → proposer de créer
-    toast(`Code inconnu : ${code} — créez l'article d'abord`, 'warn');
-    // Pré-remplir la ref dans le formulaire article
+    // Article inconnu → création à la volée, formulaire pré-rempli
+    toast(`Code inconnu : ${code} — nouvel article pré-rempli, complétez et enregistrez`, 'warn');
     openModal('article');
     setTimeout(()=>{
-      document.getElementById('aRef').value = code;
+      const isEan = /^\d{8}$|^\d{12,14}$/.test(code);
+      document.getElementById(isEan ? 'aEan' : 'aRef').value = code;
+      const nameField = document.getElementById('aName');
+      if(nameField) nameField.focus();
     }, 100);
   }
 }
@@ -1449,6 +1427,22 @@ function showScanBanner(code){
   clearTimeout(scanBannerTimer);
   scanBannerTimer = setTimeout(()=>el.classList.remove('show'), 2000);
 }
+
+// ══════════════════════════════════════════════════════
+//  FORMATS DE SCAN — EAN + codes industriels + QR
+//  (intersection avec les formats supportés par l'appareil)
+// ══════════════════════════════════════════════════════
+let SCAN_FORMATS = ['ean_13','ean_8','code_128','qr_code'];
+(async () => {
+  try{
+    if('BarcodeDetector' in window && BarcodeDetector.getSupportedFormats){
+      const sup    = await BarcodeDetector.getSupportedFormats();
+      const wished = ['ean_13','ean_8','upc_a','upc_e','code_128','code_39','code_93','itf','codabar','qr_code','data_matrix','pdf417','aztec'];
+      const f = wished.filter(x => sup.includes(x));
+      if(f.length) SCAN_FORMATS = f;
+    }
+  }catch(e){}
+})();
 
 // ══════════════════════════════════════════════════════
 //  CAMÉRA PWA (iOS Safari + Android Chrome)
@@ -1472,7 +1466,7 @@ async function openCamera(targetInputId){
 
     // Utiliser BarcodeDetector si disponible (Android Chrome)
     if('BarcodeDetector' in window){
-      const detector = new BarcodeDetector({formats:['ean_13','code_128','qr_code','data_matrix']});
+      const detector = new BarcodeDetector({formats:SCAN_FORMATS});
       camScanInterval = setInterval(async ()=>{
         try{
           const codes = await detector.detect(video);
@@ -1512,7 +1506,7 @@ async function manualCapture(){
     if(!file) return;
     if('BarcodeDetector' in window){
       const img = await createImageBitmap(file);
-      const detector = new BarcodeDetector({formats:['ean_13','code_128','qr_code']});
+      const detector = new BarcodeDetector({formats:SCAN_FORMATS});
       try{
         const codes = await detector.detect(img);
         if(codes.length>0){ closeCamera(); handleCameraResult(codes[0].rawValue); }
@@ -1565,7 +1559,7 @@ function openCameraForEan(){
       camStream = stream;
       video.srcObject = stream;
       if('BarcodeDetector' in window){
-        const detector = new BarcodeDetector({formats:['ean_13','code_128']});
+        const detector = new BarcodeDetector({formats:SCAN_FORMATS});
         camScanInterval = setInterval(async()=>{
           try{
             const codes = await detector.detect(video);
