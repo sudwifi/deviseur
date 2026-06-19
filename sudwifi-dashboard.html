@@ -479,6 +479,10 @@ body::before {
 .mini-task.green  { background:rgba(22,163,74,.10);  border-color:var(--green);   color:#15803d; }
 .mini-task.yellow { background:rgba(250,196,32,.18); border-color:var(--yellow);  color:#92660a; }
 .mini-task.gray   { background:rgba(100,116,139,.10);border-color:var(--gray);    color:#475569; }
+.mini-task.done { opacity:.5; }
+.mini-task.done .mt-label { text-decoration: line-through; }
+.mt-check { color: var(--green); font-weight: 700; margin-right: 2px; }
+.mt-extra { display:inline-block; background:rgba(0,126,177,.14); color:var(--blue1); border-radius:999px; padding:0 4px; font-size:8px; font-weight:700; margin-left:3px; vertical-align:middle; }
 
 .planning-footer {
   display: flex;
@@ -1954,11 +1958,18 @@ function syncPlanningFromSheets(){
   document.head.appendChild(s);
 }
 
-function renderMiniTask(t){
-  const color = TYPE_COLOR_MAP[(t.type||'').toLowerCase()] || 'blue';
-  const done  = (t.status === 'Terminé' || t.status === 'Fait') ? 'opacity:.45;text-decoration:line-through;' : '';
-  const owner = t.owner ? `<span style="float:right;font-size:9px;opacity:.7;margin-left:3px">${escHtml(String(t.owner).charAt(0))}</span>` : '';
-  return `<div class="mini-task ${color}" onclick="openTaskDetail(event,'${escHtml(t.id)}')" style="cursor:pointer;${done}" title="${escHtml(t.title)}${t.owner ? ' · ' + escHtml(t.owner) : ''}${t.site ? ' · ' + escHtml(t.site) : ''}">${escHtml(t.title)}${owner}</div>`;
+const ID_TO_NAME = { anthony:'Anthony', fabian:'Fabian', jonovan:'Jonovan', fred:'Fred', frederic:'Fred', ambre:'Ambre', virginie:'Virginie', stephane:'Stéphane', amanda:'Amanda' };
+function taskMembers(t){ return (Array.isArray(t.members) && t.members.length) ? t.members : (t.team ? [t.team] : []); }
+
+function renderMiniTask(t, rowId){
+  const color  = TYPE_COLOR_MAP[(t.type||'').toLowerCase()] || 'blue';
+  const isDone = (t.status === 'Terminé' || t.status === 'Fait');
+  const owner  = t.owner ? `<span style="float:right;font-size:9px;opacity:.7;margin-left:3px">${escHtml(String(t.owner).charAt(0))}</span>` : '';
+  const others = taskMembers(t).filter(m => String(m).toLowerCase() !== String(rowId||'').toLowerCase() && TEAM_ROW_MAP[String(m).toLowerCase()] !== rowId);
+  const extra  = others.length ? `<span class="mt-extra" title="${escHtml(others.map(m=>ID_TO_NAME[String(m).toLowerCase()]||m).join(', '))}">+${others.length}</span>` : '';
+  const check  = isDone ? '<span class="mt-check">✓</span>' : '';
+  const titleAttr = `${escHtml(t.title)}${t.owner ? ' · ' + escHtml(t.owner) : ''}${t.site ? ' · ' + escHtml(t.site) : ''}`;
+  return `<div class="mini-task ${color}${isDone?' done':''}" onclick="openTaskDetail(event,'${escHtml(t.id)}')" style="cursor:pointer" title="${titleAttr}"><span class="mt-label">${check}${escHtml(t.title)}</span>${extra}${owner}</div>`;
 }
 
 function buildPlanning(){
@@ -1984,12 +1995,14 @@ function buildPlanning(){
   let count = 0;
   planningTasks.forEach(t => {
     if(!t || (t.type||'') === 'absence') return;
-    const row = TEAM_ROW_MAP[(t.team||'').toLowerCase()];
-    if(!row) return;
+    const rows = [...new Set(taskMembers(t).map(m => TEAM_ROW_MAP[String(m).toLowerCase()]).filter(Boolean))];
+    if(!rows.length) return;
     for(let i = 0; i < 5; i++){
       if(planningTaskOnDay(t, dayKeys[i])){
-        const cell = document.getElementById(`cell-${row}-${i}`);
-        if(cell){ cell.insertAdjacentHTML('beforeend', renderMiniTask(t)); count++; }
+        rows.forEach(row => {
+          const cell = document.getElementById(`cell-${row}-${i}`);
+          if(cell){ cell.insertAdjacentHTML('beforeend', renderMiniTask(t, row)); count++; }
+        });
       }
     }
   });
@@ -2042,9 +2055,10 @@ function openTaskDetail(e, id){
         </div>
         <div class="task-field">
           <label>Statut</label>
-          <div class="task-field-value">${escHtml(task.status||'À faire')}</div>
+          <div class="task-field-value">${(task.status==='Terminé'||task.status==='Fait') ? '<span style="color:var(--green);font-weight:700">✓ '+escHtml(task.status)+'</span>' : escHtml(task.status||'À faire')}</div>
         </div>
       </div>
+      ${(() => { const mem = taskMembers(task); return mem.length ? `<div class="task-field"><label>Équipe affectée</label><div class="task-field-value" style="padding:8px 12px"><div class="task-team-chips">${mem.map(m => { const nm = ID_TO_NAME[String(m).toLowerCase()] || m; const isResp = task.owner && nm === task.owner; return `<span class="team-chip${isResp?' responsable':''}"><span class="team-chip-avatar">${escHtml(String(nm).charAt(0))}</span>${escHtml(nm)}${isResp?' <span style=\'font-size:10px;opacity:.7\'>(resp.)</span>':''}</span>`; }).join('')}</div></div></div>` : ''; })()}
       ${task.site ? `<div class="task-field"><label>Site / Client</label><div class="task-field-value">${escHtml(task.site)}</div></div>` : ''}
       ${periode ? `<div class="task-field"><label>Période</label><div class="task-field-value">${escHtml(periode)}</div></div>` : ''}
       ${task.description ? `<div class="task-field"><label>Description / Notes</label><div class="task-field-value">${escHtml(task.description)}</div></div>` : ''}
