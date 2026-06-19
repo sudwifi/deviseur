@@ -253,6 +253,22 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 /* Charte Sud Wifi — typographies */
 .topbar-title,.modal-title,h1,h2,h3{font-family:'Fira Sans',sans-serif}
 .view-tab,.filter-label,.qb,.btn-save,.btn-ghost,.sync-pill,.h-tab{font-family:'Montserrat',sans-serif}
+/* Multi-sélection collaborateurs */
+.member-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.member-pill{font-family:var(--mono);font-size:12px;padding:6px 12px;border-radius:999px;border:1.5px solid var(--border2);background:var(--s2);color:var(--muted2);cursor:pointer;transition:all .15s}
+.member-pill:hover{border-color:var(--blue);color:var(--blue)}
+.member-pill.selected{background:rgba(0,126,177,.12);border-color:var(--blue);color:var(--blue);font-weight:600}
+/* Co-assignés dans les chips */
+.tc-team{font-size:8px;margin-top:2px;opacity:.85;letter-spacing:.3px}
+.tc-extra{display:inline-block;background:rgba(0,126,177,.14);color:var(--blue);border-radius:999px;padding:0 5px;font-size:8px;font-weight:700;margin-left:4px;vertical-align:middle}
+/* Tâches terminées — affichage barré */
+.done-check{color:var(--green);font-weight:700;margin-right:2px}
+.task-chip.done{opacity:.55}
+.task-chip.done .tc-title{text-decoration:line-through}
+.day-task-card.done{opacity:.6}
+.day-task-card.done .dtc-title{text-decoration:line-through}
+.day-task-row.done .dtr-title{text-decoration:line-through;opacity:.8}
+.month-dot.done{opacity:.45}
 </style>
 </head>
 <body>
@@ -355,18 +371,22 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
             <option>En cours</option><option>Bloqué</option><option>Terminé</option>
           </select>
         </div>
+        <div class="form-group"></div>
+      </div>
+      <div class="form-row full">
         <div class="form-group">
-          <label>Affecter à</label>
-          <select class="form-select" id="fTeam">
-            <option value="anthony">Anthony</option>
-            <option value="fabian">Fabian</option>
-            <option value="jonovan">Jonovan</option>
-            <option value="fred">Fred</option>
-            <option value="ambre">Ambre</option>
-            <option value="virginie">Virginie</option>
-            <option value="stephane">Stéphane</option>
-            <option value="amanda">Amanda</option>
-          </select>
+          <label>Affecter à — sélection multiple</label>
+          <div class="member-pills" id="fMembers">
+            <button type="button" class="member-pill" data-member="anthony"  onclick="toggleMemberPill(this)">Anthony</button>
+            <button type="button" class="member-pill" data-member="fabian"   onclick="toggleMemberPill(this)">Fabian</button>
+            <button type="button" class="member-pill" data-member="jonovan"  onclick="toggleMemberPill(this)">Jonovan</button>
+            <button type="button" class="member-pill" data-member="fred"     onclick="toggleMemberPill(this)">Fred</button>
+            <button type="button" class="member-pill" data-member="ambre"    onclick="toggleMemberPill(this)">Ambre</button>
+            <button type="button" class="member-pill" data-member="virginie" onclick="toggleMemberPill(this)">Virginie</button>
+            <button type="button" class="member-pill" data-member="stephane" onclick="toggleMemberPill(this)">Stéphane</button>
+            <button type="button" class="member-pill" data-member="amanda"   onclick="toggleMemberPill(this)">Amanda</button>
+          </div>
+          <input type="hidden" id="fTeam"/>
         </div>
       </div>
       <div class="form-row full"><div class="form-group"><label>Description</label><textarea class="form-textarea" id="fDesc" placeholder="Détails, consignes, contexte…"></textarea></div></div>
@@ -489,7 +509,8 @@ function saveAll(){saveLocal('sw_tasks_v2',tasks);saveLocal('sw_absences',absenc
 
 function visibleTasks(){
   return tasks.filter(t=>{
-    let roleOk=selectedRole==='direction'?true:(poleMembers[selectedRole]||[]).includes(t.team);
+    const _mem=membersOf(t);
+    let roleOk=selectedRole==='direction'?true:_mem.some(m=>(poleMembers[selectedRole]||[]).includes(m));
     const typeOk=activeTypes.size===0||activeTypes.has(t.type);
     return roleOk&&typeOk;
   });
@@ -548,7 +569,7 @@ function renderSemaine(){
   teams.forEach(([personId,personName])=>{
     html+=`<div class="wg-team-label">${personName}</div>`;
     days.forEach(d=>{
-      const dayTasks=vt.filter(t=>taskOnDay(t,d)&&t.team===personId);
+      const dayTasks=vt.filter(t=>taskOnDay(t,d)&&membersOf(t).includes(personId));
       const dayAbs=absences.filter(a=>absenceOnDay(a,d)&&a.person===personName);
       html+=`<div class="wg-cell">`;
       dayAbs.forEach(a=>{
@@ -557,12 +578,15 @@ function renderSemaine(){
       dayTasks.forEach(t=>{
         const cfg=typeConfig[t.type]||typeConfig.admin;
         const sel=t.id===selectedTaskId?'selected':'';
+        const isDone=t.status==='Terminé';
         const dur=taskDuration(t),start=t.date_start||t.date||'';
         const isFirst=start===d,isLast=(t.date_end||start)===d;
         const spanCls=dur>1?(isFirst?'span-start':isLast?'span-end':'span-mid'):'';
-        html+=`<div class="task-chip chip-${cfg.color} urgency-${t.urgency} ${sel} ${spanCls}" onclick="selectTask('${t.id}')">
-          <div class="tc-title">${esc(t.title)}</div>
+        const others=membersOf(t).filter(m=>m!==personId);
+        html+=`<div class="task-chip chip-${cfg.color} urgency-${t.urgency} ${sel} ${spanCls} ${isDone?'done':''}" onclick="selectTask('${t.id}')">
+          <div class="tc-title">${isDone?'<span class="done-check">✓</span>':''}${esc(t.title)}${others.length?`<span class="tc-extra" title="${esc(others.map(m=>teamLabels[m]||m).join(', '))}">+${others.length}</span>`:''}</div>
           ${isFirst&&t.site?`<div class="tc-sub">${esc(t.site)}</div>`:''}
+          ${isFirst&&others.length?`<div class="tc-team">👥 ${esc(memberInitials(membersOf(t)))}</div>`:''}
           ${dur>1&&isFirst?`<div class="tc-dates">${fmtDisplay(start)} → ${fmtDisplay(t.date_end||start)}</div>`:''}
           <div class="urgency-dot"></div>
         </div>`;
@@ -613,9 +637,10 @@ function renderSemaine(){
     html+=`<div class="day-section"><div class="day-section-header">${sec.label}<span style="margin-left:auto;font-size:9px;color:var(--muted);font-family:var(--mono)">${items.length}</span></div><div class="day-section-body">`;
     items.forEach(t=>{
       const cfg=typeConfig[t.type]||typeConfig.admin,uu=urgencyTag[t.urgency]||urgencyTag.normal,dur=taskDuration(t);
-      html+=`<div class="day-task-row" onclick="selectTask('${t.id}')">
+      const _done=t.status==='Terminé';
+      html+=`<div class="day-task-row ${_done?'done':''}" onclick="selectTask('${t.id}')">
         <div class="dtr-dot" style="background:${cfg.dot}"></div>
-        <div class="dtr-main"><div class="dtr-title">${esc(t.title)}${dur>1?` <span style="font-size:9px;color:var(--teal)">(${dur}j)</span>`:''}</div>
+        <div class="dtr-main"><div class="dtr-title">${_done?'<span class="done-check">✓</span>':''}${esc(t.title)}${dur>1?` <span style="font-size:9px;color:var(--teal)">(${dur}j)</span>`:''}</div>
         <div class="dtr-sub">${esc(t.owner)} · ${esc(t.site||'')}</div></div>
         <div class="dtr-tag" style="background:${uu.bg};color:${uu.color}">${t.status}</div>
       </div>`;
@@ -631,6 +656,7 @@ function renderSemaine(){
         <div class="td-block"><div class="td-k">Titre</div><div class="td-v">${esc(selTask.title)}</div></div>
         <div class="td-block"><div class="td-k">Type</div><div class="td-v" style="color:${cfg.dot}">${cfg.label}</div></div>
         <div class="td-block"><div class="td-k">Responsable</div><div class="td-v">${esc(selTask.owner)}</div></div>
+        <div class="td-block"><div class="td-k">Équipe</div><div class="td-v">${esc(membersOf(selTask).map(m=>teamLabels[m]||m).join(', ')||'—')}</div></div>
         <div class="td-block"><div class="td-k">Site</div><div class="td-v">${esc(selTask.site||'—')}</div></div>
         <div class="td-block"><div class="td-k">Statut</div><div class="td-v">${esc(selTask.status)}</div></div>
         <div class="td-block"><div class="td-k">Durée</div><div class="td-v" style="color:var(--teal)">${dur} jour${dur>1?'s':''}</div></div>
@@ -638,7 +664,7 @@ function renderSemaine(){
       ${selTask.description?`<div class="td-desc">${esc(selTask.description)}</div>`:''}
       <div class="td-actions">
         <button class="td-btn primary" onclick="openEditModal('${selTask.id}')">✏️</button>
-        <button class="td-btn" onclick="markDone('${selTask.id}')">✓</button>
+        <button class="td-btn" onclick="markDone('${selTask.id}')" title="${selTask.status==='Terminé'?'Rouvrir la tâche':'Marquer terminée'}">${selTask.status==='Terminé'?'↺':'✓'}</button>
         <button class="td-btn" style="color:#dc2626" onclick="deleteTask('${selTask.id}')">✕</button>
       </div>
     </div>`;
@@ -682,10 +708,13 @@ function renderJour(){
 
 function dayTaskCardHtml(t){
   const cfg=typeConfig[t.type]||typeConfig.admin,u=urgencyTag[t.urgency]||urgencyTag.normal,oc=ownerColors[t.owner]||'#8fa3c8',dur=taskDuration(t);
-  return `<div class="day-task-card chip-${cfg.color}" onclick="selectTask('${t.id}');setView('semaine',null)" style="border-left-color:${cfg.dot}">
-    <div class="dtc-top"><div class="dtc-title">${esc(t.title)}</div><div class="dtc-urgency" style="background:${u.bg};color:${u.color}">${u.label}</div></div>
+  const isDone=t.status==='Terminé';
+  const team=membersOf(t).map(m=>teamLabels[m]||m);
+  return `<div class="day-task-card chip-${cfg.color} ${isDone?'done':''}" onclick="selectTask('${t.id}');setView('semaine',null)" style="border-left-color:${cfg.dot}">
+    <div class="dtc-top"><div class="dtc-title">${isDone?'<span class="done-check">✓</span>':''}${esc(t.title)}</div><div class="dtc-urgency" style="background:${u.bg};color:${u.color}">${u.label}</div></div>
     ${dur>1?`<div class="dtc-dates">📅 ${fmtDisplay(t.date_start||t.date||'')} → ${fmtDisplay(t.date_end||t.date_start||t.date||'')} (${dur}j)</div>`:''}
     <div class="dtc-meta"><div style="display:flex;align-items:center;gap:4px"><div class="owner-dot" style="background:${oc}22;color:${oc}">${(t.owner||'?')[0]}</div>${esc(t.owner)}</div>${t.site?'· '+esc(t.site):''} · <span style="color:var(--muted)">${t.status}</span></div>
+    ${team.length>1?`<div class="dtc-meta" style="margin-top:3px">👥 ${esc(team.join(', '))}</div>`:''}
   </div>`;
 }
 
@@ -721,15 +750,22 @@ function renderSemestre(){
   document.getElementById('mainContent').innerHTML=html;
 }
 
+const NAME_TO_ID={Virginie:'virginie',Stéphane:'stephane',Anthony:'anthony',Fabian:'fabian',Jonovan:'jonovan',Fred:'fred',Ambre:'ambre',Amanda:'amanda'};
+function membersOf(t){return (Array.isArray(t.members)&&t.members.length)?t.members:(t.team?[t.team]:[]);}
+function toggleMemberPill(btn){btn.classList.toggle('selected');}
+function getSelectedMembers(){return Array.from(document.querySelectorAll('#fMembers .member-pill.selected')).map(b=>b.dataset.member);}
+function setSelectedMembers(arr){const set=new Set((arr||[]).map(String));document.querySelectorAll('#fMembers .member-pill').forEach(b=>b.classList.toggle('selected',set.has(b.dataset.member)));}
+function memberInitials(ids){return ids.map(id=>(teamLabels[id]||id||'?').charAt(0).toUpperCase()).join(' ');}
+
 function selectTask(id){selectedTaskId=id;const t=tasks.find(x=>x.id===id);if(t)selectedDay=t.date_start||t.date||today();render()}
-function markDone(id){const t=tasks.find(x=>x.id===id);if(t){t.status='Terminé';saveAll();render();showSync('Tâche terminée ✓');}}
+function markDone(id){const t=tasks.find(x=>x.id===id);if(t){t.status=(t.status==='Terminé')?'À faire':'Terminé';saveAll();render();showSync(t.status==='Terminé'?'Tâche terminée ✓':'Tâche réouverte');if(typeof APPS_SCRIPT_URL!=='undefined'&&APPS_SCRIPT_URL)pushToSheets(t);}}
 function deleteTask(id){if(!confirm('Supprimer cette tâche ?'))return;tasks=tasks.filter(x=>x.id!==id);if(selectedTaskId===id)selectedTaskId=null;saveAll();render();showSync('Tâche supprimée')}
 
 function quickAdd(type){
   openAddModal();selectType(type);
-  if(type==='sav'){document.getElementById('fUrgency').value='critical';document.getElementById('fTeam').value='fabian';document.getElementById('fOwner').value='Fabian';}
-  else if(type==='chantier'){document.getElementById('fTeam').value='anthony';document.getElementById('fOwner').value='Anthony';}
-  else if(type==='achats'){document.getElementById('fTeam').value='ambre';document.getElementById('fOwner').value='Ambre';}
+  if(type==='sav'){document.getElementById('fUrgency').value='critical';setSelectedMembers(['fabian']);document.getElementById('fOwner').value='Fabian';}
+  else if(type==='chantier'){setSelectedMembers(['anthony']);document.getElementById('fOwner').value='Anthony';}
+  else if(type==='achats'){setSelectedMembers(['ambre']);document.getElementById('fOwner').value='Ambre';}
 }
 
 function openAddModal(){
@@ -737,7 +773,8 @@ function openAddModal(){
   document.getElementById('fTitle').value='';document.getElementById('fSite').value='';
   document.getElementById('fDateStart').value=selectedDay||today();document.getElementById('fDateEnd').value='';
   document.getElementById('fOwner').value='Virginie';document.getElementById('fUrgency').value='normal';
-  document.getElementById('fStatus').value='À faire';document.getElementById('fTeam').value='anthony';
+  document.getElementById('fStatus').value='À faire';document.getElementById('fTeam').value='';
+  setSelectedMembers([]);
   document.getElementById('fDesc').value='';document.getElementById('fLink').value='';
   selectType('chantier');document.getElementById('modalTask').classList.add('open');
 }
@@ -748,7 +785,9 @@ function openEditModal(id){
   document.getElementById('fTitle').value=t.title||'';document.getElementById('fSite').value=t.site||'';
   document.getElementById('fDateStart').value=t.date_start||t.date||'';document.getElementById('fDateEnd').value=t.date_end||'';
   document.getElementById('fOwner').value=t.owner||'Virginie';document.getElementById('fUrgency').value=t.urgency||'normal';
-  document.getElementById('fStatus').value=t.status||'À faire';document.getElementById('fTeam').value=t.team||'anthony';
+  document.getElementById('fStatus').value=t.status||'À faire';
+  const _m=(Array.isArray(t.members)&&t.members.length)?t.members:(t.team?[t.team]:[]);
+  document.getElementById('fTeam').value=_m[0]||'';setSelectedMembers(_m);
   document.getElementById('fDesc').value=t.description||'';document.getElementById('fLink').value=t.link||'';
   selectType(t.type||'chantier');document.getElementById('modalTask').classList.add('open');
 }
@@ -758,8 +797,12 @@ function selectType(type){document.getElementById('fType').value=type;document.q
 function saveTask(){
   const title=document.getElementById('fTitle').value.trim(),dateStart=document.getElementById('fDateStart').value;
   if(!title){alert('Le titre est obligatoire.');return;}if(!dateStart){alert('La date de début est obligatoire.');return;}
-  const dateEnd=document.getElementById('fDateEnd').value,editId=document.getElementById('editId').value,team=document.getElementById('fTeam').value;
-  const obj={id:editId||uid(),title,site:document.getElementById('fSite').value.trim(),type:document.getElementById('fType').value,urgency:document.getElementById('fUrgency').value,date_start:dateStart,date_end:dateEnd||dateStart,date:dateStart,owner:document.getElementById('fOwner').value,status:document.getElementById('fStatus').value,team,description:document.getElementById('fDesc').value.trim(),link:document.getElementById('fLink').value.trim(),subtitle:document.getElementById('fSite').value.trim(),roles:[team,'direction']};
+  const dateEnd=document.getElementById('fDateEnd').value,editId=document.getElementById('editId').value;
+  const owner=document.getElementById('fOwner').value;
+  let members=getSelectedMembers();
+  if(!members.length){const oid=NAME_TO_ID[owner];members=oid?[oid]:['anthony'];}
+  const team=members[0];
+  const obj={id:editId||uid(),title,site:document.getElementById('fSite').value.trim(),type:document.getElementById('fType').value,urgency:document.getElementById('fUrgency').value,date_start:dateStart,date_end:dateEnd||dateStart,date:dateStart,owner,status:document.getElementById('fStatus').value,team,members,description:document.getElementById('fDesc').value.trim(),link:document.getElementById('fLink').value.trim(),subtitle:document.getElementById('fSite').value.trim(),roles:[...new Set([...members,'direction'])]};
   if(editId){const i=tasks.findIndex(x=>x.id===editId);if(i>=0)tasks[i]=obj;else tasks.push(obj);}else tasks.push(obj);
   selectedTaskId=obj.id;selectedDay=dateStart;saveAll();closeModal('modalTask');render();showSync('Tâche enregistrée');
   if(APPS_SCRIPT_URL)pushToSheets(obj);
