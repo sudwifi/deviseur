@@ -37,6 +37,7 @@
   --shadow-sm: 0 1px 4px rgba(0,126,177,.07), 0 2px 12px rgba(0,126,177,.06);
   --shadow-md: 0 4px 20px rgba(0,126,177,.10), 0 1px 4px rgba(0,126,177,.06);
 }
+@keyframes spin { from { display:inline-block; transform:rotate(0deg); } to { transform:rotate(360deg); } }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 button,select,input,textarea{font:inherit;color:var(--text)}
@@ -503,6 +504,7 @@ body::before{
 <header class="topbar">
   <a class="back-btn" href="https://sudwifi.github.io/deviseur/sudwifi-dashboard.html">← Dashboard</a>
   <div class="topbar-title">📦 Achats & Stock</div>
+  <div id="syncIndicator" style="font-family:var(--mono);font-size:11px;color:var(--muted);transition:color .3s">⟳ Chargement…</div>
   <div class="topbar-right">
     <button class="add-btn" onclick="openModal('article')">+ Article</button>
     <button class="add-btn blue" onclick="openModal('commande')">+ Commande</button>
@@ -766,24 +768,118 @@ body::before{
 
 <script>
 // ══════════════════════════════════════════════════════
+//  CONFIG — Google Apps Script (stockage partagé)
+// ══════════════════════════════════════════════════════
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyKOgCdNuCLX4fv4mBMhM9su5uYV_SjeD3tXrPu0GSmsVakQMmrqN7B6WK_LMJ6W29v/exec';
+
+// ══════════════════════════════════════════════════════
+//  COUCHE API — appels vers Apps Script
+// ══════════════════════════════════════════════════════
+async function gasCall(params) {
+  // Apps Script CORS : on encode tout en query string GET (no preflight)
+  const qs = Object.entries(params)
+    .map(([k,v]) => encodeURIComponent(k) + '=' + encodeURIComponent(typeof v === 'object' ? JSON.stringify(v) : v))
+    .join('&');
+  const res = await fetch(GAS_URL + '?' + qs);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'Erreur Apps Script');
+  return json.data;
+}
+
+// ══════════════════════════════════════════════════════
 //  DATA
 // ══════════════════════════════════════════════════════
-// Données réelles uniquement — plus aucune donnée de démonstration.
-// Purge unique des anciens enregistrements démo (ids a1–a8 / m1–m7 / c1–c3)
-// tout en conservant les données réelles (ids générés "s_…", scans inclus).
-const DEMO_ID_RE = /^(a[1-8]|m[1-7]|c[1-3])$/;
-function purgeDemo(list){
-  return Array.isArray(list) ? list.filter(x => !(x && typeof x.id === 'string' && DEMO_ID_RE.test(x.id))) : [];
-}
-let articles   = purgeDemo(loadLS('sw_articles')   || []);
-let mouvements = purgeDemo(loadLS('sw_mouvements') || []);
-let commandes  = purgeDemo(loadLS('sw_commandes')  || []);
-// Réécrire le stockage nettoyé
-try{ saveAll(); }catch(e){}
+let articles   = [];
+let mouvements = [];
+let commandes  = [];
 
 let currentTab  = 'stock';
 let stockFilter = 'all';
 let stockSearch = '';
+let _isSyncing  = false;
+
+// ── Indicateur de sync dans la topbar ──
+function setSyncStatus(status, msg) {
+  const el = document.getElementById('syncIndicator');
+  if (!el) return;
+  const cfg = {
+    idle:    { icon: '✓', color: 'var(--green)',  label: 'Synchronisé' },
+    loading: { icon: '⟳', color: 'var(--blue2)', label: 'Chargement…' },
+    saving:  { icon: '⬆', color: 'var(--orange)', label: 'Enregistrement…' },
+    error:   { icon: '⚠', color: 'var(--red)',   label: 'Erreur sync' },
+    offline: { icon: '📵', color: 'var(--gray)',  label: 'Mode hors ligne' },
+  };
+  const c = cfg[status] || cfg.idle;
+  el.textContent = c.icon + ' ' + (msg || c.label);
+  el.style.color = c.color;
+  el.style.animation = (status === 'loading' || status === 'saving') ? 'spin .8s linear infinite' : '';
+}
+
+// ── Chargement initial depuis Google Sheets ──
+async function loadFromSheets() {
+  setSyncStatus('loading');
+  try {
+    // Stock + catalogue
+    const stockData = await gasCall({ action: 'getStock' });
+    articles = (stockData.catalogue || []).map(p => ({
+      id:       p.ean || uid(),
+      name:     p.nom || '',
+      ref:      p.reference_fournisseur || '',
+      ean:      p.ean || '',
+      cat:      detectCat(p.nom || ''),
+      supplier: p.fournisseur || '',
+      qty:      Number(p.stock_actuel) || 0,
+      min:      Number(p.seuil_alerte) || 2,
+      max:      Math.max(Number(p.seuil_alerte) * 3, 10),
+      location: '',
+      notes:    p.notes || '',
+    }));
+    // Mouvements
+    const mvtData = await gasCall({ action: 'getMouvements', limit: 300 });
+    mouvements = (mvtData || []).map(m => ({
+      id:          m.id,
+      articleId:   m.ean,
+      articleName: m.produit || '',
+      qty:         Number(m.quantite) || 0,
+      type:        (m.type === 'entree' || m.type === 'retour') ? 'in' : 'out',
+      who:         m.utilisateur || '',
+      date:        (m.date || '').slice(0, 10),
+      chantier:    m.chantier || '',
+      note:        m.notes || '',
+      serials:     [],
+    }));
+    // Commandes en local (pas dans le GAS pour l'instant)
+    const DEMO_CMD = /^c[1-3]$/;
+    commandes = (loadLS('sw_commandes') || []).filter(x => !DEMO_CMD.test(x.id || ''));
+    // Cache de secours
+    saveLS('sw_articles_cache',   articles);
+    saveLS('sw_mouvements_cache', mouvements);
+    setSyncStatus('idle');
+    render();
+  } catch (e) {
+    console.warn('Sheets inaccessible, fallback cache local :', e.message);
+    setSyncStatus('offline');
+    const DEMO_ID_RE = /^(a[1-8]|m[1-7]|c[1-3])$/;
+    const purge = list => Array.isArray(list) ? list.filter(x => !(x && typeof x.id === 'string' && DEMO_ID_RE.test(x.id))) : [];
+    articles   = purge(loadLS('sw_articles_cache')   || loadLS('sw_articles')   || []);
+    mouvements = purge(loadLS('sw_mouvements_cache') || loadLS('sw_mouvements') || []);
+    commandes  = purge(loadLS('sw_commandes') || []);
+    render();
+  }
+}
+
+// Détection automatique de catégorie selon le nom produit
+function detectCat(nom) {
+  const n = nom.toLowerCase();
+  if (/borne|eap|ap |wifi|access/.test(n)) return 'borne';
+  if (/switch|sg-|tl-sg|sg108/.test(n))    return 'switch';
+  if (/routeur|router|tl-er|er605/.test(n)) return 'routeur';
+  if (/câble|cable|cat6|ftp|sfp/.test(n))   return 'cable';
+  if (/poe|inject|alim|power/.test(n))      return 'alimentation';
+  if (/fixat|mast|support|bride/.test(n))   return 'fixation';
+  return 'autre';
+}
 
 const catConfig = {
   borne:        {label:'Borne Wifi',  bg:'rgba(0,126,177,.12)',  color:' #007eb1'},
@@ -809,11 +905,19 @@ const ownerColors = {
 };
 
 // ══════════════════════════════════════════════════════
-//  STORAGE
+//  STORAGE — localStorage (cache local) + Google Sheets (source de vérité)
 // ══════════════════════════════════════════════════════
 function loadLS(k){try{const d=localStorage.getItem(k);return d?JSON.parse(d):null}catch(e){return null}}
 function saveLS(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-function saveAll(){saveLS('sw_articles',articles);saveLS('sw_mouvements',mouvements);saveLS('sw_commandes',commandes)}
+
+// saveAll = mise à jour du cache local uniquement
+// Les écritures réelles vers Sheets se font dans saveArticle() et saveMouvement()
+function saveAll(){
+  saveLS('sw_articles_cache', articles);
+  saveLS('sw_mouvements_cache', mouvements);
+  saveLS('sw_commandes', commandes);
+}
+
 function uid(){return 's_'+Date.now()+'_'+Math.random().toString(36).slice(2,6)}
 function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function fmtDate(s){if(!s)return'—';const d=new Date(s+'T12:00:00');const m=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];return d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear()}
@@ -1102,15 +1206,16 @@ function quickMvt(articleId, type){
   openModal('mouvement');
 }
 
-function saveArticle(){
+async function saveArticle(){
   const name = document.getElementById('aName').value.trim();
   if(!name){alert('Le nom est obligatoire.');return;}
   const editId = document.getElementById('aEditId').value;
+  const ean    = document.getElementById('aEan').value.trim() || (editId || uid());
   const obj = {
-    id:       editId||uid(),
+    id:       ean,
     name,
     ref:      document.getElementById('aRef').value.trim(),
-    ean:      document.getElementById('aEan').value.trim(),
+    ean,
     cat:      document.getElementById('aCat').value,
     supplier: document.getElementById('aSupplier').value.trim(),
     qty:      parseInt(document.getElementById('aQty').value)||0,
@@ -1119,9 +1224,29 @@ function saveArticle(){
     location: document.getElementById('aLocation').value.trim(),
     notes:    document.getElementById('aNotes').value.trim(),
   };
+  // Mise à jour locale immédiate
   if(editId){const i=articles.findIndex(a=>a.id===editId);if(i>=0)articles[i]=obj;else articles.push(obj);}
   else articles.push(obj);
-  saveAll(); closeModal('modalArticle'); render(); toast('Article enregistré ✓');
+  saveAll(); closeModal('modalArticle'); render(); toast('Enregistrement…','ok');
+  // Écriture vers Google Sheets
+  setSyncStatus('saving');
+  try {
+    await gasCall({
+      action: 'upsertProduit',
+      ean:                  ean,
+      nom:                  name,
+      seuil_alerte:         obj.min,
+      stock_actuel:         obj.qty,
+      fournisseur:          obj.supplier,
+      reference_fournisseur: obj.ref,
+      notes:                obj.notes,
+    });
+    setSyncStatus('idle');
+    toast('Article enregistré ✓');
+  } catch(e) {
+    setSyncStatus('error', 'Sync échouée');
+    toast('Article sauvé localement (sync échouée)', 'warn');
+  }
 }
 
 function editArticle(id){
@@ -1166,11 +1291,30 @@ function saveMouvement(){
     note:     document.getElementById('mvtNote').value.trim(),
     serials,  // ← numéros de série
   };
+  // Mise à jour locale immédiate
   mouvements.push(mvt);
   if(art) art.qty = type==='in'?art.qty+qty:Math.max(0,art.qty-qty);
   saveAll(); closeModal('modalMvt'); render();
   const snInfo = serials.length ? ` · ${serials.length} SN enregistré${serials.length>1?'s':''}` : '';
-  toast(type==='in'?`+${qty} en stock ✓${snInfo}`:`−${qty} sorti · ${mvt.chantier||'stock'}${snInfo}`, type==='in'?'ok':'warn');
+  const toastMsg = type==='in'?`+${qty} en stock ✓${snInfo}`:`−${qty} sorti · ${mvt.chantier||'stock'}${snInfo}`;
+  toast(toastMsg, type==='in'?'ok':'warn');
+  // Écriture asynchrone vers Google Sheets
+  setSyncStatus('saving');
+  gasCall({
+    action:      'addMouvement',
+    type:        type==='in' ? 'entree' : 'sortie',
+    produit:     mvt.articleName,
+    ean:         art ? (art.ean || art.id) : articleId,
+    quantite:    qty,
+    utilisateur: mvt.who,
+    notes:       mvt.note,
+    chantier:    mvt.chantier,
+  }).then(() => {
+    setSyncStatus('idle');
+  }).catch(e => {
+    setSyncStatus('error', 'Sync échouée');
+    toast('Mouvement sauvé localement (sync échouée)', 'warn');
+  });
 }
 
 function saveCommande(){
@@ -1587,7 +1731,8 @@ function addEanToArticleForm(){
 // ══════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════
-render();
+// Lancement : charge depuis Google Sheets
+loadFromSheets();
 </script>
 </body>
 </html>
