@@ -1061,6 +1061,7 @@ function renderStock(){
           <button class="act-btn green" title="Entrée" onclick="quickMvt('${a.id}','in')">+</button>
           <button class="act-btn red"   title="Sortie" onclick="quickMvt('${a.id}','out')">−</button>
           <button class="act-btn blue"  title="Modifier" onclick="editArticle('${a.id}')">✎</button>
+          <button class="act-btn"       title="Supprimer" onclick="deleteArticle('${a.id}')">🗑</button>
         </div>
       </td>
     </tr>`;
@@ -1277,6 +1278,24 @@ function editArticle(id){
   document.getElementById('aNotes').value               = a.notes||'';
   // Ouvrir directement sans passer par openModal() qui réinitialise aEditId
   document.getElementById('modalArticle').classList.add('open');
+}
+
+async function deleteArticle(id){
+  const a = articles.find(x => x.id === id);
+  if(!a) return;
+  if(!confirm(`Supprimer "${a.name}" du catalogue ?\nCette action est irréversible.`)) return;
+  // Suppression locale immédiate
+  articles = articles.filter(x => x.id !== id);
+  saveAll(); render(); toast(`"${a.name}" supprimé`, 'warn');
+  // Suppression dans Google Sheets
+  setSyncStatus('saving');
+  try {
+    await gasCall({ action: 'deleteProduit', ean: a.ean || a.id });
+    setSyncStatus('idle');
+  } catch(e) {
+    setSyncStatus('error', 'Sync échouée');
+    toast('Supprimé localement (sync échouée)', 'warn');
+  }
 }
 
 function saveMouvement(){
