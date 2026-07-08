@@ -801,8 +801,11 @@ function saveTask(){
   const owner=document.getElementById('fOwner').value;
   let members=getSelectedMembers();
   if(!members.length){const oid=NAME_TO_ID[owner];members=oid?[oid]:['anthony'];}
-  const team=members[0];
-  const obj={id:editId||uid(),title,site:document.getElementById('fSite').value.trim(),type:document.getElementById('fType').value,urgency:document.getElementById('fUrgency').value,date_start:dateStart,date_end:dateEnd||dateStart,date:dateStart,owner,status:document.getElementById('fStatus').value,team,members,description:document.getElementById('fDesc').value.trim(),link:document.getElementById('fLink').value.trim(),subtitle:document.getElementById('fSite').value.trim(),roles:[...new Set([...members,'direction'])]};
+  const team=members[0]; // premier membre = responsable principal (compatibilité)
+  // members[] contient TOUS les membres assignés → affichage multi-ligne correct
+  // roles inclut tous les membres pour que chaque ligne de planning affiche la tâche
+  const allRoles=[...new Set([...members,'direction'])];
+  const obj={id:editId||uid(),title,site:document.getElementById('fSite').value.trim(),type:document.getElementById('fType').value,urgency:document.getElementById('fUrgency').value,date_start:dateStart,date_end:dateEnd||dateStart,date:dateStart,owner,status:document.getElementById('fStatus').value,team,members,description:document.getElementById('fDesc').value.trim(),link:document.getElementById('fLink').value.trim(),subtitle:document.getElementById('fSite').value.trim(),roles:allRoles};
   if(editId){const i=tasks.findIndex(x=>x.id===editId);if(i>=0)tasks[i]=obj;else tasks.push(obj);}else tasks.push(obj);
   selectedTaskId=obj.id;selectedDay=dateStart;saveAll();closeModal('modalTask');render();showSync('Tâche enregistrée');
   if(APPS_SCRIPT_URL)pushToSheets(obj);
@@ -826,7 +829,16 @@ function syncFromSheets(){
   showSync('Synchronisation…','loading');const btn=document.getElementById('syncBtn');if(btn){btn.classList.add('syncing');btn.textContent='⟳ Sync…';}
   const old=document.getElementById('jsonp_script');if(old)old.remove();if(window._jsonpCallback)delete window._jsonpCallback;
   const timer=setTimeout(()=>{showSync('Délai dépassé','error');const s=document.getElementById('jsonp_script');if(s)s.remove();if(btn){btn.classList.remove('syncing');btn.textContent='⟳ Sync';}},10000);
-  window._jsonpCallback=function(data){clearTimeout(timer);if(btn){btn.classList.remove('syncing');btn.textContent='⟳ Sync';}if(data&&data.tasks){tasks=data.tasks.map(t=>({...t,date_start:String(t.date_start||t.date||'').substring(0,10),date_end:String(t.date_end||t.date_start||t.date||'').substring(0,10),date:String(t.date_start||t.date||'').substring(0,10),roles:Array.isArray(t.roles)?t.roles:String(t.roles||'direction').split(',').map(r=>r.trim())}));saveAll();render();showSync(`${tasks.length} tâches synchronisées ✓`);}else{showSync('Réponse inattendue','error');}};
+  window._jsonpCallback=function(data){clearTimeout(timer);if(btn){btn.classList.remove('syncing');btn.textContent='⟳ Sync';}if(data&&data.tasks){tasks=data.tasks.map(t=>{
+  const members=Array.isArray(t.members)&&t.members.length?t.members:(t.team?[t.team]:[]);
+  const roles=Array.isArray(t.roles)&&t.roles.length?t.roles:[...new Set([...members,'direction'])];
+  return {...t,
+    date_start:String(t.date_start||t.date||'').substring(0,10),
+    date_end:String(t.date_end||t.date_start||t.date||'').substring(0,10),
+    date:String(t.date_start||t.date||'').substring(0,10),
+    members,roles
+  };
+});saveAll();render();showSync(`${tasks.length} tâches synchronisées ✓`);}else{showSync('Réponse inattendue','error');}};
   const s=document.createElement('script');s.id='jsonp_script';s.src=APPS_SCRIPT_URL+'?action=getTasks&callback=_jsonpCallback';s.onerror=()=>{clearTimeout(timer);showSync('Erreur de connexion','error');if(btn){btn.classList.remove('syncing');btn.textContent='⟳ Sync';}};document.head.appendChild(s);
 }
 async function pushToSheets(task){if(!APPS_SCRIPT_URL)return;try{await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'saveTask',task})});}catch(e){}}
