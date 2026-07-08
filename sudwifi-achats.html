@@ -1262,19 +1262,21 @@ async function saveArticle(){
 function editArticle(id){
   const a = articles.find(x=>x.id===id);
   if(!a)return;
-  document.getElementById('aEditId').value     = a.id;
+  // Remplir les champs AVANT d'ouvrir la modale (openModal efface tout)
+  document.getElementById('aEditId').value              = a.id;
   document.getElementById('modalArticleTitle').textContent = 'Modifier l\'article';
-  document.getElementById('aName').value       = a.name||'';
-  document.getElementById('aRef').value        = a.ref||'';
-  document.getElementById('aEan').value        = a.ean||'';
-  document.getElementById('aCat').value        = a.cat||'autre';
-  document.getElementById('aSupplier').value   = a.supplier||'';
-  document.getElementById('aQty').value        = a.qty||0;
-  document.getElementById('aMin').value        = a.min||2;
-  document.getElementById('aMax').value        = a.max||10;
-  document.getElementById('aLocation').value   = a.location||'';
-  document.getElementById('aNotes').value      = a.notes||'';
-  openModal('article');
+  document.getElementById('aName').value                = a.name||'';
+  document.getElementById('aRef').value                 = a.ref||'';
+  document.getElementById('aEan').value                 = a.ean||'';
+  document.getElementById('aCat').value                 = a.cat||'autre';
+  document.getElementById('aSupplier').value            = a.supplier||'';
+  document.getElementById('aQty').value                 = a.qty||0;
+  document.getElementById('aMin').value                 = a.min||2;
+  document.getElementById('aMax').value                 = a.max||10;
+  document.getElementById('aLocation').value            = a.location||'';
+  document.getElementById('aNotes').value               = a.notes||'';
+  // Ouvrir directement sans passer par openModal() qui réinitialise aEditId
+  document.getElementById('modalArticle').classList.add('open');
 }
 
 function saveMouvement(){
