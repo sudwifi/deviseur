@@ -1210,9 +1210,15 @@ async function saveArticle(){
   const name = document.getElementById('aName').value.trim();
   if(!name){alert('Le nom est obligatoire.');return;}
   const editId = document.getElementById('aEditId').value;
-  const ean    = document.getElementById('aEan').value.trim() || (editId || uid());
+  const eanField = document.getElementById('aEan').value.trim();
+
+  // En mode édition : on conserve l'id existant pour ne pas créer de doublon
+  // L'EAN peut être mis à jour mais l'id local reste celui de l'article original
+  const localId = editId || eanField || uid();
+  const ean     = eanField || localId;
+
   const obj = {
-    id:       ean,
+    id:       localId,
     name,
     ref:      document.getElementById('aRef').value.trim(),
     ean,
@@ -1224,22 +1230,26 @@ async function saveArticle(){
     location: document.getElementById('aLocation').value.trim(),
     notes:    document.getElementById('aNotes').value.trim(),
   };
-  // Mise à jour locale immédiate
-  if(editId){const i=articles.findIndex(a=>a.id===editId);if(i>=0)articles[i]=obj;else articles.push(obj);}
+
+  // Mise à jour locale immédiate — trouve par id (pas par ean)
+  const existing = articles.findIndex(a => a.id === localId);
+  if(existing >= 0) articles[existing] = obj;
   else articles.push(obj);
+
   saveAll(); closeModal('modalArticle'); render(); toast('Enregistrement…','ok');
-  // Écriture vers Google Sheets
+
+  // Écriture vers Google Sheets — on upsert par EAN (clé Sheets)
   setSyncStatus('saving');
   try {
     await gasCall({
-      action: 'upsertProduit',
-      ean:                  ean,
-      nom:                  name,
-      seuil_alerte:         obj.min,
-      stock_actuel:         obj.qty,
-      fournisseur:          obj.supplier,
+      action:                'upsertProduit',
+      ean:                   ean,
+      nom:                   name,
+      seuil_alerte:          obj.min,
+      stock_actuel:          obj.qty,
+      fournisseur:           obj.supplier,
       reference_fournisseur: obj.ref,
-      notes:                obj.notes,
+      notes:                 obj.notes,
     });
     setSyncStatus('idle');
     toast('Article enregistré ✓');
@@ -1540,9 +1550,9 @@ function handleScan(code){
     return;
   }
 
-  // Sinon → chercher l'article par EAN ou référence
+  // Sinon → chercher l'article par EAN, id ou référence
   const art = articles.find(a =>
-    a.ean === code || a.ref === code ||
+    a.ean === code || a.id === code || a.ref === code ||
     a.name.toLowerCase().includes(code.toLowerCase())
   );
 
