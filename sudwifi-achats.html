@@ -1484,8 +1484,9 @@ function removeSn(idx){
 
 function addSnFromInput(){
   const inp = document.getElementById('mvtSnInput');
-  const val = inp.value.trim();
-  if(!val) return;
+  const raw = inp.value.trim();
+  if(!raw) return;
+  const val = normalizeSN(raw);
   const list = getSnList();
   if(list.includes(val)){ toast('SN déjà ajouté','warn'); inp.value=''; return; }
   list.push(val);
@@ -1550,6 +1551,23 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// Nettoie un code scanné pour n'extraire que le SN utile
+// Ex: "Serial Number 1:2261688000255" → "2261688000255"
+// Ex: "Part Number:1700000363" → "1700000363"
+// Ex: "Box S/N:2261688X00126 EU/1.0" → "2261688X00126"
+function normalizeSN(raw) {
+  raw = raw.trim();
+  // Cas 1 : préfixe texte suivi de ":" → extraire ce qui suit
+  const colonMatch = raw.match(/[A-Za-z\s\/\.]+[:\s]+([A-Z0-9\-\.\/]+)/i);
+  if (colonMatch) {
+    // Prendre la première séquence alphanumérique longue (≥ 6 caractères)
+    const candidate = colonMatch[1].trim().split(/\s+/)[0];
+    if (candidate.length >= 6) return candidate;
+  }
+  // Cas 2 : code déjà propre (EAN, SN numérique pur)
+  return raw;
+}
+
 function handleScan(code){
   code = code.trim();
   if(!code) return;
@@ -1560,11 +1578,12 @@ function handleScan(code){
   // Si la modale mouvement est ouverte → ajouter comme SN
   const mvtModal = document.getElementById('modalMvt');
   if(mvtModal && mvtModal.classList.contains('open')){
+    const sn = normalizeSN(code);
     const list = getSnList();
-    if(!list.includes(code)){
-      list.push(code);
+    if(!list.includes(sn)){
+      list.push(sn);
       setSnList(list);
-      toast(`SN scanné : ${code}`);
+      toast(`SN scanné : ${sn}`);
     } else {
       toast('SN déjà enregistré','warn');
     }
