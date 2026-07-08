@@ -505,6 +505,9 @@ body::before{
   <a class="back-btn" href="https://sudwifi.github.io/deviseur/sudwifi-dashboard.html">← Dashboard</a>
   <div class="topbar-title">📦 Achats & Stock</div>
   <div id="syncIndicator" style="font-family:var(--mono);font-size:11px;color:var(--muted);transition:color .3s">⟳ Chargement…</div>
+  <button onclick="changeUser()" style="margin-left:auto;background:rgba(0,126,177,.08);border:1px solid rgba(0,126,177,.2);border-radius:20px;padding:4px 12px;font-family:var(--body);font-size:12px;color:var(--blue1);cursor:pointer;display:flex;align-items:center;gap:6px">
+    👤 <span id="userBadge">?</span>
+  </button>
   <div class="topbar-right">
     <button class="add-btn" onclick="openModal('article')">+ Article</button>
     <button class="add-btn blue" onclick="openModal('commande')">+ Commande</button>
@@ -771,6 +774,8 @@ body::before{
 //  CONFIG — Google Apps Script (stockage partagé)
 // ══════════════════════════════════════════════════════
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyKOgCdNuCLX4fv4mBMhM9su5uYV_SjeD3tXrPu0GSmsVakQMmrqN7B6WK_LMJ6W29v/exec';
+const ADMINS = ['Virginie', 'Stéphane'];
+let currentUser = loadLS('sw_current_user') || '';
 
 // ══════════════════════════════════════════════════════
 //  COUCHE API — appels vers Apps Script
@@ -814,6 +819,31 @@ function setSyncStatus(status, msg) {
   el.textContent = c.icon + ' ' + (msg || c.label);
   el.style.color = c.color;
   el.style.animation = (status === 'loading' || status === 'saving') ? 'spin .8s linear infinite' : '';
+}
+
+// ── Gestion utilisateur ──
+function isAdmin(){ return ADMINS.includes(currentUser); }
+
+function confirmLogin(){
+  const sel = document.getElementById('loginSelect').value;
+  if(!sel){ toast('Veuillez choisir un nom','warn'); return; }
+  currentUser = sel;
+  saveLS('sw_current_user', currentUser);
+  document.getElementById('modalLogin').classList.remove('open');
+  // Pré-remplir le champ Qui dans les modales
+  if(document.getElementById('mvtWho')) document.getElementById('mvtWho').value = currentUser;
+  updateUserBadge();
+  toast(`Bonjour ${currentUser} 👋`);
+}
+
+function updateUserBadge(){
+  const el = document.getElementById('userBadge');
+  if(el) el.textContent = currentUser || '?';
+}
+
+function changeUser(){
+  document.getElementById('loginSelect').value = '';
+  document.getElementById('modalLogin').classList.add('open');
 }
 
 // ── Chargement initial depuis Google Sheets ──
@@ -1090,7 +1120,12 @@ function renderMouvements(){
     const snHtml = m.serials&&m.serials.length
       ? `<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px">${m.serials.map(s=>`<span class="sn-chip" style="margin:0">${esc(s)}</span>`).join('')}</div>`
       : '';
-    html+=`<div class="mvt-row">
+    const adminBtns = isAdmin() ? `
+      <div style="display:flex;gap:4px;align-items:center">
+        <button class="act-btn blue" title="Modifier" onclick="openEditMouvement('${m.id}')">✎</button>
+        <button class="act-btn" title="Supprimer" onclick="deleteMouvement('${m.id}')">🗑</button>
+      </div>` : '';
+    html+=`<div class="mvt-row" style="align-items:center">
       <div class="mvt-arrow ${m.type}">${m.type==='in'?'↓':'↑'}</div>
       <div class="mvt-main">
         <div class="mvt-title">${esc(art?art.name:m.articleName||'Article supprimé')}</div>
@@ -1100,6 +1135,7 @@ function renderMouvements(){
       <div class="mvt-qty ${m.type}">${m.type==='in'?'+':'−'}${m.qty}</div>
       <div class="mvt-who" style="background:${oc}22;color:${oc}" title="${esc(m.who)}">${(m.who||'?')[0]}</div>
       <div class="mvt-date">${fmtDate(m.date)}</div>
+      ${adminBtns}
     </div>`;
   });
 
@@ -1280,6 +1316,136 @@ function editArticle(id){
   document.getElementById('modalArticle').classList.add('open');
 }
 
+// ── EDIT MOUVEMENT (admin) ──
+function openEditMouvement(id){
+  const m = mouvements.find(x => x.id === id);
+  if(!m) return;
+  // Remplir la liste articles
+  const sel = document.getElementById('editMvtArticle');
+  sel.innerHTML = articles.map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('');
+  // Remplir les champs
+  document.getElementById('editMvtId').value       = m.id;
+  document.getElementById('editMvtArticle').value  = m.articleId;
+  document.getElementById('editMvtQty').value      = m.qty;
+  document.getElementById('editMvtWho').value      = m.who || currentUser;
+  document.getElementById('editMvtDate').value     = m.date || today();
+  document.getElementById('editMvtChantier').value = m.chantier || '';
+  document.getElementById('editMvtNote').value     = m.note || '';
+  document.getElementById('editMvtSnList').value   = JSON.stringify(m.serials || []);
+  renderEditSnChips(m.serials || []);
+  selectEditMvtType(m.type || 'out');
+  document.getElementById('modalEditMvt').classList.add('open');
+}
+
+function selectEditMvtType(type){
+  document.getElementById('editMvtType').value = type;
+  document.getElementById('editMvtBtnIn').classList.toggle('active', type==='in');
+  document.getElementById('editMvtBtnOut').classList.toggle('active', type==='out');
+}
+
+function renderEditSnChips(list){
+  document.getElementById('editMvtSnChips').innerHTML = list.map((s,i) =>
+    `<span class="sn-chip">${esc(s)} <span style="cursor:pointer;margin-left:4px" onclick="removeEditSn(${i})">×</span></span>`
+  ).join('');
+}
+
+function removeEditSn(idx){
+  const list = JSON.parse(document.getElementById('editMvtSnList').value || '[]');
+  list.splice(idx, 1);
+  document.getElementById('editMvtSnList').value = JSON.stringify(list);
+  renderEditSnChips(list);
+}
+
+function editSnInputKey(e){
+  if(e.key === 'Enter' || e.key === 'Tab'){
+    e.preventDefault();
+    const inp = document.getElementById('editMvtSnInput');
+    const val = normalizeSN(inp.value.trim());
+    if(!val) return;
+    const list = JSON.parse(document.getElementById('editMvtSnList').value || '[]');
+    if(!list.includes(val)){ list.push(val); }
+    document.getElementById('editMvtSnList').value = JSON.stringify(list);
+    renderEditSnChips(list);
+    inp.value = '';
+  }
+}
+
+async function saveEditMouvement(){
+  const id  = document.getElementById('editMvtId').value;
+  const idx = mouvements.findIndex(x => x.id === id);
+  if(idx < 0) return;
+
+  const oldMvt = mouvements[idx];
+  const artId  = document.getElementById('editMvtArticle').value;
+  const art    = articles.find(a => a.id === artId);
+  const newQty = parseInt(document.getElementById('editMvtQty').value) || 1;
+  const newType = document.getElementById('editMvtType').value;
+
+  // Recalcul stock : annuler l'ancien mouvement, appliquer le nouveau
+  const oldArt = articles.find(a => a.id === oldMvt.articleId);
+  if(oldArt){
+    oldArt.qty = oldMvt.type === 'in'
+      ? Math.max(0, oldArt.qty - oldMvt.qty)
+      : oldArt.qty + oldMvt.qty;
+  }
+  if(art){
+    art.qty = newType === 'in' ? art.qty + newQty : Math.max(0, art.qty - newQty);
+  }
+
+  const updatedMvt = {
+    ...oldMvt,
+    articleId:   artId,
+    articleName: art ? art.name : oldMvt.articleName,
+    qty:         newQty,
+    type:        newType,
+    who:         document.getElementById('editMvtWho').value,
+    date:        document.getElementById('editMvtDate').value,
+    chantier:    document.getElementById('editMvtChantier').value.trim(),
+    note:        document.getElementById('editMvtNote').value.trim(),
+    serials:     JSON.parse(document.getElementById('editMvtSnList').value || '[]'),
+  };
+  mouvements[idx] = updatedMvt;
+  saveAll(); closeModal('modalEditMvt'); render(); toast('Mouvement modifié ✓');
+
+  // Sync Sheets : supprimer l'ancien, recréer le nouveau
+  setSyncStatus('saving');
+  try {
+    await gasCall({ action: 'deleteMouvement', id });
+    await gasCall({
+      action:      'addMouvement',
+      type:        newType === 'in' ? 'entree' : 'sortie',
+      produit:     updatedMvt.articleName,
+      ean:         art ? (art.ean || art.id) : artId,
+      quantite:    newQty,
+      utilisateur: updatedMvt.who,
+      notes:       updatedMvt.note,
+      chantier:    updatedMvt.chantier,
+    });
+    setSyncStatus('idle');
+  } catch(e){
+    setSyncStatus('error', 'Sync échouée');
+    toast('Modifié localement (sync échouée)', 'warn');
+  }
+}
+
+async function deleteMouvement(id){
+  const m = mouvements.find(x => x.id === id);
+  if(!m) return;
+  const art = articles.find(a => a.id === m.articleId);
+  if(!confirm(`Supprimer ce mouvement (${m.type==='in'?'+':'−'}${m.qty} · ${m.articleName||'?'}) ?`)) return;
+  // Annuler l'effet sur le stock
+  if(art){ art.qty = m.type==='in' ? Math.max(0, art.qty - m.qty) : art.qty + m.qty; }
+  mouvements = mouvements.filter(x => x.id !== id);
+  saveAll(); render(); toast('Mouvement supprimé','warn');
+  setSyncStatus('saving');
+  try {
+    await gasCall({ action: 'deleteMouvement', id });
+    setSyncStatus('idle');
+  } catch(e){
+    setSyncStatus('error', 'Sync échouée');
+  }
+}
+
 async function deleteArticle(id){
   const a = articles.find(x => x.id === id);
   if(!a) return;
@@ -1406,6 +1572,7 @@ function openModal(type){
     document.getElementById('mvtQty').value=1;
     document.getElementById('mvtChantier').value='';
     document.getElementById('mvtNote').value='';
+    if(currentUser) document.getElementById('mvtWho').value=currentUser;
     document.getElementById('mvtSnInput').value='';
     document.getElementById('mvtSnList').value='';
     document.getElementById('mvtSnChips').innerHTML='';
@@ -1425,7 +1592,7 @@ function openModal(type){
 function closeModal(id){document.getElementById(id).classList.remove('open')}
 function closeModalOutside(e,id){if(e.target===document.getElementById(id))closeModal(id)}
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){['modalArticle','modalMvt','modalCommande'].forEach(closeModal)}
+  if(e.key==='Escape'){['modalArticle','modalMvt','modalCommande','modalEditMvt'].forEach(closeModal)}
 });
 
 // ══════════════════════════════════════════════════════
@@ -1781,8 +1948,92 @@ function addEanToArticleForm(){
 // ══════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════
-// Lancement : charge depuis Google Sheets
+// Lancement
+updateUserBadge();
+if(!currentUser){
+  document.getElementById('modalLogin').classList.add('open');
+}
 loadFromSheets();
 </script>
+<!-- ── MODALE LOGIN ── -->
+<div class="modal-overlay" id="modalLogin" style="z-index:3000">
+  <div class="modal-box" style="max-width:340px;text-align:center">
+    <div style="font-size:32px;margin-bottom:8px">👤</div>
+    <div class="modal-title" style="margin-bottom:4px">Qui êtes-vous ?</div>
+    <div style="color:var(--muted);font-size:13px;margin-bottom:20px">Sélectionnez votre nom pour continuer</div>
+    <select class="form-select" id="loginSelect" style="margin-bottom:20px;font-size:15px">
+      <option value="">— Choisir —</option>
+      <option>Anthony</option>
+      <option>Fabian</option>
+      <option>Jonovan</option>
+      <option>Frédéric</option>
+      <option>Ambre</option>
+      <option>Amanda</option>
+      <option>Virginie</option>
+      <option>Stéphane</option>
+    </select>
+    <button class="btn-save" style="width:100%" onclick="confirmLogin()">Confirmer</button>
+  </div>
+</div>
+
+<!-- ── MODALE EDIT MOUVEMENT ── -->
+<div class="modal-overlay" id="modalEditMvt" onclick="closeModalOutside(event,'modalEditMvt')">
+  <div class="modal-box" style="max-width:540px">
+    <button class="modal-close" onclick="closeModal('modalEditMvt')">✕</button>
+    <div class="modal-title">Modifier le mouvement</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div class="form-group" style="grid-column:1/-1">
+        <label>Type</label>
+        <div style="display:flex;gap:8px">
+          <button id="editMvtBtnIn"  class="mvt-type-btn" onclick="selectEditMvtType('in')" style="flex:1">↓ Entrée stock</button>
+          <button id="editMvtBtnOut" class="mvt-type-btn" onclick="selectEditMvtType('out')" style="flex:1">↑ Sortie stock</button>
+        </div>
+        <input type="hidden" id="editMvtId"/>
+        <input type="hidden" id="editMvtType" value="out"/>
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label>Article *</label>
+        <select class="form-select" id="editMvtArticle"></select>
+      </div>
+      <div class="form-group">
+        <label>Quantité *</label>
+        <input class="form-input" id="editMvtQty" type="number" min="1" value="1"/>
+      </div>
+      <div class="form-group">
+        <label>Qui</label>
+        <select class="form-select" id="editMvtWho">
+          <option>Anthony</option><option>Fabian</option><option>Jonovan</option>
+          <option>Frédéric</option><option>Ambre</option><option>Amanda</option>
+          <option>Virginie</option><option>Stéphane</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input class="form-input" id="editMvtDate" type="date"/>
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label>Chantier / Site</label>
+        <input class="form-input" id="editMvtChantier" placeholder="Ex: Camping Le Soleil"/>
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label>Numéros de série</label>
+        <div style="display:flex;gap:6px">
+          <input class="sn-input" id="editMvtSnInput" placeholder="Scanner ou taper le SN…" autocomplete="off" onkeydown="editSnInputKey(event)" style="flex:1"/>
+        </div>
+        <input type="hidden" id="editMvtSnList"/>
+        <div id="editMvtSnChips" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px"></div>
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label>Note</label>
+        <input class="form-input" id="editMvtNote" placeholder="Ex: remplacement switch défaillant"/>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-cancel" onclick="closeModal('modalEditMvt')">Annuler</button>
+      <button class="btn-save" onclick="saveEditMouvement()">Enregistrer les modifications</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
