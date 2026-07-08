@@ -775,6 +775,10 @@ body::before{
 // ══════════════════════════════════════════════════════
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyKOgCdNuCLX4fv4mBMhM9su5uYV_SjeD3tXrPu0GSmsVakQMmrqN7B6WK_LMJ6W29v/exec';
 const ADMINS = ['Virginie', 'Stéphane'];
+function isAdmin(){ 
+  const normalize = s => (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+  return ADMINS.some(a => normalize(a) === normalize(currentUser));
+}
 let currentUser = loadLS('sw_current_user') || '';
 
 // ══════════════════════════════════════════════════════
@@ -822,7 +826,7 @@ function setSyncStatus(status, msg) {
 }
 
 // ── Gestion utilisateur ──
-function isAdmin(){ return ADMINS.includes(currentUser); }
+// isAdmin définie avec normalize dans ADMINS
 
 function confirmLogin(){
   const sel = document.getElementById('loginSelect').value;
@@ -852,33 +856,42 @@ async function loadFromSheets() {
   try {
     // Stock + catalogue
     const stockData = await gasCall({ action: 'getStock' });
-    articles = (stockData.catalogue || []).map(p => ({
-      id:       p.ean || uid(),
-      name:     p.nom || '',
-      ref:      p.reference_fournisseur || '',
-      ean:      p.ean || '',
-      cat:      detectCat(p.nom || ''),
-      supplier: p.fournisseur || '',
-      qty:      Number(p.stock_actuel) || 0,
-      min:      Number(p.seuil_alerte) || 2,
-      max:      Math.max(Number(p.seuil_alerte) * 3, 10),
-      location: '',
-      notes:    p.notes || '',
-    }));
+    articles = (stockData.catalogue || []).map(p => {
+      // ID stable : EAN en priorité, sinon slug du nom (évite uid() aléatoire à chaque reload)
+      const stableId = (p.ean || '').trim() || 'art_' + (p.nom || '').toLowerCase().replace(/[^a-z0-9]/g,'_').slice(0,30);
+      return {
+        id:       stableId,
+        name:     p.nom || '',
+        ref:      p.reference_fournisseur || '',
+        ean:      (p.ean || '').trim(),
+        cat:      detectCat(p.nom || ''),
+        supplier: p.fournisseur || '',
+        qty:      Number(p.stock_actuel) || 0,
+        min:      Number(p.seuil_alerte) || 2,
+        max:      Math.max(Number(p.seuil_alerte) * 3, 10),
+        location: '',
+        notes:    p.notes || '',
+      };
+    });
     // Mouvements
     const mvtData = await gasCall({ action: 'getMouvements', limit: 300 });
-    mouvements = (mvtData || []).map(m => ({
-      id:          m.id,
-      articleId:   m.ean,
-      articleName: m.produit || '',
-      qty:         Number(m.quantite) || 0,
-      type:        (m.type === 'entree' || m.type === 'retour') ? 'in' : 'out',
-      who:         m.utilisateur || '',
-      date:        (m.date || '').slice(0, 10),
-      chantier:    m.chantier || '',
-      note:        m.notes || '',
-      serials:     [],
-    }));
+    mouvements = (mvtData || []).map(m => {
+      // Retrouver l'article correspondant pour avoir son id local stable
+      const ean = (m.ean || '').trim();
+      const matchingArt = articles.find(a => a.ean === ean || a.id === ean);
+      return {
+        id:          m.id,
+        articleId:   matchingArt ? matchingArt.id : ean,
+        articleName: m.produit || (matchingArt ? matchingArt.name : ''),
+        qty:         Number(m.quantite) || 0,
+        type:        (m.type === 'entree' || m.type === 'retour') ? 'in' : 'out',
+        who:         m.utilisateur || '',
+        date:        (m.date || '').slice(0, 10),
+        chantier:    m.chantier || '',
+        note:        m.notes || '',
+        serials:     [],
+      };
+    });
     // Commandes en local (pas dans le GAS pour l'instant)
     const DEMO_CMD = /^c[1-3]$/;
     commandes = (loadLS('sw_commandes') || []).filter(x => !DEMO_CMD.test(x.id || ''));
@@ -1236,11 +1249,12 @@ function renderAffectations(){
 //  ACTIONS
 // ══════════════════════════════════════════════════════
 function quickMvt(articleId, type){
+  // openModal recrée le select articles — on doit sélectionner APRÈS
+  openModal('mouvement');
   document.getElementById('mvtArticle').value = articleId;
   document.getElementById('mvtType').value    = type;
   document.getElementById('mvtDate').value    = today();
   selectMvtType(type);
-  openModal('mouvement');
 }
 
 async function saveArticle(){
