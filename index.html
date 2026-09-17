@@ -534,6 +534,18 @@
           <label>Nombre de caméras</label>
           <input type="number" id="nbCam" value="8" min="1" oninput="calc()">
         </div>
+        <div style="border-top:1px solid var(--border);margin:4px 0 2px;"></div>
+        <div>
+          <label>Assistance vacanciers 24/7 (chat multilingue)</label>
+          <div class="toggle-group">
+            <div class="toggle-btn active" id="chat-inclus" onclick="setChatVacanciers('inclus')">Inclus</div>
+            <div class="toggle-btn" id="chat-option" onclick="setChatVacanciers('option')">En option (upsell)</div>
+          </div>
+        </div>
+        <div id="chat-prix-block" style="display:none;">
+          <label>Prix option (€/mois · 0 = sur demande)</label>
+          <input type="number" id="chatPrixMensuel" value="0" min="0" oninput="calc()">
+        </div>
       </div>
     </div>
 
@@ -945,7 +957,7 @@ function getAdipsys(cnx, mois) {
 // ═══════════════════ STATE ═══════════════════
 let STATE = {
   typo:'camping', engagement:60, adipsysDuree:60,
-  recurrentMode:'saisonnier', acomptePct:30, leasingMode:'sec',
+  recurrentMode:'saisonnier', acomptePct:30, leasingMode:'sec', chatVacanciers:'inclus',
 };
 let lastResult = null;
 
@@ -1059,6 +1071,14 @@ function setAcompte(pct) {
   [0,30,50].forEach(k => document.getElementById('acp-'+k).classList.remove('active'));
   document.getElementById('acp-'+pct).classList.add('active');
   document.getElementById('leas-acp-pct').textContent = pct;
+  calc();
+}
+
+function setChatVacanciers(mode) {
+  STATE.chatVacanciers = mode;
+  ['inclus','option'].forEach(k => document.getElementById('chat-'+k).classList.remove('active'));
+  document.getElementById('chat-'+mode).classList.add('active');
+  document.getElementById('chat-prix-block').style.display = mode === 'option' ? 'block' : 'none';
   calc();
 }
 
@@ -1207,6 +1227,7 @@ function calc() {
   const caRecAnnuel = recMensuel * nbMoisRec;
   const margeRecAnnuelle = (recMensuel - crPack) * nbMoisRec;
   const recSuggere = calcRecurrentSuggere(nbH);
+  const chatPrix = parseFloat(document.getElementById('chatPrixMensuel')?.value) || 0;
 
   lastResult = {
     typo:STATE.typo, typoLabel:typo.label,
@@ -1217,7 +1238,7 @@ function calc() {
     loyerCAPEXSeul, min15pct, alerteMin, recCap, recCapEff,
     baseTotale, loyerTotal, acompteMontant, baseLeasee,
     receveTrimestriel, receveTotalFin,
-    recMensuel, nbMoisRec, caRecAnnuel, margeRecAnnuelle, recSuggere,
+    recMensuel, nbMoisRec, caRecAnnuel, margeRecAnnuelle, recSuggere, chatPrix,
     nomClient: document.getElementById('nomClient').value || '—',
     date: new Date().toLocaleDateString('fr-FR'),
   };
@@ -1325,11 +1346,28 @@ function updateMateriel(r) {
 function updateClientView(r) {
   const s = getSettings();
   const nom = r.nomClient!=='—'?r.nomClient:r.typoLabel;
-  const modeRec = STATE.recurrentMode==='saisonnier'?'6 mois/an · avril – septembre':STATE.recurrentMode==='annuel'?'Annuel · sans engagement':'60 mois';
   const raison = s.sRaison||'Sud Wifi';
   const adresse = s.sAdresse||'Solliès-Pont, Var';
   const email = s.sEmail||'contact@sudwifi.fr';
   const site = s.sSite||'sudwifi.fr';
+
+  // Coût mensuel affiché au client
+  let coutMensuelPrincipal, coutMensuelDetail;
+  if (STATE.leasingMode === 'integre') {
+    // Un seul flux : loyer incluant matériel, installation, portail et services
+    coutMensuelPrincipal = r.loyerTotal;
+    coutMensuelDetail = `Tout inclus · pendant ${STATE.engagement} mois`;
+  } else {
+    // Deux flux distincts : loyer sur la durée du leasing + pack services selon sa récurrence
+    coutMensuelPrincipal = r.loyerTotal + r.recMensuel;
+    const recLabel = STATE.recurrentMode==='saisonnier'
+      ? `${fmt(r.recMensuel)} services (avril – septembre)`
+      : `${fmt(r.recMensuel)} services (12 mois/an)`;
+    coutMensuelDetail = `${fmt(r.loyerTotal)} installation sur ${STATE.engagement} mois + ${recLabel}`;
+    if (STATE.recurrentMode === 'saisonnier') {
+      coutMensuelDetail += ` · hors saison : ${fmt(r.loyerTotal)}/mois`;
+    }
+  }
 
   document.getElementById('client-view-content').innerHTML = `
     <div class="cv-stripe"></div>
@@ -1362,43 +1400,57 @@ function updateClientView(r) {
     </div>
 
     <div class="cv-title">Solution Wifi · ${nom}</div>
-    <div class="cv-sub">${r.nbHeberg} hébergements · ${r.typoLabel} · ${r.nbAPTotal} points d'accès</div>
+    <div class="cv-sub">${r.nbHeberg} hébergements · ${r.typoLabel} · couverture extérieure de tous les hébergements</div>
     <hr class="cv-divider">
 
-    <div class="cv-grid">
-      <div class="cv-metric blue">
-        <div class="cm-label">${STATE.leasingMode==='integre'?'Loyer mensuel all-inclusive':'Loyer mensuel'}</div>
-        <div class="cm-value">${fmt(r.loyerTotal)}</div>
-        <div class="cm-sub">${STATE.leasingMode==='integre'?'Matériel · installation · portail · services':'Matériel · installation · portail'} · ${STATE.engagement} mois</div>
+    <div class="cv-pack">
+      <div class="cv-pack-header">✦ Ce qui est inclus dans votre solution</div>
+      <div class="cv-pack-row"><span>Déploiement complet ${r.typoLabel} — couverture extérieure de tous les hébergements</span><span class="check">✓</span></div>
+      <div class="cv-pack-row"><span>Portail de connexion Sud Wifi personnalisé à vos couleurs</span><span class="check">✓</span></div>
+      ${STATE.chatVacanciers==='inclus'?`<div class="cv-pack-row"><span>Assistance aux vacanciers par mail et chat en direct 24/7 — instantanée, dans toutes les langues</span><span class="check">✓</span></div>`:''}
+      <div class="cv-pack-row"><span>Signal disponible aux abords immédiats de chaque hébergement</span><span class="check">✓</span></div>
+      <div class="cv-pack-row"><span>Supervision réseau 24/7 · alertes proactives · maintenance incluse</span><span class="check">✓</span></div>
+      <div class="cv-pack-row"><span>Matériel standard TP-Link Omada — non propriétaire, vous gardez la main</span><span class="check">✓</span></div>
+      <div class="cv-pack-row"><span>Pack services ${STATE.recurrentMode==='saisonnier'?'<strong>saisonnier sans engagement</strong>':'sans engagement'} — résiliable à tout moment</span><span class="check">✓</span></div>
+    </div>
+
+    ${STATE.chatVacanciers==='option'?`
+    <div class="cv-pack" style="border-color:#fde68a;">
+      <div class="cv-pack-header" style="background:#d97706;">✦ En option — Assistance vacanciers Sud Wifi</div>
+      <div class="cv-pack-row" style="display:block;">
+        <div style="margin-bottom:4px;"><strong>Assistance à vos vacanciers par mail et chat en direct 24/7</strong> — instantanée, dans toutes les langues.</div>
+        <div style="color:#6b7280;font-size:11px;">Vos vacanciers sont dépannés directement par nos équipes, sans solliciter votre réception. Exclusivité Sud Wifi.</div>
+        <div style="margin-top:6px;font-weight:700;color:#d97706;">${r.chatPrix > 0 ? fmt(r.chatPrix)+' / mois' : 'Tarif sur demande'}</div>
       </div>
-      <div class="cv-metric">
-        <div class="cm-label">Acompte à la commande</div>
-        <div class="cm-value">${fmt(r.acompteMontant)}</div>
-        <div class="cm-sub">${STATE.acomptePct}% du montant total</div>
-      </div>
-      <div class="cv-metric sun">
-        <div class="cm-label">Pack services</div>
-        <div class="cm-value">${fmt(r.recMensuel)}</div>
-        <div class="cm-sub">${modeRec}</div>
-      </div>
+    </div>`:''}
+
+    <div style="font-size:11px;color:#6b7280;margin-bottom:12px;line-height:1.5;">
+      Réception intérieure variable selon la construction de l'hébergement — bornes intérieures en option.
     </div>
 
     ${STATE.typo==='camping'||STATE.typo==='village'?`
     <div class="cv-roi">
-      <strong>💡 Retour sur investissement :</strong>
-      85% des campings facturent le Wifi en option payante à leurs clients.
-      À 2 €/nuit × ${r.nbHeberg} emplacements × 90 jours de saison = <strong>${fmt(2*r.nbHeberg*90*0.85)} € de CA Wifi/saison</strong> pour votre établissement.
-      Votre installation est remboursée en moins de 2 saisons.
+      <strong>💡 Vous restez maître de votre modèle :</strong>
+      l'infrastructure vous appartient. Vous décidez librement de proposer le Wifi
+      gratuit, payant, ou en formule mixte — inclus dans vos hébergements premium,
+      facturé sur les emplacements. Et si vous choisissez de le facturer,
+      <strong>100% des recettes vous reviennent</strong> : aucune commission, aucun intermédiaire.
+      À titre indicatif, sur ${r.nbHeberg} hébergements facturés 2 €/nuit sur une saison de 90 jours,
+      le potentiel atteint <strong>${fmt(2*r.nbHeberg*90*0.85)} par saison</strong>.
+      Votre choix reste révisable chaque année.
     </div>`:''}
 
-    <div class="cv-pack">
-      <div class="cv-pack-header">✦ Ce qui est inclus dans votre solution</div>
-      <div class="cv-pack-row"><span>Déploiement complet ${r.typoLabel} — ${r.nbAPTotal} points d'accès TP-Link Omada</span><span class="check">✓</span></div>
-      <div class="cv-pack-row"><span>Portail captif Adipsys Expert ${r.adp.cnxTier} connexions (valeur publique ${fmt(r.adipsysPV)})</span><span class="check">✓</span></div>
-      <div class="cv-pack-row"><span>Couverture 100% du site · signal garanti dans chaque hébergement</span><span class="check">✓</span></div>
-      <div class="cv-pack-row"><span>Supervision réseau 24/7 · alertes proactives · maintenance incluse</span><span class="check">✓</span></div>
-      <div class="cv-pack-row"><span>Matériel standard TP-Link Omada — non propriétaire, vous gardez la main</span><span class="check">✓</span></div>
-      <div class="cv-pack-row"><span>Pack services ${STATE.recurrentMode==='saisonnier'?'<strong>saisonnier sans engagement</strong>':'sans engagement'} — résiliable à tout moment</span><span class="check">✓</span></div>
+    <div class="cv-grid" style="grid-template-columns:repeat(2,1fr);">
+      <div class="cv-metric blue">
+        <div class="cm-label">Coût initial</div>
+        <div class="cm-value">${fmt(r.acompteMontant)}</div>
+        <div class="cm-sub">${r.acompteMontant > 0 ? 'Frais de mise en service' : 'Aucun frais de mise en service'}</div>
+      </div>
+      <div class="cv-metric sun">
+        <div class="cm-label">Coût mensuel</div>
+        <div class="cm-value">${fmt(coutMensuelPrincipal)}</div>
+        <div class="cm-sub">${coutMensuelDetail}</div>
+      </div>
     </div>
 
     <div class="cv-footer">
@@ -1426,6 +1478,7 @@ function buildProjectData() {
       chkTV: document.getElementById('chkTV').checked, nbTV: document.getElementById('nbTV').value,
       chkTel: document.getElementById('chkTel').checked, nbPostes: document.getElementById('nbPostes').value,
       chkVSI: document.getElementById('chkVSI').checked, nbCam: document.getElementById('nbCam').value,
+      chatPrixMensuel: document.getElementById('chatPrixMensuel').value,
     },
     state: { ...STATE },
     result: lastResult,
@@ -1493,6 +1546,7 @@ function loadProject(i) {
   document.getElementById('nbPostes').value   = inp.nbPostes||20;
   document.getElementById('chkVSI').checked   = inp.chkVSI||false;
   document.getElementById('nbCam').value      = inp.nbCam||8;
+  document.getElementById('chatPrixMensuel').value = inp.chatPrixMensuel||0;
   // Restore state
   if (p.state) {
     const s = p.state;
@@ -1502,6 +1556,7 @@ function loadProject(i) {
     STATE.recurrentMode = s.recurrentMode||'saisonnier';
     STATE.acomptePct = s.acomptePct||30;
     STATE.leasingMode = s.leasingMode||'sec';
+    STATE.chatVacanciers = s.chatVacanciers||'inclus';
     // Update UI buttons
     document.querySelectorAll('.typo-btn').forEach((b,j)=>b.classList.remove('active'));
     const typoNames=['camping','hotel','village','sante','senior'];
@@ -1511,6 +1566,7 @@ function loadProject(i) {
     setAdipsys(STATE.adipsysDuree);
     setAcompte(STATE.acomptePct);
     setLeasingMode(STATE.leasingMode);
+    setChatVacanciers(STATE.chatVacanciers);
     ['saisonnier','annuel','60'].forEach(k=>document.getElementById('rec-'+k).classList.remove('active'));
     document.getElementById('rec-'+(STATE.recurrentMode==='60mois'?'60':STATE.recurrentMode==='annuel'?'annuel':'saisonnier')).classList.add('active');
     ['ponte-nb','tv-nb','tel-nb','vsi-nb'].forEach((id,i)=>{
