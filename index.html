@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sud Wifi — Deviseur Commercial v4</title>
+<title>Sud Wifi — Deviseur Commercial v5</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700;800&family=Quicksand:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -441,7 +441,7 @@
     </div>
   </div>
   <div class="header-right">
-    <div class="version-badge">v4.0</div>
+    <div class="version-badge">v5.0</div>
     <div class="header-actions">
       <button class="hbtn secondary" onclick="openTab('projets')">📁 Projets</button>
       <button class="hbtn secondary" onclick="importJSON()">⬆ Importer</button>
@@ -540,6 +540,7 @@
     <div class="card">
       <div class="card-header"><span class="card-title">Pack Services récurrent</span></div>
       <div class="card-body">
+        <div style="font-size:10px;color:var(--text3);line-height:1.4;">Prestations Sud Wifi : maintenance, supervision réseau, assistance utilisateurs — facturées indépendamment du financement du matériel.</div>
         <div>
           <label>Mode</label>
           <div class="toggle-group">
@@ -550,7 +551,11 @@
         </div>
         <div>
           <label>Mensualité pack (€/mois)</label>
-          <input type="number" id="recurrentMensuel" value="450" min="0" oninput="calc()">
+          <div class="row" style="gap:6px;">
+            <input type="number" id="recurrentMensuel" value="450" min="0" oninput="calc()" style="flex:1;">
+            <button onclick="suggererRecurrent()" class="hbtn secondary" style="white-space:nowrap;font-size:11px;padding:6px 10px;">🔢 Suggérer</button>
+          </div>
+          <div id="rec-suggestion" style="font-size:10px; color:var(--text3); margin-top:3px;"></div>
         </div>
         <div id="rec-info" style="font-size:11px; color:var(--text3);"></div>
       </div>
@@ -560,6 +565,14 @@
       <div class="card-header"><span class="card-title">Financement leasing</span></div>
       <div class="card-body">
         <div>
+          <label>Mode</label>
+          <div class="toggle-group">
+            <div class="toggle-btn active" id="leas-mode-sec" onclick="setLeasingMode('sec')">Sec (Capex)</div>
+            <div class="toggle-btn" id="leas-mode-integre" onclick="setLeasingMode('integre')">Avec services intégrés</div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px;">Sec : le loyer ne couvre que le Capex, le pack services est facturé à part par Sud Wifi. Intégré : le loyer inclut le pack services (2+3).</div>
+        </div>
+        <div>
           <label>Durée</label>
           <div class="toggle-group">
             <div class="toggle-btn" id="eng-12" onclick="setEngagement(12)">12 mois</div>
@@ -567,11 +580,11 @@
             <div class="toggle-btn active" id="eng-60" onclick="setEngagement(60)">60 mois</div>
           </div>
         </div>
-        <div>
+        <div id="leasing-rec-input-block" style="display:none;">
           <label>Récurrent capitalisé (€/mois)</label>
           <input type="number" id="recCapitalise" value="125" min="0" oninput="calc()">
+          <div id="alert-15pct" class="alert-msg" style="display:none;margin-top:6px;"></div>
         </div>
-        <div id="alert-15pct" class="alert-msg" style="display:none"></div>
         <div>
           <label>Acompte client</label>
           <div class="toggle-group">
@@ -635,14 +648,15 @@
       <div class="card-header"><span class="card-title">Structure financement</span></div>
       <div class="card-body">
         <div class="leasing-block">
-          <div class="leasing-row"><span class="lbl">CAPEX chantier HT</span><span class="val" id="leas-capex">—</span></div>
+          <div class="leasing-row"><span class="lbl">CAPEX chantier HT (matériel + Adipsys)</span><span class="val" id="leas-capex">—</span></div>
           <div class="leasing-row"><span class="lbl">Acompte commande (<span id="leas-acp-pct">30</span>%)</span><span class="val" id="leas-acompte">—</span></div>
           <div class="leasing-row"><span class="lbl">Base financée leasing</span><span class="val" id="leas-base">—</span></div>
-          <div class="leasing-row"><span class="lbl">Récurrent capitalisé (<span id="leas-rec-mois">—</span> mois)</span><span class="val" id="leas-rec-cap">—</span></div>
-          <div class="leasing-row"><span class="lbl">Base totale financée</span><span class="val" id="leas-total-base">—</span></div>
-          <div class="leasing-row separator big"><span class="lbl">Loyer client all-inclusive</span><span class="val" id="leas-loyer">—</span></div>
-          <div class="leasing-row green-row"><span class="lbl">↳ Sud Wifi reçoit à livraison (CAPEX)</span><span class="val" id="leas-livraison">—</span></div>
-          <div class="leasing-row yellow-row"><span class="lbl">↳ Sud Wifi reçoit / trimestre (récurrent)</span><span class="val" id="leas-trimestriel">—</span></div>
+          <div class="leasing-row" id="row-rec-cap" style="display:none;"><span class="lbl">Récurrent capitalisé (<span id="leas-rec-mois">—</span> mois)</span><span class="val" id="leas-rec-cap">—</span></div>
+          <div class="leasing-row" id="row-base-totale" style="display:none;"><span class="lbl">Base totale financée</span><span class="val" id="leas-total-base">—</span></div>
+          <div class="leasing-row separator big"><span class="lbl" id="leas-loyer-label">Loyer client (Capex uniquement)</span><span class="val" id="leas-loyer">—</span></div>
+          <div class="leasing-row green-row"><span class="lbl">↳ Sud Wifi reçoit du leaser à livraison</span><span class="val" id="leas-livraison">—</span></div>
+          <div class="leasing-row yellow-row" id="row-trimestriel" style="display:none;"><span class="lbl">↳ Sud Wifi reçoit / trimestre (récurrent)</span><span class="val" id="leas-trimestriel">—</span></div>
+          <div class="leasing-row" id="row-pack-note"><span class="lbl" style="color:var(--text3);font-size:11px;">Pack services facturé à part par Sud Wifi</span><span class="val" id="leas-pack-note" style="font-size:11px;color:var(--text3);">—</span></div>
           <div class="leasing-row"><span class="lbl">Total encaissé Sud Wifi · <span id="leas-duree">60</span> mois</span><span class="val" id="leas-total-enc">—</span></div>
         </div>
       </div>
@@ -839,6 +853,22 @@
       </div>
 
       <div class="card">
+        <div class="card-header"><span class="card-title">Barème pack services récurrent (par emplacement)</span></div>
+        <div class="card-body">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">Tarif dégressif par tranche d'emplacements — utilisé par le bouton "🔢 Suggérer" du Pack Services.</div>
+          <div class="row">
+            <div><label>0–50 emp. (€/emp./mois)</label><input type="number" id="pRecTier1" value="2.50" step="0.05" oninput="saveSettings(); calc()"></div>
+            <div><label>51–150 emp. (€/emp./mois)</label><input type="number" id="pRecTier2" value="2.00" step="0.05" oninput="saveSettings(); calc()"></div>
+          </div>
+          <div class="row">
+            <div><label>151–300 emp. (€/emp./mois)</label><input type="number" id="pRecTier3" value="1.60" step="0.05" oninput="saveSettings(); calc()"></div>
+            <div><label>300+ emp. (€/emp./mois)</label><input type="number" id="pRecTier4" value="1.30" step="0.05" oninput="saveSettings(); calc()"></div>
+          </div>
+          <div><label>Plancher minimum (€/mois)</label><input type="number" id="pRecMin" value="180" oninput="saveSettings(); calc()"></div>
+        </div>
+      </div>
+
+      <div class="card">
         <div class="card-header"><span class="card-title">Tarifs matériel — Coût de revient / Prix de vente</span></div>
         <div class="card-body">
           <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">Modifiez CR et PV pour ajuster vos marges. La marge est recalculée instantanément.</div>
@@ -915,7 +945,7 @@ function getAdipsys(cnx, mois) {
 // ═══════════════════ STATE ═══════════════════
 let STATE = {
   typo:'camping', engagement:60, adipsysDuree:60,
-  recurrentMode:'saisonnier', acomptePct:30,
+  recurrentMode:'saisonnier', acomptePct:30, leasingMode:'sec',
 };
 let lastResult = null;
 
@@ -933,6 +963,11 @@ function loadSettings() {
   if (s.pTauxMO)      document.getElementById('pTauxMO').value      = s.pTauxMO;
   if (s.pCoutKm)      document.getElementById('pCoutKm').value      = s.pCoutKm;
   if (s.pCRPack)      document.getElementById('pCRPack').value      = s.pCRPack;
+  if (s.pRecTier1)    document.getElementById('pRecTier1').value    = s.pRecTier1;
+  if (s.pRecTier2)    document.getElementById('pRecTier2').value    = s.pRecTier2;
+  if (s.pRecTier3)    document.getElementById('pRecTier3').value    = s.pRecTier3;
+  if (s.pRecTier4)    document.getElementById('pRecTier4').value    = s.pRecTier4;
+  if (s.pRecMin)      document.getElementById('pRecMin').value      = s.pRecMin;
 }
 function saveSettings() {
   const s = {
@@ -947,6 +982,11 @@ function saveSettings() {
     pTauxMO:      document.getElementById('pTauxMO').value,
     pCoutKm:      document.getElementById('pCoutKm').value,
     pCRPack:      document.getElementById('pCRPack').value,
+    pRecTier1:    document.getElementById('pRecTier1')?.value,
+    pRecTier2:    document.getElementById('pRecTier2')?.value,
+    pRecTier3:    document.getElementById('pRecTier3')?.value,
+    pRecTier4:    document.getElementById('pRecTier4')?.value,
+    pRecMin:      document.getElementById('pRecMin')?.value,
   };
   localStorage.setItem('sw_settings', JSON.stringify(s));
 }
@@ -1020,6 +1060,52 @@ function setAcompte(pct) {
   document.getElementById('acp-'+pct).classList.add('active');
   document.getElementById('leas-acp-pct').textContent = pct;
   calc();
+}
+
+function setLeasingMode(mode) {
+  STATE.leasingMode = mode;
+  ['sec','integre'].forEach(k => document.getElementById('leas-mode-'+k).classList.remove('active'));
+  document.getElementById('leas-mode-'+mode).classList.add('active');
+  const showIntegre = mode === 'integre';
+  document.getElementById('row-rec-cap').style.display = showIntegre ? 'flex' : 'none';
+  document.getElementById('row-base-totale').style.display = showIntegre ? 'flex' : 'none';
+  document.getElementById('row-trimestriel').style.display = showIntegre ? 'flex' : 'none';
+  document.getElementById('row-pack-note').style.display = showIntegre ? 'none' : 'flex';
+  document.getElementById('leasing-rec-input-block').style.display = showIntegre ? 'block' : 'none';
+  document.getElementById('leas-loyer-label').textContent = showIntegre ? 'Loyer client all-inclusive' : 'Loyer client (Capex uniquement)';
+  if (!showIntegre) {
+    document.getElementById('alert-15pct').style.display = 'none';
+  }
+  calc();
+}
+
+// ═══════════════════ CALCULATEUR RÉCURRENT PAR EMPLACEMENTS ═══════════════════
+function getRecurrentTiers() {
+  const t1 = parseFloat(document.getElementById('pRecTier1')?.value) || 2.50;
+  const t2 = parseFloat(document.getElementById('pRecTier2')?.value) || 2.00;
+  const t3 = parseFloat(document.getElementById('pRecTier3')?.value) || 1.60;
+  const t4 = parseFloat(document.getElementById('pRecTier4')?.value) || 1.30;
+  const min = parseFloat(document.getElementById('pRecMin')?.value) || 180;
+  return { tiers: [ {max:50, rate:t1}, {max:150, rate:t2}, {max:300, rate:t3}, {max:Infinity, rate:t4} ], min };
+}
+function calcRecurrentSuggere(nbH) {
+  const { tiers, min } = getRecurrentTiers();
+  let restant = nbH, prevMax = 0, total = 0;
+  for (const tier of tiers) {
+    if (restant <= 0) break;
+    const trancheSize = Math.min(restant, tier.max - prevMax);
+    total += trancheSize * tier.rate;
+    restant -= trancheSize;
+    prevMax = tier.max;
+  }
+  return Math.max(Math.round(total), min);
+}
+function suggererRecurrent() {
+  const nbH = parseInt(document.getElementById('nbHeberg').value) || 0;
+  const suggestion = calcRecurrentSuggere(nbH);
+  document.getElementById('recurrentMensuel').value = suggestion;
+  calc();
+  toast(`💡 Suggestion appliquée : ${fmt(suggestion)}/mois pour ${nbH} emplacements`, 'info');
 }
 
 function fmt(n) { return new Intl.NumberFormat('fr-FR',{minimumFractionDigits:0,maximumFractionDigits:0}).format(Math.round(n))+' €'; }
@@ -1100,20 +1186,27 @@ function calc() {
   const capexPV = totalPV + adp.pv;
 
   const tauxM = tauxLeas / 100;
-  const loyerCAPEXSeul = totalPV * tauxM;
-  const min15pct = loyerCAPEXSeul * 0.15;
-  const alerteMin = recCap > 0 && recCap < min15pct;
+  const isIntegre = STATE.leasingMode === 'integre';
+  const recCapEff = isIntegre ? recCap : 0;
 
-  const baseTotale = totalPV + (recCap * STATE.engagement);
+  // L'acompte réduit le montant effectivement financé par le leaser
+  const acompteMontant = capexPV * STATE.acomptePct / 100;
+  const baseLeasee = capexPV - acompteMontant;
+
+  const loyerCAPEXSeul = baseLeasee * tauxM;
+  const min15pct = loyerCAPEXSeul * 0.15;
+  const alerteMin = isIntegre && recCap > 0 && recCap < min15pct;
+
+  const baseTotale = baseLeasee + (recCapEff * STATE.engagement);
   const loyerTotal = baseTotale * tauxM;
-  const acompteMontant = totalPV * STATE.acomptePct / 100;
-  const baseLeasee = totalPV * (1 - STATE.acomptePct / 100);
-  const receveTrimestriel = recCap * 3;
-  const receveTotalFin = totalPV + (recCap * STATE.engagement);
+  const receveTrimestriel = recCapEff * 3;
+  // Sud Wifi encaisse l'acompte directement + le capex financé reversé par le leaser + le récurrent capitalisé
+  const receveTotalFin = capexPV + (recCapEff * STATE.engagement);
 
   const nbMoisRec = STATE.recurrentMode === 'saisonnier' ? 6 : 12;
   const caRecAnnuel = recMensuel * nbMoisRec;
   const margeRecAnnuelle = (recMensuel - crPack) * nbMoisRec;
+  const recSuggere = calcRecurrentSuggere(nbH);
 
   lastResult = {
     typo:STATE.typo, typoLabel:typo.label,
@@ -1121,17 +1214,21 @@ function calc() {
     lignes, totalCR, totalPV,
     adp, adipsysCR:adp.cr, adipsysPV:adp.pv, adipsysMarge:adp.marge,
     capexCR, capexPV,
-    loyerCAPEXSeul, min15pct, alerteMin, recCap,
+    loyerCAPEXSeul, min15pct, alerteMin, recCap, recCapEff,
     baseTotale, loyerTotal, acompteMontant, baseLeasee,
     receveTrimestriel, receveTotalFin,
-    recMensuel, nbMoisRec, caRecAnnuel, margeRecAnnuelle,
+    recMensuel, nbMoisRec, caRecAnnuel, margeRecAnnuelle, recSuggere,
     nomClient: document.getElementById('nomClient').value || '—',
     date: new Date().toLocaleDateString('fr-FR'),
   };
 
   // Alertes
-  document.getElementById('alert-15pct').style.display = alerteMin ? 'block' : 'none';
-  document.getElementById('alert-15pct').textContent = alerteMin ? `⚠ Minimum requis : ${fmt(min15pct)}/mois` : '';
+  if (isIntegre) {
+    document.getElementById('alert-15pct').style.display = alerteMin ? 'block' : 'none';
+    document.getElementById('alert-15pct').textContent = alerteMin ? `⚠ Minimum requis : ${fmt(min15pct)}/mois` : '';
+  } else {
+    document.getElementById('alert-15pct').style.display = 'none';
+  }
 
   updateUI(lastResult);
 }
@@ -1155,22 +1252,28 @@ function updateUI(r) {
   setText('badge-marge-capex', mpct+'%');
   document.getElementById('badge-marge-capex').className = 'badge '+(mpct>=65?'green':mpct>=50?'blue':'yellow');
 
-  setText('leas-capex', fmt(r.totalPV));
+  setText('leas-capex', fmt(r.capexPV));
   setText('leas-acompte', fmt(r.acompteMontant));
   setText('leas-base', fmt(r.baseLeasee));
   setText('leas-rec-mois', STATE.engagement);
-  setText('leas-rec-cap', fmt(r.recCap*STATE.engagement));
+  setText('leas-rec-cap', fmt((r.recCapEff||0)*STATE.engagement));
   setText('leas-total-base', fmt(r.baseTotale));
   setText('leas-loyer', fmt(r.loyerTotal)+'/mois');
-  setText('leas-livraison', fmt(r.totalPV));
+  setText('leas-livraison', fmt(r.baseLeasee));
   setText('leas-trimestriel', r.receveTrimestriel>0?fmt(r.receveTrimestriel):'—');
   setText('leas-total-enc', fmt(r.receveTotalFin));
   setText('leas-duree', STATE.engagement);
+  setText('leas-pack-note', fmt(r.recMensuel)+'/mois');
+  const loyerLabelEl = document.getElementById('leas-loyer-label');
+  if (loyerLabelEl) loyerLabelEl.textContent = STATE.leasingMode==='integre' ? 'Loyer client all-inclusive' : 'Loyer client (Capex uniquement)';
 
   setText('res-pack', fmt(r.recMensuel)+'/mois');
   setText('res-pack-mode', STATE.recurrentMode==='saisonnier'?'6 mois/an · sans engagement':STATE.recurrentMode==='annuel'?'12 mois/an · sans engagement':'12 mois/an · 60 mois');
   setText('res-ca-rec', fmt(r.caRecAnnuel)+'/an');
   setText('res-marge-rec', fmt(r.margeRecAnnuelle)+'/an');
+
+  const suggEl = document.getElementById('rec-suggestion');
+  if (suggEl) suggEl.textContent = `💡 Suggestion par emplacements : ${fmt(r.recSuggere)}/mois (${r.nbHeberg} emp.)`;
 
   updateMarge(r);
   updateMateriel(r);
@@ -1264,14 +1367,14 @@ function updateClientView(r) {
 
     <div class="cv-grid">
       <div class="cv-metric blue">
-        <div class="cm-label">Loyer mensuel all-inclusive</div>
+        <div class="cm-label">${STATE.leasingMode==='integre'?'Loyer mensuel all-inclusive':'Loyer mensuel'}</div>
         <div class="cm-value">${fmt(r.loyerTotal)}</div>
-        <div class="cm-sub">Matériel · installation · portail · ${STATE.engagement} mois</div>
+        <div class="cm-sub">${STATE.leasingMode==='integre'?'Matériel · installation · portail · services':'Matériel · installation · portail'} · ${STATE.engagement} mois</div>
       </div>
       <div class="cv-metric">
-        <div class="cm-label">Ou : acompte + loyer</div>
+        <div class="cm-label">Acompte à la commande</div>
         <div class="cm-value">${fmt(r.acompteMontant)}</div>
-        <div class="cm-sub">puis ${fmt(r.baseLeasee * (parseFloat(document.getElementById('pTauxLeasing').value)||2.014)/100)}/mois</div>
+        <div class="cm-sub">${STATE.acomptePct}% du montant total</div>
       </div>
       <div class="cv-metric sun">
         <div class="cm-label">Pack services</div>
@@ -1398,6 +1501,7 @@ function loadProject(i) {
     STATE.adipsysDuree = s.adipsysDuree||60;
     STATE.recurrentMode = s.recurrentMode||'saisonnier';
     STATE.acomptePct = s.acomptePct||30;
+    STATE.leasingMode = s.leasingMode||'sec';
     // Update UI buttons
     document.querySelectorAll('.typo-btn').forEach((b,j)=>b.classList.remove('active'));
     const typoNames=['camping','hotel','village','sante','senior'];
@@ -1406,6 +1510,7 @@ function loadProject(i) {
     setEngagement(STATE.engagement);
     setAdipsys(STATE.adipsysDuree);
     setAcompte(STATE.acomptePct);
+    setLeasingMode(STATE.leasingMode);
     ['saisonnier','annuel','60'].forEach(k=>document.getElementById('rec-'+k).classList.remove('active'));
     document.getElementById('rec-'+(STATE.recurrentMode==='60mois'?'60':STATE.recurrentMode==='annuel'?'annuel':'saisonnier')).classList.add('active');
     ['ponte-nb','tv-nb','tel-nb','vsi-nb'].forEach((id,i)=>{
