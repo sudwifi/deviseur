@@ -242,6 +242,11 @@
   .metric-value.green   { color: var(--green); }
   .metric-value.yellow  { color: var(--yellow); }
   .metric-sub { font-size: 10px; color: var(--text3); margin-top: 1px; }
+  .metric-input {
+    background: transparent; border: none; outline: none;
+    padding: 0; width: 100%; -moz-appearance: textfield;
+  }
+  .metric-input:focus { outline: 1px dashed var(--blue-light); border-radius: 2px; }
 
   /* ── DATA TABLE ── */
   .data-table { width: 100%; border-collapse: collapse; }
@@ -649,8 +654,18 @@
       <div class="card-header"><span class="card-title">Dimensionnement</span></div>
       <div class="card-body">
         <div class="metrics-grid">
-          <div class="metric"><div class="metric-label">AP outdoor</div><div class="metric-value accent" id="res-ap-out">—</div><div class="metric-sub" id="res-ap-out-type">—</div></div>
-          <div class="metric"><div class="metric-label">AP indoor</div><div class="metric-value accent" id="res-ap-in">—</div><div class="metric-sub" id="res-ap-in-type">—</div></div>
+          <div class="metric">
+            <div class="metric-label">AP outdoor</div>
+            <input type="number" id="res-ap-out" class="metric-value accent metric-input" min="0" oninput="onApManualInput('out', this.value)">
+            <div class="metric-sub" id="res-ap-out-type">—</div>
+            <div style="font-size:9px;margin-top:2px;"><a href="#" onclick="resetApAuto('out');return false;" style="color:var(--text3);text-decoration:underline;" id="reset-ap-out" hidden>↺ recalcul auto</a></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">AP indoor</div>
+            <input type="number" id="res-ap-in" class="metric-value accent metric-input" min="0" oninput="onApManualInput('in', this.value)">
+            <div class="metric-sub" id="res-ap-in-type">—</div>
+            <div style="font-size:9px;margin-top:2px;"><a href="#" onclick="resetApAuto('in');return false;" style="color:var(--text3);text-decoration:underline;" id="reset-ap-in" hidden>↺ recalcul auto</a></div>
+          </div>
           <div class="metric"><div class="metric-label">Switches</div><div class="metric-value" id="res-switches">—</div><div class="metric-sub">TL-SG2210P</div></div>
           <div class="metric"><div class="metric-label">Mâts outdoor</div><div class="metric-value" id="res-mats">—</div><div class="metric-sub" id="res-mats-sub">INF-MAT4M-02</div></div>
           <div class="metric"><div class="metric-label">Contrôleur</div><div class="metric-value">1</div><div class="metric-sub">OC200 + Mikrotik</div></div>
@@ -984,6 +999,7 @@ const LOGO_SUDWIFI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAIA
 let STATE = {
   typo:'camping', engagement:60, adipsysDuree:60,
   recurrentMode:'saisonnier', acomptePct:30, leasingMode:'sec', chatVacanciers:'inclus', matsInclus:true,
+  apOutOverride:null, apInOverride:null,
 };
 let lastResult = null;
 
@@ -1106,6 +1122,18 @@ function setAcompte(pct) {
   calc();
 }
 
+function onApManualInput(which, val) {
+  const n = parseInt(val);
+  if (which === 'out') STATE.apOutOverride = isNaN(n) ? null : n;
+  else STATE.apInOverride = isNaN(n) ? null : n;
+  calc();
+}
+function resetApAuto(which) {
+  if (which === 'out') STATE.apOutOverride = null;
+  else STATE.apInOverride = null;
+  calc();
+}
+
 function setMatsInclus(inclus) {
   STATE.matsInclus = inclus;
   document.getElementById('mats-inclus').classList.toggle('active', inclus);
@@ -1190,6 +1218,9 @@ function calc() {
   let nbAPOut = typo.ratioOut > 0 ? Math.ceil(nbH / typo.ratioOut) : 0;
   let nbAPIn  = typo.ratioIn  > 0 ? Math.ceil(nbH / typo.ratioIn)  : 0;
   if (hasTV) nbAPIn = Math.max(nbAPIn, nbTV);
+  const nbAPOutAuto = nbAPOut, nbAPInAuto = nbAPIn;
+  if (STATE.apOutOverride !== null) nbAPOut = STATE.apOutOverride;
+  if (STATE.apInOverride !== null) nbAPIn = STATE.apInOverride;
   const nbAPTotal = nbAPOut + nbAPIn;
   const nbSwitches = Math.ceil(nbAPTotal / 5) + 1;
   const adp = getAdipsys(nbH, STATE.adipsysDuree);
@@ -1272,7 +1303,7 @@ function calc() {
 
   lastResult = {
     typo:STATE.typo, typoLabel:typo.label,
-    nbHeberg:nbH, distKm, nbAPOut, nbAPIn, nbAPTotal, nbSwitches,
+    nbHeberg:nbH, distKm, nbAPOut, nbAPIn, nbAPTotal, nbSwitches, nbAPOutAuto, nbAPInAuto,
     lignes, totalCR, totalPV,
     adp, adipsysCR:adp.cr, adipsysPV:adp.pv, adipsysMarge:adp.marge,
     capexCR, capexPV,
@@ -1296,10 +1327,14 @@ function calc() {
 }
 
 function updateUI(r) {
-  setText('res-ap-out', r.nbAPOut||'0');
+  const elApOut = document.getElementById('res-ap-out');
+  if (document.activeElement !== elApOut) elApOut.value = r.nbAPOut||0;
   setText('res-ap-out-type', r.nbAPOut > 0 ? (STATE.typo==='camping'?'EAP650-D120 directionnel':'EAP625-HD omni') : '—');
-  setText('res-ap-in', r.nbAPIn||'0');
+  document.getElementById('reset-ap-out').hidden = (STATE.apOutOverride === null);
+  const elApIn = document.getElementById('res-ap-in');
+  if (document.activeElement !== elApIn) elApIn.value = r.nbAPIn||0;
   setText('res-ap-in-type', r.nbAPIn > 0 ? 'EAP610' : '—');
+  document.getElementById('reset-ap-in').hidden = (STATE.apInOverride === null);
   setText('res-switches', r.nbSwitches);
   setText('res-mats', STATE.matsInclus ? (r.nbAPOut||'0') : (r.nbAPOut>0 ? 'Option' : '0'));
   setText('res-mats-sub', STATE.matsInclus ? 'INF-MAT4M-02' : 'À la charge du client');
@@ -1624,6 +1659,8 @@ function loadProject(i) {
     STATE.leasingMode = s.leasingMode||'sec';
     STATE.chatVacanciers = s.chatVacanciers||'inclus';
     STATE.matsInclus = s.matsInclus!==undefined ? s.matsInclus : true;
+    STATE.apOutOverride = s.apOutOverride!==undefined ? s.apOutOverride : null;
+    STATE.apInOverride = s.apInOverride!==undefined ? s.apInOverride : null;
     // Update UI buttons
     document.querySelectorAll('.typo-btn').forEach((b,j)=>b.classList.remove('active'));
     const typoNames=['camping','hotel','village','sante','senior'];
