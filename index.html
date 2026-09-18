@@ -1369,6 +1369,14 @@ function updateClientView(r) {
     }
   }
 
+  // Échelonnement du paiement en cas d'achat comptant
+  const seuilChantierImportant = 50000;
+  const chantierImportant = r.capexPV > seuilChantierImportant;
+  const acompteCash = chantierImportant ? r.capexPV * 0.40 : r.acompteMontant;
+  const paiementIntermediaire = chantierImportant ? r.capexPV * 0.30 : 0;
+  const paiementSolde = chantierImportant ? r.capexPV * 0.30 : (r.capexPV - r.acompteMontant);
+  const acomptePctCash = chantierImportant ? 40 : STATE.acomptePct;
+
   document.getElementById('client-view-content').innerHTML = `
     <div class="cv-stripe"></div>
     <div class="cv-header">
@@ -1440,7 +1448,8 @@ function updateClientView(r) {
       Votre choix reste révisable chaque année.
     </div>`:''}
 
-    <div class="cv-grid" style="grid-template-columns:repeat(2,1fr);">
+    <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;margin-bottom:6px;">Option 1 — Location</div>
+    <div class="cv-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:14px;">
       <div class="cv-metric blue">
         <div class="cm-label">Coût initial</div>
         <div class="cm-value">${fmt(r.acompteMontant)}</div>
@@ -1451,6 +1460,26 @@ function updateClientView(r) {
         <div class="cm-value">${fmt(coutMensuelPrincipal)}</div>
         <div class="cm-sub">${coutMensuelDetail}</div>
       </div>
+    </div>
+
+    <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;margin-bottom:6px;">Option 2 — Achat comptant</div>
+    <div class="cv-pack" style="margin-bottom:10px;">
+      <div class="cv-pack-header" style="background:#16a34a;">Échelonnement du règlement matériel</div>
+      <div class="cv-pack-row"><span>Acompte à la commande${acomptePctCash>0?` (${acomptePctCash}%)`:''}</span><span style="font-weight:700;">${fmt(acompteCash)}</span></div>
+      ${chantierImportant?`<div class="cv-pack-row"><span>Paiement intermédiaire au début des travaux (30%)</span><span style="font-weight:700;">${fmt(paiementIntermediaire)}</span></div>`:''}
+      <div class="cv-pack-row"><span>Solde à la livraison / mise en service</span><span style="font-weight:700;">${fmt(paiementSolde)}</span></div>
+      <div class="cv-pack-row" style="background:#f8fafc;"><span style="font-weight:700;">Total investissement</span><span style="font-weight:700;">${fmt(r.capexPV)}</span></div>
+    </div>
+    <div class="cv-grid" style="grid-template-columns:1fr;margin-bottom:10px;">
+      <div class="cv-metric green">
+        <div class="cm-label">Pack services</div>
+        <div class="cm-value">${fmt(r.recMensuel)}<span style="font-size:12px;font-weight:500;color:#6b7280;">/mois</span></div>
+        <div class="cm-sub">Engagement annuel uniquement</div>
+      </div>
+    </div>
+
+    <div style="font-size:11px;color:#166534;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:9px 12px;margin-bottom:14px;line-height:1.5;">
+      💡 Avec l'achat comptant, aucun engagement pluriannuel sur le matériel : seul le pack services vous engage, année par année. Vous restez parce que vous êtes satisfait de notre prestation, pas parce qu'un contrat vous y oblige.
     </div>
 
     <div class="cv-footer">
