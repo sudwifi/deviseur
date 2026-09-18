@@ -400,6 +400,7 @@
     .header, .tabs, .col-left, #tab-marge, #tab-ia, #tab-projets, #tab-settings { display: none !important; }
     .panel.active { height: auto; overflow: visible; }
     .client-view { box-shadow: none; }
+    .no-print { display: none !important; }
   }
 </style>
 </head>
@@ -758,7 +759,7 @@
   <div style="flex:1;padding:20px;overflow-y:auto;display:flex;justify-content:center;align-items:flex-start;">
     <div style="max-width:700px;width:100%;">
       <div class="client-view" id="client-view-content"></div>
-      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;">
+      <div class="no-print" style="margin-top:12px;display:flex;gap:8px;justify-content:center;">
         <button onclick="window.print()" class="hbtn primary">🖨 Imprimer / PDF</button>
         <button onclick="copyClientText()" class="hbtn secondary">📋 Copier texte</button>
         <button onclick="pushToAxonaut()" class="hbtn yellow">🔗 Créer devis Axonaut</button>
@@ -847,6 +848,11 @@
           <div><label>Email</label><input type="text" id="sEmail" value="contact@sudwifi.fr" oninput="saveSettings()"></div>
           <div><label>Site web</label><input type="text" id="sSite" value="sudwifi.fr" oninput="saveSettings()"></div>
           <div><label>SIRET</label><input type="text" id="sSiret" placeholder="XXX XXX XXX XXXXX" oninput="saveSettings()"></div>
+          <div class="row">
+            <div><label>Contact commercial (nom)</label><input type="text" id="sContact" value="Virginie Bordes" oninput="saveSettings()"></div>
+            <div><label>Téléphone direct</label><input type="text" id="sTelDirect" value="07 86 05 23 32" oninput="saveSettings()"></div>
+          </div>
+          <div><label>Email direct</label><input type="text" id="sEmailDirect" value="virginie@sudwifi.fr" oninput="saveSettings()"></div>
         </div>
       </div>
 
@@ -971,6 +977,9 @@ function loadSettings() {
   if (s.sEmail)   document.getElementById('sEmail').value   = s.sEmail;
   if (s.sSite)    document.getElementById('sSite').value    = s.sSite;
   if (s.sSiret)   document.getElementById('sSiret').value   = s.sSiret;
+  if (s.sContact)    document.getElementById('sContact').value    = s.sContact;
+  if (s.sEmailDirect) document.getElementById('sEmailDirect').value = s.sEmailDirect;
+  if (s.sTelDirect)   document.getElementById('sTelDirect').value   = s.sTelDirect;
   if (s.pTauxLeasing) document.getElementById('pTauxLeasing').value = s.pTauxLeasing;
   if (s.pTauxMO)      document.getElementById('pTauxMO').value      = s.pTauxMO;
   if (s.pCoutKm)      document.getElementById('pCoutKm').value      = s.pCoutKm;
@@ -990,6 +999,9 @@ function saveSettings() {
     sEmail:   document.getElementById('sEmail').value,
     sSite:    document.getElementById('sSite').value,
     sSiret:   document.getElementById('sSiret').value,
+    sContact:     document.getElementById('sContact')?.value,
+    sEmailDirect: document.getElementById('sEmailDirect')?.value,
+    sTelDirect:   document.getElementById('sTelDirect')?.value,
     pTauxLeasing: document.getElementById('pTauxLeasing').value,
     pTauxMO:      document.getElementById('pTauxMO').value,
     pCoutKm:      document.getElementById('pCoutKm').value,
@@ -1350,6 +1362,9 @@ function updateClientView(r) {
   const adresse = s.sAdresse||'Solliès-Pont, Var';
   const email = s.sEmail||'contact@sudwifi.fr';
   const site = s.sSite||'sudwifi.fr';
+  const contact = s.sContact||'Virginie Bordes';
+  const emailDirect = s.sEmailDirect||'virginie@sudwifi.fr';
+  const telDirect = s.sTelDirect||'07 86 05 23 32';
 
   // Coût mensuel affiché au client
   let coutMensuelPrincipal, coutMensuelDetail;
@@ -1484,7 +1499,8 @@ function updateClientView(r) {
 
     <div class="cv-footer">
       Proposition commerciale valable 30 jours · Prix indiqués HT · TVA 20% applicable<br>
-      <strong>${raison}</strong> · ${adresse} · ${email} · ${site}
+      <strong>${raison}</strong> · ${adresse} · ${email} · ${site}<br>
+      <span style="color:#374151;">Votre contact : <strong>${contact}</strong> · ${emailDirect} · ${telDirect}</span>
     </div>
   `;
 }
