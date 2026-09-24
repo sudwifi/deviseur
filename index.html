@@ -497,6 +497,11 @@
             <input type="number" id="distanceKm" value="60" min="0" oninput="calc()">
           </div>
         </div>
+        <div>
+          <label>Nombre de jours de déploiement</label>
+          <input type="number" id="nbJoursDeploiement" value="1" min="1" oninput="calc()">
+          <div id="nuitee-info" style="font-size:10px;color:var(--text3);margin-top:3px;"></div>
+        </div>
       </div>
     </div>
 
@@ -899,6 +904,10 @@
             <div><label>Coût km déplacement</label><input type="number" id="pCoutKm" value="0.68" step="0.01" oninput="saveSettings(); calc()"></div>
             <div><label>CR pack services (€/mois)</label><input type="number" id="pCRPack" value="20" oninput="saveSettings(); calc()"></div>
           </div>
+          <div class="row">
+            <div><label>Coût hébergement/nuitée (€)</label><input type="number" id="pCoutNuitee" value="90" oninput="saveSettings(); calc()"></div>
+            <div><label>Seuil nuitée (km aller simple)</label><input type="number" id="pSeuilNuitee" value="200" oninput="saveSettings(); calc()"></div>
+          </div>
         </div>
       </div>
 
@@ -1020,6 +1029,8 @@ function loadSettings() {
   if (s.pTauxMO)      document.getElementById('pTauxMO').value      = s.pTauxMO;
   if (s.pCoutKm)      document.getElementById('pCoutKm').value      = s.pCoutKm;
   if (s.pCRPack)      document.getElementById('pCRPack').value      = s.pCRPack;
+  if (s.pCoutNuitee)  document.getElementById('pCoutNuitee').value  = s.pCoutNuitee;
+  if (s.pSeuilNuitee) document.getElementById('pSeuilNuitee').value = s.pSeuilNuitee;
   if (s.pRecTier1)    document.getElementById('pRecTier1').value    = s.pRecTier1;
   if (s.pRecTier2)    document.getElementById('pRecTier2').value    = s.pRecTier2;
   if (s.pRecTier3)    document.getElementById('pRecTier3').value    = s.pRecTier3;
@@ -1042,6 +1053,8 @@ function saveSettings() {
     pTauxMO:      document.getElementById('pTauxMO').value,
     pCoutKm:      document.getElementById('pCoutKm').value,
     pCRPack:      document.getElementById('pCRPack').value,
+    pCoutNuitee:  document.getElementById('pCoutNuitee').value,
+    pSeuilNuitee: document.getElementById('pSeuilNuitee').value,
     pRecTier1:    document.getElementById('pRecTier1')?.value,
     pRecTier2:    document.getElementById('pRecTier2')?.value,
     pRecTier3:    document.getElementById('pRecTier3')?.value,
@@ -1204,6 +1217,7 @@ function calc() {
   const typo = TYPOS[STATE.typo];
   const nbH  = parseInt(document.getElementById('nbHeberg').value)||0;
   const distKm = parseInt(document.getElementById('distanceKm').value)||0;
+  const nbJoursDeploiement = parseInt(document.getElementById('nbJoursDeploiement').value)||1;
   const recMensuel = parseFloat(document.getElementById('recurrentMensuel').value)||0;
   const recCap = parseFloat(document.getElementById('recCapitalise').value)||0;
   const hasPonte = document.getElementById('chkPonte').checked;
@@ -1214,6 +1228,8 @@ function calc() {
   const tauxMO   = parseFloat(document.getElementById('pTauxMO').value)||45;
   const coutKm   = parseFloat(document.getElementById('pCoutKm').value)||0.68;
   const crPack   = parseFloat(document.getElementById('pCRPack').value)||20;
+  const coutNuitee = parseFloat(document.getElementById('pCoutNuitee').value)||90;
+  const seuilNuitee = parseFloat(document.getElementById('pSeuilNuitee').value)||200;
 
   let nbAPOut = typo.ratioOut > 0 ? Math.ceil(nbH / typo.ratioOut) : 0;
   let nbAPIn  = typo.ratioIn  > 0 ? Math.ceil(nbH / typo.ratioIn)  : 0;
@@ -1272,6 +1288,22 @@ function calc() {
   if (distKm > 0) {
     lignes.push({ ref:'DEPL', label:`Déplacements (${distKm} km A/R)`, qty:1, cr:Math.round(deplCR), pv:Math.round(deplPV) });
     totalCR += deplCR; totalPV += deplPV;
+  }
+
+  // Hébergement : nuitées = nb de jours de déploiement, dès que l'aller simple dépasse le seuil
+  const distanceAllerSimple = distKm / 2;
+  const nbNuitees = distanceAllerSimple > seuilNuitee ? nbJoursDeploiement : 0;
+  const hebergementCR = nbNuitees * coutNuitee;
+  const hebergementPV = hebergementCR * (1/0.30);
+  if (nbNuitees > 0) {
+    lignes.push({ ref:'HEBERG', label:`Hébergement (${nbNuitees} nuitée${nbNuitees>1?'s':''})`, qty:1, cr:Math.round(hebergementCR), pv:Math.round(hebergementPV) });
+    totalCR += hebergementCR; totalPV += hebergementPV;
+  }
+  const infoNuitee = document.getElementById('nuitee-info');
+  if (infoNuitee) {
+    infoNuitee.textContent = distanceAllerSimple > seuilNuitee
+      ? `🏨 ${nbNuitees} nuitée${nbNuitees>1?'s':''} incluse${nbNuitees>1?'s':''} (aller simple ${Math.round(distanceAllerSimple)} km > ${seuilNuitee} km)`
+      : `Pas d'hébergement (aller simple ${Math.round(distanceAllerSimple)} km ≤ ${seuilNuitee} km)`;
   }
 
   const capexCR = totalCR + adp.cr;
@@ -1382,7 +1414,7 @@ function updateMarge(r) {
   const tbody = document.getElementById('tbl-marge-detail');
   let html='', crMat=0, pvMat=0, crMO=0, pvMO=0;
   r.lignes.forEach(l => {
-    const isMO = l.ref.startsWith('MO-') || l.ref==='CABL-FORFAIT' || l.ref==='DEPL';
+    const isMO = l.ref.startsWith('MO-') || l.ref==='CABL-FORFAIT' || l.ref==='DEPL' || l.ref==='HEBERG';
     const crT=l.cr*l.qty, pvT=l.pv*l.qty, mT=pvT-crT;
     const mp = pvT>0?Math.round(mT/pvT*100):0;
     if(isMO){crMO+=crT;pvMO+=pvT;}else{crMat+=crT;pvMat+=pvT;}
@@ -1572,6 +1604,7 @@ function buildProjectData() {
       nomClient: nom,
       nbHeberg: document.getElementById('nbHeberg').value,
       distanceKm: document.getElementById('distanceKm').value,
+      nbJoursDeploiement: document.getElementById('nbJoursDeploiement').value,
       recurrentMensuel: document.getElementById('recurrentMensuel').value,
       recCapitalise: document.getElementById('recCapitalise').value,
       chkPonte: document.getElementById('chkPonte').checked,
@@ -1637,6 +1670,7 @@ function loadProject(i) {
   document.getElementById('nomClient').value = inp.nomClient||'';
   document.getElementById('nbHeberg').value  = inp.nbHeberg||100;
   document.getElementById('distanceKm').value= inp.distanceKm||60;
+  document.getElementById('nbJoursDeploiement').value = inp.nbJoursDeploiement||1;
   document.getElementById('recurrentMensuel').value = inp.recurrentMensuel||450;
   document.getElementById('recCapitalise').value    = inp.recCapitalise||125;
   document.getElementById('chkPonte').checked = inp.chkPonte||false;
