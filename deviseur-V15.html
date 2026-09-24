@@ -605,7 +605,7 @@
         <div class="card-header"><span class="card-title">Informations société</span></div>
         <div class="card-body">
           <div><label>Raison sociale</label><input type="text" id="sRaison" value="Sud Wifi" oninput="saveSettings()"></div>
-          <div><label>Adresse</label><input type="text" id="sAdresse" value="Solliès-Pont, Var (83)" oninput="saveSettings()"></div>
+          <div><label>Adresse</label><input type="text" id="sAdresse" value="La Farlède, Var (83)" oninput="saveSettings()"></div>
           <div><label>Email</label><input type="text" id="sEmail" value="contact@sudwifi.fr" oninput="saveSettings()"></div>
           <div><label>Site web</label><input type="text" id="sSite" value="sudwifi.fr" oninput="saveSettings()"></div>
           <div><label>SIRET</label><input type="text" id="sSiret" placeholder="XXX XXX XXX XXXXX" oninput="saveSettings()"></div>
@@ -1310,7 +1310,7 @@ function updateClientView(r) {
   const s = getSettings();
   const nom = r.nomClient!=='—'?r.nomClient:'Votre site';
   const raison = s.sRaison||'Sud Wifi';
-  const adresse = s.sAdresse||'Solliès-Pont, Var';
+  const adresse = s.sAdresse||'La Farlède, Var';
   const email = s.sEmail||'contact@sudwifi.fr';
   const site = s.sSite||'sudwifi.fr';
   const contact = s.sContact||'Virginie Bordes';
@@ -1339,7 +1339,7 @@ function updateClientView(r) {
       <div class="cv-logo-wrap"><img src="${LOGO_SUDWIFI}" width="56" height="56" alt="Sud Wifi" style="display:block;object-fit:contain;"></div>
       <div class="cv-brand">
         <div class="cv-brand-name">${raison}</div>
-        <div style="font-size:11px;color:#6b7280;margin-top:1px;">Intégrateur vidéosurveillance & réseaux · ${adresse}</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:1px;">Intégrateur vidéosurveillance & réseaux certifié TP-Link · ${adresse}</div>
       </div>
       <div class="cv-brand-right">
         Proposition du ${r.date}<br>
@@ -1348,7 +1348,7 @@ function updateClientView(r) {
     </div>
 
     <div class="cv-title">Solution Vidéosurveillance · ${nom}</div>
-    <div class="cv-sub">${r.nbCamTotal} caméra${r.nbCamTotal>1?'s':''} réparties sur ${r.nbZones} zone${r.nbZones>1?'s':''}</div>
+    <div class="cv-sub">${r.nbCamTotal} caméra${r.nbCamTotal>1?'s':''} réparties sur le site</div>
     <hr class="cv-divider">
 
     <div class="cv-pack">
