@@ -488,7 +488,7 @@
           <input type="text" id="nomClient" placeholder="Camping Les Palmiers…" oninput="calc()">
         </div>
         <div>
-          <label>ID entreprise Axonaut (optionnel — évite la recherche par nom)</label>
+          <label>ID entreprise Axonaut (à saisir une fois par client — mémorisé ensuite)</label>
           <input type="text" id="axonautCompanyId" inputmode="numeric" placeholder="ex. 12345 (visible dans l'URL de la fiche Axonaut)">
         </div>
         <div class="row">
@@ -1813,8 +1813,8 @@ function axonautBase(raw) {
   if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
   // L'API v2 n'est pas servie par app.axonaut.com
   u = u.replace(/^(https?:\/\/)app\.axonaut\.com/i, '$1axonaut.com');
-  // Le chemin /api/v2 est ajouté par le Deviseur : on l'enlève s'il a été collé dans l'URL
-  return u.replace(/\/api(\/v2)?$/i, '');
+  // Le chemin /api/v2/... est ajouté par le Deviseur : on enlève tout ce qui suit le nom de domaine s'il a été collé
+  return u.replace(/\/api(\/.*)?$/i, '');
 }
 function axonautHeaders(key) {
   return { 'userApiKey': key, 'Content-Type': 'application/json', 'Accept': 'application/json' };
@@ -1822,8 +1822,14 @@ function axonautHeaders(key) {
 async function axonautError(resp) {
   let t = '';
   try { t = await resp.text(); } catch(e) {}
-  try { const j = JSON.parse(t); t = j.message || j.error || (j.errors ? JSON.stringify(j.errors) : t); } catch(e) {}
-  return `${resp.status} ${String(t).slice(0, 160)}`.trim();
+  let msg = t;
+  try {
+    const j = JSON.parse(t);
+    const m = j.message || j.detail || j.error || j.errors || j.violations || j;
+    msg = typeof m === 'string' ? m : JSON.stringify(m);
+  } catch(e) {}
+  console.error('Axonaut', resp.status, t);
+  return `${resp.status} ${String(msg).slice(0, 400)}`.trim();
 }
 function normName(n) {
   return (n || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
@@ -1836,6 +1842,7 @@ async function axonautFindCompany(base, key, nom) {
     let resp = await fetch(`${base}/api/v2/companies?page=${page}`, { headers: axonautHeaders(key) });
     // Axonaut répond 404 quand on dépasse la dernière page : c'est la fin de la liste, pas une erreur.
     if (resp.status === 404 && page > 1) break;
+    if (resp.status === 403) throw new Error('Recherche entreprise : 403 (Axonaut n\'autorise pas la lecture de la liste)');
     // Page 1 introuvable avec le paramètre : on retente sans paramètre.
     if (resp.status === 404 && page === 1) resp = await fetch(`${base}/api/v2/companies`, { headers: axonautHeaders(key) });
     if (!resp.ok) throw new Error(`Recherche entreprise (page ${page}, ${new URL(resp.url || base).host}) : ` + await axonautError(resp));
@@ -1856,22 +1863,23 @@ async function testAxonaut() {
   const el = document.getElementById('axonaut-status');
   if (!key) { el.textContent = '⚠ Veuillez saisir votre clé API.'; el.style.color='var(--orange)'; return; }
   el.textContent = '⏳ Test en cours…'; el.style.color='var(--text3)';
-  const routes = ['/api/v2/companies', '/api/v2/opportunities', '/api/v2/quotations'];
-  const out = [];
-  let allOk = true;
-  for (const route of routes) {
-    try {
-      const resp = await fetch(`${url}${route}?page=1`, { headers: axonautHeaders(key) });
-      out.push(`${route} → ${resp.status}`);
-      if (!resp.ok) allOk = false;
-    } catch(e) {
-      out.push(`${route} → blocage navigateur (CORS) : renseignez l'URL du relais`);
-      allOk = false;
+  try {
+    const resp = await fetch(`${url}/api/v2/companies?page=1`, { headers: axonautHeaders(key) });
+    if (resp.ok) {
+      el.textContent = '✅ Connexion Axonaut OK'; el.style.color='var(--green)';
+      toast('Connexion Axonaut réussie !', 'success');
+    } else if (resp.status === 401) {
+      el.textContent = '❌ Clé API refusée par Axonaut (401) — vérifiez la clé.'; el.style.color='var(--red)';
+    } else if (resp.status === 403 || resp.status === 404) {
+      el.textContent = `✅ Relais joignable. Axonaut refuse seulement la lecture des listes (${resp.status}) : la création de devis reste possible — saisissez l'ID entreprise Axonaut dans le formulaire.`;
+      el.style.color='var(--green)';
+    } else {
+      el.textContent = `❌ Erreur ${await axonautError(resp)}`; el.style.color='var(--red)';
     }
+  } catch(e) {
+    el.textContent = '❌ Blocage navigateur (CORS) : renseignez l\'URL du relais Axonaut ci-dessus — ' + e.message;
+    el.style.color='var(--red)';
   }
-  el.textContent = (allOk ? '✅ Connexion Axonaut OK — ' : '❌ Diagnostic (' + url + ') — ') + out.join(' · ');
-  el.style.color = allOk ? 'var(--green)' : 'var(--red)';
-  if (allOk) toast('Connexion Axonaut réussie !', 'success');
 }
 
 function buildAxonautProducts(r) {
@@ -1897,7 +1905,12 @@ function buildAxonautProducts(r) {
     price: Math.round(r.recMensuel * 100) / 100,
     tax_rate: 20,
   });
-  return prods;
+  // Axonaut refuse les lignes incomplètes : on écarte les lignes sans prix/quantité valides
+  return prods
+    .filter(p => Number.isFinite(p.price) && Number.isFinite(p.quantity) && p.quantity > 0)
+    .map(p => { const o = { ...p, name: String(p.name || 'Article').slice(0, 250) };
+      if (!p.product_code) delete o.product_code; else o.product_code = String(p.product_code);
+      return o; });
 }
 function buildAxonautComments(r) {
   return `Solution Wifi — ${r.nomClient} — ${r.nbHeberg} héb. ${r.typoLabel}\n` +
@@ -1929,8 +1942,26 @@ async function pushToAxonaut() {
 
   try {
     // 1) Entreprise
-    const forcedId = parseInt((document.getElementById('axonautCompanyId')?.value || '').replace(/\D/g, ''), 10);
-    let company = forcedId ? { id: forcedId } : await axonautFindCompany(base, key, r.nomClient);
+    // ID saisi à la main > ID mémorisé pour ce nom de client > recherche par nom (liste des entreprises)
+    const idMap = (() => { try { return JSON.parse(localStorage.getItem('sw_axonaut_ids') || '{}'); } catch(e) { return {}; } })();
+    const nameKey = normName(r.nomClient);
+    const typedId = parseInt((document.getElementById('axonautCompanyId')?.value || '').replace(/\D/g, ''), 10);
+    const forcedId = typedId || idMap[nameKey] || 0;
+    let company = null;
+    if (forcedId) {
+      company = { id: forcedId };
+    } else {
+      try {
+        company = await axonautFindCompany(base, key, r.nomClient);
+      } catch(e) {
+        if (/\b40[34]\b/.test(e.message)) {
+          toast('⚠ Axonaut refuse la recherche par nom. Renseignez « ID entreprise Axonaut » (le numéro dans l\'adresse de la fiche client) puis relancez.', 'error');
+          document.getElementById('axonautCompanyId')?.focus();
+          return;
+        }
+        throw e;
+      }
+    }
     if (!company) {
       if (!confirm(`« ${r.nomClient} » n'existe pas dans Axonaut.\nLa créer comme prospect et poursuivre ?`)) {
         toast('Envoi annulé : entreprise introuvable dans Axonaut.', 'error'); return;
@@ -1996,7 +2027,8 @@ async function pushToAxonaut() {
     // 3) Devis rattaché à l'entreprise (et à l'opportunité si on en a une)
     stage = 'devis';
     const today = new Date();
-    const iso = d => d.toISOString().slice(0, 10);
+    // Axonaut exige du RFC3339 complet (une date seule est refusée : « Invalid RFC3339 »)
+    const iso = d => d.toISOString().slice(0, 10) + 'T00:00:00+00:00';
     const exp = new Date(today.getTime() + 30 * 86400000);
     const quote = {
       company_id: company.id,
@@ -2010,6 +2042,7 @@ async function pushToAxonaut() {
     const rq = await fetch(`${base}/api/v2/quotations`, { method: 'POST', headers: H, body: JSON.stringify(quote) });
     if (!rq.ok) throw new Error('Devis : ' + await axonautError(rq));
     const q = await rq.json();
+    try { idMap[nameKey] = company.id; localStorage.setItem('sw_axonaut_ids', JSON.stringify(idMap)); } catch(e) {}
     toast(`${oppId ? '✅' : '⚠'} Devis ${q.number || q.id || ''} créé dans Axonaut — ${oppNote}`, oppId ? 'success' : 'error');
   } catch(e) {
     const net = e instanceof TypeError ? ' (blocage CORS : renseignez l\'URL du relais dans Paramètres → Intégration Axonaut)' : '';
