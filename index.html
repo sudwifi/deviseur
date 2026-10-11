@@ -487,6 +487,10 @@
           <label>Nom client / projet</label>
           <input type="text" id="nomClient" placeholder="Camping Les Palmiers…" oninput="calc()">
         </div>
+        <div>
+          <label>ID entreprise Axonaut (optionnel — évite la recherche par nom)</label>
+          <input type="text" id="axonautCompanyId" inputmode="numeric" placeholder="ex. 12345 (visible dans l'URL de la fiche Axonaut)">
+        </div>
         <div class="row">
           <div>
             <label>Hébergements</label>
@@ -862,8 +866,21 @@
             <div style="font-size:10px;color:var(--text3);margin-top:4px;">Paramètres Axonaut → API → Clé API. Stockée uniquement dans votre navigateur.</div>
           </div>
           <div>
-            <label>URL Axonaut (optionnel — laisser vide si app.axonaut.com)</label>
-            <input type="text" id="axonautUrl" placeholder="https://app.axonaut.com" oninput="saveSettings()">
+            <label>URL du relais Axonaut (obligatoire si le navigateur bloque en CORS — ex. https://axonaut-relais.xxx.workers.dev)</label>
+            <input type="text" id="axonautUrl" placeholder="https://axonaut-relais.xxx.workers.dev" oninput="saveSettings()">
+          </div>
+          <div>
+            <label>Pipe Axonaut des opportunités</label>
+            <input type="text" id="axonautPipe" placeholder="#2 Qualifié" oninput="saveSettings()">
+          </div>
+          <div>
+            <label>Étape du pipe à l'envoi du devis</label>
+            <input type="text" id="axonautStep" placeholder="J+4 - Proposition envoyée" oninput="saveSettings()">
+            <div style="font-size:10px;color:var(--text3);margin-top:4px;">Noms exacts, tels qu'affichés dans Axonaut → Opportunités.</div>
+          </div>
+          <div>
+            <label>E-mail du commercial responsable (Axonaut)</label>
+            <input type="text" id="axonautManager" placeholder="virginie@sudwifi.fr" oninput="saveSettings()">
           </div>
           <div>
             <button onclick="testAxonaut()" class="hbtn secondary">🔌 Tester la connexion Axonaut</button>
@@ -871,7 +888,7 @@
           <div id="axonaut-status" style="font-size:11px;color:var(--text3);"></div>
           <div style="background:var(--bg);border:1px solid var(--border2);border-radius:4px;padding:10px;font-size:11px;color:var(--text3);line-height:1.6;">
             <strong style="color:var(--text2);">Comment ça fonctionne :</strong><br>
-            Le bouton "→ Axonaut" crée automatiquement un devis dans Axonaut avec toutes les lignes du chiffrage (matériel, MO, Adipsys). Le devis apparaît dans Axonaut, prêt pour relecture et envoi en signature électronique.<br><br>
+            Le bouton "→ Axonaut" retrouve l'entreprise (par son nom), crée une opportunité dans le pipe ci-dessus puis un devis rattaché à cette opportunité, avec toutes les lignes du chiffrage (matériel, MO, Adipsys). Le devis suit ainsi sa progression dans le pipe.<br><br>
             <strong style="color:var(--yellow);">Alternative sans API :</strong> Si votre réseau bloque les appels directs, utilisez Make/N8N avec un webhook — je peux vous fournir le modèle.
           </div>
         </div>
@@ -1017,6 +1034,9 @@ function loadSettings() {
   const s = JSON.parse(localStorage.getItem('sw_settings') || '{}');
   if (s.axonautApiKey) document.getElementById('axonautApiKey').value = s.axonautApiKey;
   if (s.axonautUrl)   document.getElementById('axonautUrl').value   = s.axonautUrl;
+  if (s.axonautPipe)  document.getElementById('axonautPipe').value  = s.axonautPipe;
+  if (s.axonautStep)  document.getElementById('axonautStep').value  = s.axonautStep;
+  if (s.axonautManager) document.getElementById('axonautManager').value = s.axonautManager;
   if (s.sRaison)  document.getElementById('sRaison').value  = s.sRaison;
   if (s.sAdresse) document.getElementById('sAdresse').value = s.sAdresse;
   if (s.sEmail)   document.getElementById('sEmail').value   = s.sEmail;
@@ -1041,6 +1061,9 @@ function saveSettings() {
   const s = {
     axonautApiKey: document.getElementById('axonautApiKey').value,
     axonautUrl:    document.getElementById('axonautUrl').value,
+    axonautPipe:   document.getElementById('axonautPipe').value,
+    axonautStep:   document.getElementById('axonautStep').value,
+    axonautManager: document.getElementById('axonautManager').value,
     sRaison:  document.getElementById('sRaison').value,
     sAdresse: document.getElementById('sAdresse').value,
     sEmail:   document.getElementById('sEmail').value,
@@ -1777,86 +1800,186 @@ function loadJSONFile(e) {
 }
 
 // ═══════════════════ AXONAUT ═══════════════════
+// API v2 : base https://axonaut.com (et non app.axonaut.com), en-tête userApiKey.
+const AXONAUT_DEFAULTS = {
+  baseUrl: 'https://axonaut.com',
+  pipe: '#2 Qualifié',
+  step: 'J+4 - Proposition envoyée',
+  manager: 'virginie@sudwifi.fr',
+};
+function axonautBase(raw) {
+  let u = (raw || '').trim().replace(/\/+$/, '');
+  if (!u) return AXONAUT_DEFAULTS.baseUrl;
+  if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+  // L'API v2 n'est pas servie par app.axonaut.com
+  u = u.replace(/^(https?:\/\/)app\.axonaut\.com/i, '$1axonaut.com');
+  // Le chemin /api/v2 est ajouté par le Deviseur : on l'enlève s'il a été collé dans l'URL
+  return u.replace(/\/api(\/v2)?$/i, '');
+}
+function axonautHeaders(key) {
+  return { 'userApiKey': key, 'Content-Type': 'application/json', 'Accept': 'application/json' };
+}
+async function axonautError(resp) {
+  let t = '';
+  try { t = await resp.text(); } catch(e) {}
+  try { const j = JSON.parse(t); t = j.message || j.error || (j.errors ? JSON.stringify(j.errors) : t); } catch(e) {}
+  return `${resp.status} ${String(t).slice(0, 160)}`.trim();
+}
+function normName(n) {
+  return (n || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+}
+// Retrouve l'entreprise par son nom exact (insensible à la casse/accents) ; null si absente.
+async function axonautFindCompany(base, key, nom) {
+  const target = normName(nom);
+  let firstIdPrev = null;
+  for (let page = 1; page <= 30; page++) {
+    let resp = await fetch(`${base}/api/v2/companies?page=${page}`, { headers: axonautHeaders(key) });
+    // Axonaut répond 404 quand on dépasse la dernière page : c'est la fin de la liste, pas une erreur.
+    if (resp.status === 404 && page > 1) break;
+    // Page 1 introuvable avec le paramètre : on retente sans paramètre.
+    if (resp.status === 404 && page === 1) resp = await fetch(`${base}/api/v2/companies`, { headers: axonautHeaders(key) });
+    if (!resp.ok) throw new Error(`Recherche entreprise (page ${page}, ${new URL(resp.url || base).host}) : ` + await axonautError(resp));
+    const data = await resp.json();
+    const list = Array.isArray(data) ? data : (data.data || data.companies || []);
+    if (!list.length) break;
+    if (list[0] && list[0].id === firstIdPrev) break; // pagination ignorée : on s'arrête
+    firstIdPrev = list[0] && list[0].id;
+    const hit = list.find(c => normName(c.name) === target);
+    if (hit) return hit;
+  }
+  return null;
+}
+
 async function testAxonaut() {
-  const key = document.getElementById('axonautApiKey').value;
-  const url = document.getElementById('axonautUrl').value || 'https://app.axonaut.com';
+  const key = document.getElementById('axonautApiKey').value.trim();
+  const url = axonautBase(document.getElementById('axonautUrl').value);
   const el = document.getElementById('axonaut-status');
   if (!key) { el.textContent = '⚠ Veuillez saisir votre clé API.'; el.style.color='var(--orange)'; return; }
   el.textContent = '⏳ Test en cours…'; el.style.color='var(--text3)';
-  try {
-    const resp = await fetch(`${url}/api/v2/users`, {
-      headers: { 'userApiKey': key, 'Content-Type': 'application/json' }
-    });
-    if (resp.ok) {
-      el.textContent = '✅ Connexion Axonaut OK'; el.style.color='var(--green)';
-      toast('Connexion Axonaut réussie !', 'success');
-    } else {
-      el.textContent = `❌ Erreur ${resp.status} — vérifiez votre clé API`; el.style.color='var(--red)';
+  const routes = ['/api/v2/companies', '/api/v2/opportunities', '/api/v2/quotations'];
+  const out = [];
+  let allOk = true;
+  for (const route of routes) {
+    try {
+      const resp = await fetch(`${url}${route}?page=1`, { headers: axonautHeaders(key) });
+      out.push(`${route} → ${resp.status}`);
+      if (!resp.ok) allOk = false;
+    } catch(e) {
+      out.push(`${route} → blocage navigateur (CORS) : renseignez l'URL du relais`);
+      allOk = false;
     }
-  } catch(e) {
-    el.textContent = '❌ Erreur réseau — vérifiez que vous utilisez cet outil via GitHub Pages ou Netlify (pas en local).';
-    el.style.color='var(--red)';
   }
+  el.textContent = (allOk ? '✅ Connexion Axonaut OK — ' : '❌ Diagnostic (' + url + ') — ') + out.join(' · ');
+  el.style.color = allOk ? 'var(--green)' : 'var(--red)';
+  if (allOk) toast('Connexion Axonaut réussie !', 'success');
+}
+
+function buildAxonautProducts(r) {
+  const prods = r.lignes.map(l => ({
+    name: l.label,
+    product_code: l.ref,
+    quantity: l.qty,
+    price: Math.round(l.pv * 100) / 100,
+    tax_rate: 20,
+  }));
+  prods.push({
+    name: `Portail Adipsys HM SaaS Expert ${r.adp.cnxTier} cnx — ${STATE.adipsysDuree} mois`,
+    product_code: `ADIPSYS-${r.adp.cnxTier}-${STATE.adipsysDuree}M-EXP`,
+    quantity: 1,
+    price: Math.round(r.adipsysPV * 100) / 100,
+    tax_rate: 20,
+  });
+  // Ligne récurrent (informatif)
+  prods.push({
+    name: `Pack Services Wifi ${STATE.recurrentMode==='saisonnier'?'saisonnier (avr–sept)':'annuel'} — sans engagement`,
+    product_code: 'PACK-SERVICES',
+    quantity: STATE.recurrentMode==='saisonnier'?6:12,
+    price: Math.round(r.recMensuel * 100) / 100,
+    tax_rate: 20,
+  });
+  return prods;
+}
+function buildAxonautComments(r) {
+  return `Solution Wifi — ${r.nomClient} — ${r.nbHeberg} héb. ${r.typoLabel}\n` +
+    `Proposition Sud Wifi du ${r.date}\nCAPEX HT: ${Math.round(r.capexPV)} €\n` +
+    `Acompte (${STATE.acomptePct}%): ${Math.round(r.acompteMontant)} €\n` +
+    `Loyer all-inclusive: ${Math.round(r.loyerTotal)} €/mois (${STATE.engagement} mois)\n` +
+    `Pack services: ${r.recMensuel} €/mois`;
 }
 
 async function pushToAxonaut() {
   if (!lastResult) { toast('Calculez d\'abord un projet.', 'error'); return; }
   const s = getSettings();
-  const key = s.axonautApiKey || document.getElementById('axonautApiKey')?.value;
-  const baseUrl = s.axonautUrl || 'https://app.axonaut.com';
+  const key = (s.axonautApiKey || document.getElementById('axonautApiKey')?.value || '').trim();
+  const base = axonautBase(s.axonautUrl);
   if (!key) {
     toast('⚠ Configurez votre clé API Axonaut dans Paramètres', 'error');
     openTab('settings'); return;
   }
   const r = lastResult;
-  toast('⏳ Création du devis dans Axonaut…', 'info');
-
-  // Construction du devis Axonaut
-  const lines = r.lignes.map(l => ({
-    title: l.label,
-    reference: l.ref,
-    quantity: l.qty,
-    unit_price_without_taxes: Math.round(l.pv * 100) / 100,
-    tax_rate: 20,
-  }));
-  lines.push({
-    title: `Portail Adipsys HM SaaS Expert ${r.adp.cnxTier} cnx — ${STATE.adipsysDuree} mois`,
-    reference: `ADIPSYS-${r.adp.cnxTier}-${STATE.adipsysDuree}M-EXP`,
-    quantity: 1,
-    unit_price_without_taxes: Math.round(r.adipsysPV * 100) / 100,
-    tax_rate: 20,
-  });
-  // Ligne récurrent (informatif)
-  lines.push({
-    title: `Pack Services Wifi ${STATE.recurrentMode==='saisonnier'?'saisonnier (avr–sept)':'annuel'} — sans engagement`,
-    reference: 'PACK-SERVICES',
-    quantity: STATE.recurrentMode==='saisonnier'?6:12,
-    unit_price_without_taxes: r.recMensuel,
-    tax_rate: 20,
-  });
-
-  const quotePayload = {
-    title: `Solution Wifi — ${r.nomClient} — ${r.nbHeberg} héb. ${r.typoLabel}`,
-    comment: `Proposition Sud Wifi du ${r.date}\nCAPEX HT: ${Math.round(r.capexPV)} €\nAcompte (${STATE.acomptePct}%): ${Math.round(r.acompteMontant)} €\nLoyer all-inclusive: ${Math.round(r.loyerTotal)} €/mois (${STATE.engagement} mois)\nPack services: ${r.recMensuel} €/mois`,
-    quote_lines: lines,
-    status: 'draft',
-  };
+  if (!r.nomClient || r.nomClient === '—') {
+    toast('⚠ Renseignez le nom du client (il sert à retrouver l\'entreprise dans Axonaut).', 'error'); return;
+  }
+  const pipe = (s.axonautPipe || '').trim() || AXONAUT_DEFAULTS.pipe;
+  const step = (s.axonautStep || '').trim() || AXONAUT_DEFAULTS.step;
+  const manager = (s.axonautManager || '').trim() || AXONAUT_DEFAULTS.manager;
+  const H = axonautHeaders(key);
+  let stage = 'entreprise';
+  toast('⏳ Envoi vers Axonaut…', 'info');
 
   try {
-    const resp = await fetch(`${baseUrl}/api/v2/quotes`, {
-      method: 'POST',
-      headers: { 'userApiKey': key, 'Content-Type': 'application/json' },
-      body: JSON.stringify(quotePayload),
-    });
-    if (resp.ok) {
-      const data = await resp.json();
-      toast(`✅ Devis créé dans Axonaut ! Réf: ${data.id||'—'}`, 'success');
-    } else {
-      const err = await resp.text();
-      toast(`❌ Erreur Axonaut ${resp.status}: ${err.slice(0,80)}`, 'error');
+    // 1) Entreprise
+    const forcedId = parseInt((document.getElementById('axonautCompanyId')?.value || '').replace(/\D/g, ''), 10);
+    let company = forcedId ? { id: forcedId } : await axonautFindCompany(base, key, r.nomClient);
+    if (!company) {
+      if (!confirm(`« ${r.nomClient} » n'existe pas dans Axonaut.\nLa créer comme prospect et poursuivre ?`)) {
+        toast('Envoi annulé : entreprise introuvable dans Axonaut.', 'error'); return;
+      }
+      const rc = await fetch(`${base}/api/v2/companies`, { method: 'POST', headers: H,
+        body: JSON.stringify({ name: r.nomClient, is_prospect: true, is_customer: false, business_manager: manager }) });
+      if (!rc.ok) throw new Error('Création entreprise : ' + await axonautError(rc));
+      company = await rc.json();
     }
+    if (!company || !company.id) throw new Error('Entreprise : identifiant manquant dans la réponse Axonaut');
+
+    // 2) Opportunité dans le pipe (suivi de progression)
+    stage = 'opportunité';
+    const ro = await fetch(`${base}/api/v2/opportunities`, { method: 'POST', headers: H,
+      body: JSON.stringify({
+        company_id: company.id,
+        name: `Offre Wifi — ${r.nomClient}`,
+        pipe_name: pipe,
+        pipe_step_name: step,
+        business_manager_email: manager,
+        amount: Math.round(r.capexPV),
+        comments: buildAxonautComments(r),
+      }) });
+    if (!ro.ok) throw new Error(`Opportunité (pipe « ${pipe} » / étape « ${step} ») : ` + await axonautError(ro));
+    const opp = await ro.json();
+    if (!opp || !opp.id) throw new Error('Opportunité : identifiant manquant dans la réponse Axonaut');
+
+    // 3) Devis rattaché à l'entreprise ET à l'opportunité
+    stage = 'devis';
+    const today = new Date();
+    const iso = d => d.toISOString().slice(0, 10);
+    const exp = new Date(today.getTime() + 30 * 86400000);
+    const rq = await fetch(`${base}/api/v2/quotations`, { method: 'POST', headers: H,
+      body: JSON.stringify({
+        company_id: company.id,
+        opportunity_id: opp.id,
+        date: iso(today),
+        expiry_date: iso(exp),
+        business_manager: manager,
+        comments: buildAxonautComments(r),
+        products: buildAxonautProducts(r),
+      }) });
+    if (!rq.ok) throw new Error('Devis : ' + await axonautError(rq));
+    const q = await rq.json();
+    toast(`✅ Devis créé dans Axonaut et rattaché à l'opportunité n°${opp.id} (devis ${q.number || q.id || '—'})`, 'success');
   } catch(e) {
-    toast(`❌ Erreur réseau: ${e.message}. Utilisez GitHub Pages ou Netlify.`, 'error');
+    const net = e instanceof TypeError ? ' (blocage CORS : renseignez l\'URL du relais dans Paramètres → Intégration Axonaut)' : '';
+    toast(`❌ Axonaut — étape ${stage} : ${e.message}${net}`, 'error');
+    console.error('Axonaut', stage, e);
   }
 }
 
