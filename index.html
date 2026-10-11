@@ -1942,40 +1942,75 @@ async function pushToAxonaut() {
     }
     if (!company || !company.id) throw new Error('Entreprise : identifiant manquant dans la réponse Axonaut');
 
-    // 2) Opportunité dans le pipe (suivi de progression)
+    // 2) Opportunité : on réutilise celle déjà ouverte pour cette entreprise, sinon on en crée une
     stage = 'opportunité';
-    const ro = await fetch(`${base}/api/v2/opportunities`, { method: 'POST', headers: H,
-      body: JSON.stringify({
-        company_id: company.id,
-        name: `Offre Wifi — ${r.nomClient}`,
-        pipe_name: pipe,
-        pipe_step_name: step,
-        business_manager_email: manager,
-        amount: Math.round(r.capexPV),
-        comments: buildAxonautComments(r),
-      }) });
-    if (!ro.ok) throw new Error(`Opportunité (pipe « ${pipe} » / étape « ${step} ») : ` + await axonautError(ro));
-    const opp = await ro.json();
-    if (!opp || !opp.id) throw new Error('Opportunité : identifiant manquant dans la réponse Axonaut');
+    let oppId = null, oppNote = '';
+    let existing = null;
+    try {
+      const rl = await fetch(`${base}/api/v2/companies/${company.id}/opportunities`, { headers: H });
+      if (rl.ok) {
+        const d = await rl.json();
+        const list = (Array.isArray(d) ? d : (d.data || d.opportunities || []))
+          .filter(o => !o.is_win && !o.is_archived && (o.probability == null || o.probability > 0 || /Qualifi|Prospection/i.test(o.pipe_name || '')))
+          .sort((x, y) => (y.id || 0) - (x.id || 0));
+        existing = list[0] || null;
+      }
+    } catch(e) { /* pas bloquant : on créera l'opportunité */ }
 
-    // 3) Devis rattaché à l'entreprise ET à l'opportunité
+    if (existing) {
+      oppId = existing.id;
+      oppNote = `opportunité existante n°${oppId} réutilisée`;
+      // Passage à l'étape « Proposition envoyée » (seulement si l'opportunité est déjà dans le bon pipe)
+      if (existing.pipe_name === pipe && existing.pipe_step_name !== step) {
+        try {
+          const body = { pipe_step_name: step };
+          if (!existing.amount) body.amount = Math.round(r.capexPV);
+          const rp = await fetch(`${base}/api/v2/opportunities/${oppId}`, { method: 'PATCH', headers: H, body: JSON.stringify(body) });
+          oppNote += rp.ok ? ` et passée à « ${step} »` : ` (étape à passer à la main : PATCH ${rp.status})`;
+        } catch(e) { oppNote += ' (étape à passer à la main)'; }
+      } else if (existing.pipe_name !== pipe) {
+        oppNote += ` (dans « ${(existing.pipe_name || '').slice(0, 25)} », étape à ajuster à la main)`;
+      }
+    } else {
+      const ro = await fetch(`${base}/api/v2/opportunities`, { method: 'POST', headers: H,
+        body: JSON.stringify({
+          company_id: company.id,
+          name: `Offre Wifi — ${r.nomClient}`,
+          pipe_name: pipe,
+          pipe_step_name: step,
+          business_manager_email: manager,
+          amount: Math.round(r.capexPV),
+          comments: buildAxonautComments(r),
+        }) });
+      if (ro.ok) {
+        const opp = await ro.json();
+        oppId = opp && opp.id ? opp.id : null;
+        oppNote = oppId ? `opportunité n°${oppId} créée` : 'opportunité créée';
+      } else {
+        // Le devis reste prioritaire : on le crée quand même, sans opportunité
+        oppNote = `⚠ opportunité non créée (${await axonautError(ro)}) — devis non rattaché au pipe`;
+        console.warn('Axonaut opportunité', oppNote);
+      }
+    }
+
+    // 3) Devis rattaché à l'entreprise (et à l'opportunité si on en a une)
     stage = 'devis';
     const today = new Date();
     const iso = d => d.toISOString().slice(0, 10);
     const exp = new Date(today.getTime() + 30 * 86400000);
-    const rq = await fetch(`${base}/api/v2/quotations`, { method: 'POST', headers: H,
-      body: JSON.stringify({
-        company_id: company.id,
-        opportunity_id: opp.id,
-        date: iso(today),
-        expiry_date: iso(exp),
-        business_manager: manager,
-        comments: buildAxonautComments(r),
-        products: buildAxonautProducts(r),
-      }) });
+    const quote = {
+      company_id: company.id,
+      date: iso(today),
+      expiry_date: iso(exp),
+      business_manager: manager,
+      comments: buildAxonautComments(r),
+      products: buildAxonautProducts(r),
+    };
+    if (oppId) quote.opportunity_id = oppId;
+    const rq = await fetch(`${base}/api/v2/quotations`, { method: 'POST', headers: H, body: JSON.stringify(quote) });
     if (!rq.ok) throw new Error('Devis : ' + await axonautError(rq));
     const q = await rq.json();
-    toast(`✅ Devis créé dans Axonaut et rattaché à l'opportunité n°${opp.id} (devis ${q.number || q.id || '—'})`, 'success');
+    toast(`${oppId ? '✅' : '⚠'} Devis ${q.number || q.id || ''} créé dans Axonaut — ${oppNote}`, oppId ? 'success' : 'error');
   } catch(e) {
     const net = e instanceof TypeError ? ' (blocage CORS : renseignez l\'URL du relais dans Paramètres → Intégration Axonaut)' : '';
     toast(`❌ Axonaut — étape ${stage} : ${e.message}${net}`, 'error');
