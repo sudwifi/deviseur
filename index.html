@@ -460,6 +460,7 @@
       <button class="hbtn secondary" onclick="openTab('projets')">📁 Projets</button>
       <button class="hbtn secondary" onclick="importJSON()">⬆ Importer</button>
       <button class="hbtn yellow" onclick="saveProject()">💾 Sauvegarder</button>
+      <button class="hbtn secondary" id="btnRetourLead" style="display:none" onclick="retourLead()">↩ Fiche lead SETT</button>
       <button class="hbtn primary" onclick="pushToAxonaut()">🔗 → Axonaut</button>
     </div>
   </div>
@@ -488,7 +489,7 @@
           <input type="text" id="nomClient" placeholder="Camping Les Palmiers…" oninput="calc()">
         </div>
         <div>
-          <label>ID entreprise Axonaut (laisser vide pour un nouveau contact : la fiche prospect est créée)</label>
+          <label>ID entreprise Axonaut (à saisir une fois par client — mémorisé ensuite)</label>
           <input type="text" id="axonautCompanyId" inputmode="numeric" placeholder="ex. 12345 (visible dans l'URL de la fiche Axonaut)">
         </div>
         <div class="row">
@@ -1945,31 +1946,31 @@ async function pushToAxonaut() {
     // ID saisi à la main > ID mémorisé pour ce nom de client > recherche par nom (liste des entreprises)
     const idMap = (() => { try { return JSON.parse(localStorage.getItem('sw_axonaut_ids') || '{}'); } catch(e) { return {}; } })();
     const nameKey = normName(r.nomClient);
-    const typedId = parseInt(String(document.getElementById('axonautCompanyId')?.value || '').replace(/\D/g, ''), 10);
+    const typedId = parseInt((document.getElementById('axonautCompanyId')?.value || '').replace(/\D/g, ''), 10);
     const forcedId = typedId || idMap[nameKey] || 0;
     let company = null;
-    let created = false;
     if (forcedId) {
       company = { id: forcedId };
     } else {
       try {
         company = await axonautFindCompany(base, key, r.nomClient);
       } catch(e) {
-        // Recherche par nom refusée par Axonaut : on passe directement à la création de la fiche
-        if (!/\b40[34]\b/.test(e.message)) throw e;
-        company = null;
+        if (/\b40[34]\b/.test(e.message)) {
+          toast('⚠ Axonaut refuse la recherche par nom. Renseignez « ID entreprise Axonaut » (le numéro dans l\'adresse de la fiche client) puis relancez.', 'error');
+          document.getElementById('axonautCompanyId')?.focus();
+          return;
+        }
+        throw e;
       }
     }
     if (!company) {
-      // Aucun ID connu : création de la fiche prospect (fusion possible plus tard en cas de doublon)
+      if (!confirm(`« ${r.nomClient} » n'existe pas dans Axonaut.\nLa créer comme prospect et poursuivre ?`)) {
+        toast('Envoi annulé : entreprise introuvable dans Axonaut.', 'error'); return;
+      }
       const rc = await fetch(`${base}/api/v2/companies`, { method: 'POST', headers: H,
         body: JSON.stringify({ name: r.nomClient, is_prospect: true, is_customer: false, business_manager: manager }) });
-      if (!rc.ok) throw new Error('Création de la fiche prospect : ' + await axonautError(rc));
+      if (!rc.ok) throw new Error('Création entreprise : ' + await axonautError(rc));
       company = await rc.json();
-      created = true;
-      // On mémorise l'ID tout de suite : un 2e clic ne recrée pas de doublon
-      try { if (company && company.id) { idMap[nameKey] = company.id; localStorage.setItem('sw_axonaut_ids', JSON.stringify(idMap)); } } catch(e) {}
-      const f = document.getElementById('axonautCompanyId'); if (f && company && company.id) f.value = company.id;
     }
     if (!company || !company.id) throw new Error('Entreprise : identifiant manquant dans la réponse Axonaut');
 
@@ -2043,7 +2044,7 @@ async function pushToAxonaut() {
     if (!rq.ok) throw new Error('Devis : ' + await axonautError(rq));
     const q = await rq.json();
     try { idMap[nameKey] = company.id; localStorage.setItem('sw_axonaut_ids', JSON.stringify(idMap)); } catch(e) {}
-    toast(`${oppId ? '✅' : '⚠'} Devis ${q.number || q.id || ''} créé dans Axonaut${created ? ' (fiche prospect créée)' : ''} — ${oppNote}`, oppId ? 'success' : 'error');
+    toast(`${oppId ? '✅' : '⚠'} Devis ${q.number || q.id || ''} créé dans Axonaut — ${oppNote}`, oppId ? 'success' : 'error');
   } catch(e) {
     const net = e instanceof TypeError ? ' (blocage CORS : renseignez l\'URL du relais dans Paramètres → Intégration Axonaut)' : '';
     toast(`❌ Axonaut — étape ${stage} : ${e.message}${net}`, 'error');
@@ -2214,6 +2215,39 @@ setRecurrent('saisonnier');
 calc();
 renderMaterialParams();
 renderProjects();
+
+// ═══════════════════ LIEN AVEC LA FICHE LEAD SETT 2026 ═══════════════════
+// La fiche lead ouvre ce Deviseur avec ?lead_id=…&entreprise=…&prenom=…&nom=…&typo=…&capacite=…&axonaut_id=…&retour=…
+(function leadFromSett() {
+  const p = new URLSearchParams(location.search);
+  const id = p.get('lead_id');
+  if (!id) return;
+  window.SETT_LEAD = { id, retour: p.get('retour') || '' };
+  const set = (elId, v) => { const e = document.getElementById(elId); if (e && v) e.value = v; };
+  set('nomClient', p.get('entreprise') || [p.get('prenom'), p.get('nom')].filter(Boolean).join(' '));
+  set('axonautCompanyId', p.get('axonaut_id'));
+  const nb = parseInt(p.get('capacite'), 10);
+  if (nb > 0) set('nbHeberg', nb);
+  const typo = p.get('typo');
+  if (typo && typeof setTypo === 'function') {
+    const b = [...document.querySelectorAll('.typo-btn')].find(x => (x.getAttribute('onclick') || '').includes("'" + typo + "'"));
+    if (b) setTypo(typo, b);
+  }
+  const btn = document.getElementById('btnRetourLead');
+  if (btn) btn.style.display = '';
+  calc();
+  toast('📋 Lead SETT chargé : ' + (document.getElementById('nomClient').value || '—'), 'info');
+})();
+
+// Renvoie le montant HT chiffré vers la fiche lead (onglet « sett_leads »)
+function retourLead() {
+  const L = window.SETT_LEAD;
+  if (!L || !L.retour) { toast('Lien de retour absent : rouvrez ce Deviseur depuis la fiche lead.', 'error'); return; }
+  if (!lastResult) { toast("Calculez d'abord un projet.", 'error'); return; }
+  const url = L.retour + (L.retour.includes('?') ? '&' : '?') +
+    'lead_id=' + encodeURIComponent(L.id) + '&src=wifi&montant=' + Math.round(lastResult.capexPV);
+  window.open(url, 'sett_leads');
+}
 </script>
 </body>
 </html>
