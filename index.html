@@ -297,25 +297,6 @@
   .badge.yellow { background: rgba(250,196,32,0.15); color: var(--yellow); }
   .badge.red    { background: rgba(239,68,68,0.15);  color: var(--red); }
 
-  /* ── IA ── */
-  .ia-panel { flex-direction: column; padding: 16px; gap: 12px; }
-  .ia-btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: var(--blue-dark); color: white; border: none;
-    padding: 9px 20px; border-radius: 5px;
-    font-family: var(--title); font-size: 13px; font-weight: 600;
-    cursor: pointer; transition: opacity 0.15s;
-  }
-  .ia-btn:hover { opacity: 0.85; }
-  .ia-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .ia-output {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 6px; padding: 14px;
-    font-size: 13px; line-height: 1.65; color: var(--text2);
-    white-space: pre-wrap; flex: 1; min-height: 250px; overflow-y: auto;
-  }
-  .ia-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; flex: 1; }
-
   /* ── PROJETS ── */
   .projects-panel { flex-direction: column; padding: 16px; gap: 12px; }
   .projects-list { display: flex; flex-direction: column; gap: 8px; }
@@ -402,7 +383,7 @@
 
   @media print {
     body { background: white; }
-    .header, .tabs, .col-left, #tab-marge, #tab-ia, #tab-projets, #tab-settings { display: none !important; }
+    .header, .tabs, .col-left, #tab-marge, #tab-projets, #tab-settings { display: none !important; }
     .panel.active { height: auto; overflow: visible; }
     .client-view { box-shadow: none; }
     .no-print { display: none !important; }
@@ -472,7 +453,6 @@
   <div class="tab" onclick="openTab('marge')">📊 Analyse marge</div>
   <div class="tab" onclick="openTab('materiel')">📦 Liste matériel</div>
   <div class="tab" onclick="openTab('client')">📄 Vue client</div>
-  <div class="tab" onclick="openTab('ia')">✨ Génération IA</div>
   <div class="tab" onclick="openTab('projets')">📁 Projets</div>
   <div class="tab" onclick="openTab('settings')">⚙ Paramètres</div>
 </div>
@@ -810,24 +790,6 @@
   </div>
 </div>
 
-<!-- ═══════════════════ IA ═══════════════════ -->
-<div id="tab-ia" class="main panel ia-panel">
-  <div style="display:flex;align-items:center;gap:12px;">
-    <button class="ia-btn" id="btnGenIA" onclick="generateIA()"><span>✨</span> Générer avec l'IA</button>
-    <span style="font-size:11px;color:var(--text3);">Génère liste chantier technique + récapitulatif commercial adapté</span>
-  </div>
-  <div class="ia-cols">
-    <div style="display:flex;flex-direction:column;gap:6px;">
-      <div class="card-title" style="color:var(--text2);">Liste de chantier technique</div>
-      <div class="ia-output" id="ia-chantier">Cliquez sur "Générer avec l'IA" pour obtenir la liste de chantier.</div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:6px;">
-      <div class="card-title" style="color:var(--text2);">Récapitulatif commercial</div>
-      <div class="ia-output" id="ia-commercial">Cliquez sur "Générer avec l'IA" pour obtenir le récapitulatif commercial.</div>
-    </div>
-  </div>
-</div>
-
 <!-- ═══════════════════ PROJETS ═══════════════════ -->
 <div id="tab-projets" class="main panel projects-panel">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
@@ -872,11 +834,11 @@
           </div>
           <div>
             <label>Pipe Axonaut des opportunités</label>
-            <input type="text" id="axonautPipe" placeholder="#2 Qualifié" oninput="saveSettings()">
+            <input type="text" id="axonautPipe" placeholder="#2 Suivi devis (hors salon)" oninput="saveSettings()">
           </div>
           <div>
             <label>Étape du pipe à l'envoi du devis</label>
-            <input type="text" id="axonautStep" placeholder="J+4 - Proposition envoyée" oninput="saveSettings()">
+            <input type="text" id="axonautStep" placeholder="1. Devis envoyé" oninput="saveSettings()">
             <div style="font-size:10px;color:var(--text3);margin-top:4px;">Noms exacts, tels qu'affichés dans Axonaut → Opportunités.</div>
           </div>
           <div>
@@ -1106,7 +1068,6 @@ function openTab(name) {
         (name==='marge' && t.textContent.includes('marge')) ||
         (name==='materiel' && t.textContent.includes('mat')) ||
         (name==='client' && t.textContent.includes('client')) ||
-        (name==='ia' && t.textContent.includes('IA')) ||
         (name==='projets' && t.textContent.includes('Projets')) ||
         (name==='settings' && t.textContent.includes('Param'))) {
       t.classList.add('active');
@@ -1801,11 +1762,15 @@ function loadJSONFile(e) {
 }
 
 // ═══════════════════ AXONAUT ═══════════════════
+// Cycle commercial du salon : noms EXACTS des étapes dans Axonaut
+const SETT_PIPE = 'Sett 2026';
+const SETT_STEPS = ['1. Visite sur Stand', '2 Chiffré / démo sur stand', '3 À recontacter post-salon', '4 RDV / visite planifié', '5 Devis à produire'];
+const SETT_ORIGINE = 'SETT 2026 – stand';
 // API v2 : base https://axonaut.com (et non app.axonaut.com), en-tête userApiKey.
 const AXONAUT_DEFAULTS = {
   baseUrl: 'https://axonaut.com',
-  pipe: '#2 Qualifié',
-  step: 'J+4 - Proposition envoyée',
+  pipe: '#2 Suivi devis ',
+  step: '1. Devis envoyé',
   manager: 'virginie@sudwifi.fr',
 };
 function axonautBase(raw) {
@@ -1934,9 +1899,11 @@ async function pushToAxonaut() {
   if (!r.nomClient || r.nomClient === '—') {
     toast('⚠ Renseignez le nom du client (il sert à retrouver l\'entreprise dans Axonaut).', 'error'); return;
   }
-  const pipe = (s.axonautPipe || '').trim() || AXONAUT_DEFAULTS.pipe;
-  const step = (s.axonautStep || '').trim() || AXONAUT_DEFAULTS.step;
-  const manager = (s.axonautManager || '').trim() || AXONAUT_DEFAULTS.manager;
+  // Ouvert depuis la fiche lead SETT : cycle « Sett 2026 », étape 2, commercial du lead (les réglages sont ignorés)
+  const L = window.SETT_LEAD;
+  const pipe = L ? SETT_PIPE : ((s.axonautPipe || '').trim() || AXONAUT_DEFAULTS.pipe);
+  const step = L ? SETT_STEPS[1] : ((s.axonautStep || '').trim() || AXONAUT_DEFAULTS.step);
+  const manager = (L && L.manager) || (s.axonautManager || '').trim() || AXONAUT_DEFAULTS.manager;
   const H = axonautHeaders(key);
   let stage = 'entreprise';
   toast('⏳ Envoi vers Axonaut…', 'info');
@@ -1947,7 +1914,7 @@ async function pushToAxonaut() {
     const idMap = (() => { try { return JSON.parse(localStorage.getItem('sw_axonaut_ids') || '{}'); } catch(e) { return {}; } })();
     const nameKey = normName(r.nomClient);
     const typedId = parseInt((document.getElementById('axonautCompanyId')?.value || '').replace(/\D/g, ''), 10);
-    const forcedId = typedId || idMap[nameKey] || 0;
+    const forcedId = typedId || (L && L.companyId) || idMap[nameKey] || 0;
     let company = null;
     if (forcedId) {
       company = { id: forcedId };
@@ -1979,41 +1946,58 @@ async function pushToAxonaut() {
     let oppId = null, oppNote = '';
     let existing = null;
     try {
-      const rl = await fetch(`${base}/api/v2/companies/${company.id}/opportunities`, { headers: H });
-      if (rl.ok) {
-        const d = await rl.json();
-        const list = (Array.isArray(d) ? d : (d.data || d.opportunities || []))
-          .filter(o => !o.is_win && !o.is_archived && (o.probability == null || o.probability > 0 || /Qualifi|Prospection/i.test(o.pipe_name || '')))
-          .sort((x, y) => (y.id || 0) - (x.id || 0));
-        existing = list[0] || null;
+      if (L && L.oppId) {
+        // Opportunité déjà créée par la fiche lead : on la lit pour connaître son étape
+        const rg = await fetch(`${base}/api/v2/opportunities/${L.oppId}`, { headers: H });
+        existing = rg.ok ? await rg.json() : { id: L.oppId };
+      } else {
+        const rl = await fetch(`${base}/api/v2/companies/${company.id}/opportunities`, { headers: H });
+        if (rl.ok) {
+          const d = await rl.json();
+          const all = (Array.isArray(d) ? d : (d.data || d.opportunities || []))
+            .filter(o => !o.is_win && !o.is_archived && (o.probability == null || o.probability > 0 || /Qualifi|Prospection|Sett|Suivi/i.test(o.pipe_name || '')))
+            .sort((x, y) => (y.id || 0) - (x.id || 0));
+          // En mode salon, on ne réutilise qu'une opportunité du cycle « Sett 2026 »
+          const list = L ? all.filter(o => (o.pipe_name || '').trim() === pipe) : all;
+          existing = list[0] || null;
+        }
       }
     } catch(e) { /* pas bloquant : on créera l'opportunité */ }
 
     if (existing) {
       oppId = existing.id;
       oppNote = `opportunité existante n°${oppId} réutilisée`;
-      // Passage à l'étape « Proposition envoyée » (seulement si l'opportunité est déjà dans le bon pipe)
-      if (existing.pipe_name === pipe && existing.pipe_step_name !== step) {
+      // Passage à l'étape cible (seulement si l'opportunité est déjà dans le bon pipe)
+      // On fait seulement AVANCER l'étape (jamais reculer une opportunité déjà en RDV ou devis)
+      const curIdx = SETT_STEPS.indexOf((existing.pipe_step_name || '').trim());
+      const canMove = !L || (existing.pipe_step_name != null && curIdx < SETT_STEPS.indexOf(step));
+      if (L && existing.pipe_step_name == null) {
+        oppNote += ' (étape non lue : à vérifier dans Axonaut)';
+      } else if ((existing.pipe_name || '').trim() === pipe.trim() && existing.pipe_step_name !== step && canMove) {
         try {
           const body = { pipe_step_name: step };
           if (!existing.amount) body.amount = Math.round(r.capexPV);
           const rp = await fetch(`${base}/api/v2/opportunities/${oppId}`, { method: 'PATCH', headers: H, body: JSON.stringify(body) });
           oppNote += rp.ok ? ` et passée à « ${step} »` : ` (étape à passer à la main : PATCH ${rp.status})`;
         } catch(e) { oppNote += ' (étape à passer à la main)'; }
-      } else if (existing.pipe_name !== pipe) {
+      } else if (existing.pipe_name != null && (existing.pipe_name || '').trim() !== pipe.trim()) {
         oppNote += ` (dans « ${(existing.pipe_name || '').slice(0, 25)} », étape à ajuster à la main)`;
       }
     } else {
-      const ro = await fetch(`${base}/api/v2/opportunities`, { method: 'POST', headers: H,
-        body: JSON.stringify({
+      const oppBody = {
           company_id: company.id,
-          name: `Offre Wifi — ${r.nomClient}`,
+          name: L ? `SETT 2026 – ${r.nomClient}` : `Offre Wifi — ${r.nomClient}`,
           pipe_name: pipe,
           pipe_step_name: step,
           business_manager_email: manager,
           amount: Math.round(r.capexPV),
           comments: buildAxonautComments(r),
-        }) });
+        };
+      if (L) oppBody.probability = 50;
+      let ro = await fetch(`${base}/api/v2/opportunities`, { method: 'POST', headers: H,
+        body: JSON.stringify(L ? { ...oppBody, custom_fields: { 'Origine': L.origine || SETT_ORIGINE } } : oppBody) });
+      // Champ « Origine » refusé (valeur absente de la liste) : on recrée sans
+      if (L && (ro.status === 400 || ro.status === 422)) ro = await fetch(`${base}/api/v2/opportunities`, { method: 'POST', headers: H, body: JSON.stringify(oppBody) });
       if (ro.ok) {
         const opp = await ro.json();
         oppId = opp && opp.id ? opp.id : null;
@@ -2044,6 +2028,8 @@ async function pushToAxonaut() {
     if (!rq.ok) throw new Error('Devis : ' + await axonautError(rq));
     const q = await rq.json();
     try { idMap[nameKey] = company.id; localStorage.setItem('sw_axonaut_ids', JSON.stringify(idMap)); } catch(e) {}
+    // Mémorisé pour le retour vers la fiche lead (évite un doublon d'opportunité)
+    if (L) { L.companyId = company.id; if (oppId) L.oppId = oppId; }
     toast(`${oppId ? '✅' : '⚠'} Devis ${q.number || q.id || ''} créé dans Axonaut — ${oppNote}`, oppId ? 'success' : 'error');
   } catch(e) {
     const net = e instanceof TypeError ? ' (blocage CORS : renseignez l\'URL du relais dans Paramètres → Intégration Axonaut)' : '';
@@ -2065,39 +2051,6 @@ function exportCSV() {
 function copyClientText() {
   const txt=document.getElementById('client-view-content').innerText;
   navigator.clipboard.writeText(txt).then(()=>toast('Texte copié !','success'));
-}
-
-// ═══════════════════ IA ═══════════════════
-async function generateIA() {
-  if (!lastResult) { toast('Calculez d\'abord un projet.', 'error'); return; }
-  const btn=document.getElementById('btnGenIA');
-  btn.disabled=true; btn.textContent='⏳ Génération…';
-  document.getElementById('ia-chantier').textContent='Génération en cours…';
-  document.getElementById('ia-commercial').textContent='Génération en cours…';
-  const r=lastResult;
-  const ctx=`Client: ${r.nomClient} — ${r.typoLabel} — ${r.nbHeberg} hébergements
-AP outdoor: ${r.nbAPOut} × ${STATE.typo==='camping'?'EAP650-D120 directionnel':'EAP625-HD omni'}
-AP indoor: ${r.nbAPIn} × EAP610 | Switches: ${r.nbSwitches} × TL-SG2210P
-Portail Adipsys Expert ${r.adp.cnxTier} cnx — ${STATE.adipsysDuree} mois
-CAPEX total: ${Math.round(r.capexPV)} € HT | Loyer all-inclusive: ${Math.round(r.loyerTotal)} €/mois
-Pack services: ${r.recMensuel} €/mois (${STATE.recurrentMode}) | Acompte: ${Math.round(r.acompteMontant)} €
-Distance chantier: ${r.distKm} km`;
-  try {
-    const [res1, res2] = await Promise.all([
-      fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':'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','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-3-5-sonnet-20241022',max_tokens:1000,system:'Tu es expert technique réseau Wifi pour Sud Wifi, intégrateur TP-Link Omada spécialisé HPA et camping. Rédige des listes techniques précises. Réponds uniquement en français.',messages:[{role:'user',content:`Génère une liste de chantier technique complète (phases: préparation, commande matériel, installation, mise en service, recette client):\n${ctx}`}]})}),
-      fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':'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','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-3-5-sonnet-20241022',max_tokens:1000,system:'Tu es commercial senior chez Sud Wifi. Tu rédiges des synthèses commerciales percutantes, orientées bénéfices client. Argument ROI fort. Anti-Osmozis (liberté matériel). Sans engagement = argument clé camping. Français uniquement.',messages:[{role:'user',content:`Rédige un récapitulatif commercial pour cette proposition (300 mots max, avec ROI, différenciateurs, appel à l'action):\n${ctx}`}]})}),
-    ]);
-    const d1=await res1.json(), d2=await res2.json();
-    document.getElementById('ia-chantier').textContent = d1.content?.[0]?.text||'Erreur';
-    document.getElementById('ia-commercial').textContent = d2.content?.[0]?.text||'Erreur';
-    toast('Génération IA terminée ✨', 'success');
-  } catch(e) {
-    const msg='Erreur API: '+e.message+'\n\nCet outil doit être hébergé sur GitHub Pages ou Netlify pour fonctionner (pas en local ni sur Google Sites).';
-    document.getElementById('ia-chantier').textContent=msg;
-    document.getElementById('ia-commercial').textContent='Erreur API.';
-    toast('Erreur API — voir onglet IA', 'error');
-  }
-  btn.disabled=false; btn.innerHTML='<span>✨</span> Générer avec l\'IA';
 }
 
 // ═══════════════════ TOAST ═══════════════════
@@ -2222,7 +2175,8 @@ renderProjects();
   const p = new URLSearchParams(location.search);
   const id = p.get('lead_id');
   if (!id) return;
-  window.SETT_LEAD = { id, retour: p.get('retour') || '' };
+  window.SETT_LEAD = { id, retour: p.get('retour') || '', manager: p.get('manager') || '', origine: p.get('origine') || '',
+    oppId: parseInt(p.get('opp_id'), 10) || 0, companyId: parseInt(p.get('axonaut_id'), 10) || 0 };
   const set = (elId, v) => { const e = document.getElementById(elId); if (e && v) e.value = v; };
   set('nomClient', p.get('entreprise') || [p.get('prenom'), p.get('nom')].filter(Boolean).join(' '));
   set('axonautCompanyId', p.get('axonaut_id'));
@@ -2245,7 +2199,8 @@ function retourLead() {
   if (!L || !L.retour) { toast('Lien de retour absent : rouvrez ce Deviseur depuis la fiche lead.', 'error'); return; }
   if (!lastResult) { toast("Calculez d'abord un projet.", 'error'); return; }
   const url = L.retour + (L.retour.includes('?') ? '&' : '?') +
-    'lead_id=' + encodeURIComponent(L.id) + '&src=wifi&montant=' + Math.round(lastResult.capexPV);
+    'lead_id=' + encodeURIComponent(L.id) + '&src=wifi&montant=' + Math.round(lastResult.capexPV) +
+    (L.oppId ? '&opp_id=' + L.oppId : '') + (L.companyId ? '&company_id=' + L.companyId : '');
   window.open(url, 'sett_leads');
 }
 </script>
