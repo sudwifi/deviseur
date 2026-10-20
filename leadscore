@@ -81,7 +81,7 @@ pre{background:#0f172a;color:#e2e8f0;padding:10px;border-radius:8px;overflow:aut
       <div><label>Fonction</label><div class="chips" data-chip="fonction"><button class="chip" data-v="Gérant / Dirigeant">Dirigeant</button><button class="chip" data-v="Directeur / Responsable">Directeur</button><button class="chip" data-v="Technique / IT">Technique</button><button class="chip" data-v="Autre">Autre</button></div></div>
       <div><label>Ville</label><input type="text" data-f="ville" autocomplete="off"></div>
       <div><label>Client Sud Wifi actuel ?</label><div class="chips" data-chip="client"><button class="chip" data-v="oui">Oui</button><button class="chip" data-v="non">Non</button></div></div>
-      <div class="full"><label class="chk"><input type="checkbox" data-c="consent"><span>Accord verbal recueilli pour utiliser ces informations (recontact commercial) <span class="hint" id="consentAt"></span></span></label></div>
+      <div class="full"><label class="chk"><input type="checkbox" data-c="consent"><span>Accord verbal recueilli <span class="hint">(précaution · base : badge SETT, données partagées avec les exposants partenaires)</span> <span class="hint" id="consentAt"></span></span></label></div>
     </div>
   </div>
 
@@ -96,6 +96,7 @@ pre{background:#0f172a;color:#e2e8f0;padding:10px;border-radius:8px;overflow:aut
     <div class="crit"><label>6 · Décideur présent</label><div class="chips" id="cDec"></div></div>
     <div class="crit"><label>7 · Engagement chez le prestataire actuel</label>
       <input type="text" data-f="prestataire" placeholder="Nom du prestataire actuel (optionnel)" autocomplete="off" style="max-width:340px;margin-bottom:8px">
+      <div style="max-width:200px;margin-bottom:8px"><label>Fin d'engagement (MM-YYYY)</label><input type="text" data-f="finEngagement" inputmode="numeric" placeholder="MM-YYYY" maxlength="7" autocomplete="off"></div>
       <div class="chips" id="cEng"></div>
       <label class="chk" id="resilBox" style="margin-top:8px"><input type="checkbox" data-c="resil"><span>Résiliation envoyée <span class="hint">(décoché = pas envoyée)</span></span></label>
     </div>
@@ -147,16 +148,16 @@ pre{background:#0f172a;color:#e2e8f0;padding:10px;border-radius:8px;overflow:aut
   <h3 style="margin-top:0">Réglages</h3>
   <div class="grid">
     <div class="full"><label>Clé API Axonaut (stockée uniquement sur cet appareil)</label><input type="password" id="sKey" autocomplete="off"></div>
-    <div><label>Email du commercial Axonaut</label><input type="email" id="sMgr"></div>
+    <div><label>E-mail par défaut (si commercial non reconnu)</label><input type="email" id="sMgr"></div>
     <div><label>Pipe commercial</label><input type="text" id="sPipe"></div>
-    <div><label>Étape d'entrée dans le pipe</label><input type="text" id="sStep"></div>
+    <div><label>Valeur du champ « Origine »</label><input type="text" id="sOrig"></div>
     <div class="full"><label>URL du relais Axonaut (Cloudflare) — le même que dans le Deviseur Wifi</label><input type="url" id="sApi" placeholder="https://axonaut-relais.xxx.workers.dev"></div>
     <div class="full"><button class="btn sec" id="axTest" type="button">🔌 Tester la connexion Axonaut</button><div class="hint" id="axStatus" style="margin-top:6px"></div></div>
     <div class="full"><label>URL du Deviseur Wifi</label><input type="url" id="sWifi" placeholder="https://…"></div>
     <div class="full"><label>URL du Deviseur vidéo</label><input type="url" id="sVideo" placeholder="https://…"></div>
   </div>
   <details style="margin-top:10px"><summary class="hint">Comment les Deviseurs récupèrent le lead</summary>
-    <p class="hint">Les Deviseurs patchés (Wifi V15 et vidéo V5 « SETT ») lisent automatiquement ces paramètres d'URL : <code>lead_id, entreprise, prenom, nom, email, tel, ville, typo, capacite, axonaut_id, retour</code>. Leur bouton « ↩ Fiche lead » renvoie le montant chiffré dans le champ « Budget estimé » (Wifi + vidéo s'additionnent).</p></details>
+    <p class="hint">Les Deviseurs (Wifi V15 et vidéo V5 « SETT ») lisent automatiquement : <code>lead_id, entreprise, prenom, nom, email, tel, ville, typo, capacite, axonaut_id, opp_id, manager, origine, retour</code>. Leur « → Axonaut » crée le devis dans le cycle « Sett 2026 », étape 2, au nom du commercial du lead. Leur « ↩ Fiche lead » renvoie le montant (Wifi + vidéo s'additionnent) et l'opportunité : la fiche se met alors à jour dans Axonaut toute seule.</p></details>
   <div class="btns" style="margin-top:14px"><button class="btn sec" id="sClose">Annuler</button><button class="btn" id="sSave">Enregistrer</button></div>
 </dialog>
 
@@ -164,7 +165,16 @@ pre{background:#0f172a;color:#e2e8f0;padding:10px;border-radius:8px;overflow:aut
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LS_L='sett2026_leads_v1',LS_S='sett2026_settings_v1',LS_B='sett2026_leads_backup';
-const DEF={apiKey:'',manager:'virginie@sudwifi.fr',pipe:'Sett 2026',step:'Nouveau lead',api:'',urlWifi:'',urlVideo:'',lastCommercial:'Virginie'};
+const DEF={apiKey:'',manager:'virginie@sudwifi.fr',pipe:'Sett 2026',origine:'SETT 2026 – stand',api:'',urlWifi:'',urlVideo:'',lastCommercial:'Virginie'};
+const MGR={Virginie:'virginie@sudwifi.fr','Stéphane':'stephane@sudwifi.fr',Anthony:'anthony@sudwifi.fr',Amanda:'amanda@sudwifi.fr'};
+// Noms EXACTS des étapes du cycle « Sett 2026 » dans Axonaut
+const STEPS=[['stand','1. Visite sur Stand'],['chiffre','2 Chiffré / démo sur stand'],['recontact','3 À recontacter post-salon'],['rdv','4 RDV / visite planifié'],['devis','5 Devis à produire']];
+const ACT2STEP={'Chiffrage sur le stand':'chiffre','Démo Tableau de bord':'chiffre','Rappel sous 48h':'recontact','Envoi documentation':'recontact','Visite sur site':'rdv'};
+const stepIdx=k=>STEPS.findIndex(x=>x[0]===k);
+function stepKey(l){let k=ACT2STEP[l.action]||'stand';if(k==='stand'&&(Number(l.montantWifi)||Number(l.montantVideo)))k='chiffre';return k}
+const stepName=l=>STEPS[stepIdx(stepKey(l))][1];
+const mgrOf=l=>MGR[l.commercial]||settings.manager;
+const probOf=l=>Math.min(TEMPS[score(l).t].prob,50); // plafonné à 50 % tant que le devis n'est pas envoyé
 const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
 let settings={...DEF,...load(LS_S,{})},leads=load(LS_L,[]),cur=null,filter='all';
 
@@ -208,7 +218,7 @@ function score(l){
 }
 
 /* ---------- Données ---------- */
-const newLead=()=>({id:'L'+Date.now().toString(36),createdAt:Date.now(),updatedAt:Date.now(),entreprise:'',prenom:'',nom:'',email:'',tel:'',telType:'',fonction:'',ville:'',client:'',type:'',classement:'',capacite:'',capaciteNb:'',timing:'',budget:'',decideur:'',budgetEstime:'',montantWifi:'',montantVideo:'',action:'',commercial:settings.lastCommercial,notes:'',prestataire:'',engagement:'',resil:false,consent:false,consentAt:'',ax:{status:'todo'}});
+const newLead=()=>({id:'L'+Date.now().toString(36),createdAt:Date.now(),updatedAt:Date.now(),entreprise:'',prenom:'',nom:'',email:'',tel:'',telType:'',fonction:'',ville:'',client:'',type:'',classement:'',capacite:'',capaciteNb:'',timing:'',budget:'',decideur:'',budgetEstime:'',montantWifi:'',montantVideo:'',action:'',commercial:settings.lastCommercial,notes:'',prestataire:'',engagement:'',finEngagement:'',resil:false,consent:false,consentAt:'',ax:{status:'todo'}});
 const isEmpty=l=>!(l.entreprise||l.nom||l.prenom||l.email||l.tel);
 let tmr;
 function persist(now){clearTimeout(tmr);const go=()=>{if(cur&&!isEmpty(cur)){cur.updatedAt=Date.now();const i=leads.findIndex(x=>x.id===cur.id);i<0?leads.unshift(cur):leads[i]=cur}
@@ -246,12 +256,18 @@ function render(){
   $('#sCap').classList.toggle('hide',!s.cap);$('#sCap').textContent=s.cap?'⚠ '+s.cap:'';
   updateAxBtn();
 }
-function updateAxBtn(){const st=cur.ax?.status;$('#sendAx').textContent=st==='sent'?'✅ Dans Axonaut':'⬆ Axonaut'}
+function updateAxBtn(){const st=cur.ax?.status;$('#sendAx').textContent=st==='sent'?'🔄 Mettre à jour Axonaut':'⬆ Axonaut'}
 function open_(l){cur=l;buildQual();render();show('edit');window.scrollTo(0,0)}
 function show(v){$('#viewEdit').classList.toggle('hide',v!=='edit');$('#viewList').classList.toggle('hide',v!=='list');$('#tabEdit').classList.toggle('act',v==='edit');$('#tabList').classList.toggle('act',v==='list');if(v==='list')renderList()}
 
-document.addEventListener('input',e=>{const f=e.target.dataset?.f;if(!f||!cur)return;cur[f]=e.target.value;
+const validMY=v=>/^(0[1-9]|1[0-2])-\d{4}$/.test(v||'');
+const fmtMY=v=>{const d=String(v).replace(/\D/g,'').slice(0,6);return d.length>2?d.slice(0,2)+'-'+d.slice(2):d};
+function engFromMY(v){if(!validMY(v))return'';const[m,y]=v.split('-').map(Number);const n=new Date();const mo=(y-n.getFullYear())*12+(m-1-n.getMonth());return mo<=0?'free':mo<=6?'m6':mo<=12?'m12':mo<=24?'m24':'m24p'}
+document.addEventListener('input',e=>{const f=e.target.dataset?.f;if(!f||!cur)return;
+  if(f==='finEngagement')e.target.value=fmtMY(e.target.value);
+  cur[f]=e.target.value;
   if(f==='capaciteNb'){cur.capacite=bucketOf(cur.capaciteNb)}
+  if(f==='finEngagement'){const b=engFromMY(cur.finEngagement);if(b){cur.engagement=b;if(!ENGAGED.includes(b))cur.resil=false}}
   render();persist()});
 document.addEventListener('change',e=>{const k=e.target.dataset?.c;if(!k||!cur)return;cur[k]=e.target.checked;
   if(k==='consent')cur.consentAt=e.target.checked?Date.now():'';
@@ -271,10 +287,10 @@ function renderList(){
   $('#list').innerHTML=rows.map(({l,s})=>{const T=TEMPS[s.t],none=!s.filled;const sent=l.ax?.status==='sent';
     return`<div class="lead" data-id="${l.id}" style="--c:${none?'#94a3b8':T.c}"><div class="t">${none?'—':T.e+'<br>'+T.l}</div>
     <div class="i"><b>${esc(l.entreprise||(l.prenom+' '+l.nom).trim()||'Sans nom')}</b><span>${esc((l.prenom+' '+l.nom).trim())}${l.tel?` · <a href="tel:${esc(l.tel)}">${esc(l.tel)}</a>`:''}</span></div>
-    <div class="s">${none?'':s.pct+'/100<br>'}${sent?'✅ Axonaut':!l.consent?'🔒 sans accord':l.ax?.status==='error'?'⚠️ erreur':'⏳ à envoyer'}</div>
+    <div class="s">${none?'':s.pct+'/100<br>'}${sent?'✅ '+esc((STEPS[l.ax.stepIdx??0]||STEPS[0])[1]):l.ax?.status==='error'?'⚠️ erreur':'⏳ à envoyer'}</div>
     <button class="ib" style="background:#fee2e2;color:#dc2626" data-del="${l.id}">🗑</button></div>`}).join('')||'<p class="hint" style="text-align:center">Aucun lead pour le moment.</p>';
-  const todo=leads.filter(l=>l.ax?.status!=='sent'&&!isEmpty(l)&&l.consent).length;
-  $('#list').insertAdjacentHTML('afterbegin',`<div class="btns" style="margin-bottom:10px"><button class="btn ax" id="sendAll">⬆ Envoyer tout vers Axonaut (${todo})</button><button class="btn sec" id="clrF">Tous (${leads.length})</button></div>`);
+  const todo=leads.filter(l=>!isEmpty(l)).length;
+  $('#list').insertAdjacentHTML('afterbegin',`<div class="btns" style="margin-bottom:10px"><button class="btn ax" id="sendAll">⬆ Envoyer / mettre à jour Axonaut (${todo})</button><button class="btn sec" id="clrF">Tous (${leads.length})</button></div>`);
 }
 $('#viewList').addEventListener('click',e=>{
   const st=e.target.closest('.stat');if(st){filter=filter===st.dataset.t?'all':st.dataset.t;return renderList()}
@@ -296,7 +312,7 @@ function goDeviseur(url,name){
   if(isEmpty(cur)){toast("Saisissez d'abord au moins un nom ou une entreprise");return}
   persist(true);
   const p=new URLSearchParams({source:'sett2026',lead_id:cur.id,entreprise:cur.entreprise,prenom:cur.prenom,nom:cur.nom,email:cur.email,tel:cur.tel,ville:cur.ville,type:cur.type,
-    typo:({camping:'camping',hotel:'hotel',collectif:'village'})[cur.type]||'',capacite:cur.capaciteNb||'',axonaut_id:cur.ax?.companyId||'',retour:location.href.split('#')[0].split('?')[0]});
+    typo:({camping:'camping',hotel:'hotel',collectif:'village'})[cur.type]||'',capacite:cur.capaciteNb||'',axonaut_id:cur.ax?.companyId||'',opp_id:cur.ax?.oppId||'',manager:mgrOf(cur),origine:settings.origine,retour:location.href.split('#')[0].split('?')[0]});
   window.open(url+(url.includes('?')?'&':'?')+p.toString(),'_blank');
 }
 $('#goWifi').onclick=()=>goDeviseur(settings.urlWifi,'Deviseur Wifi');
@@ -307,9 +323,19 @@ window.name='sett_leads'; // permet aux Deviseurs de revenir sur cet onglet
 (function(){const p=new URLSearchParams(location.search);const id=p.get('lead_id'),m=p.get('montant'),src=p.get('src');
   if(id&&m){const l=leads.find(x=>x.id===id);if(l){
     if(src==='wifi')l.montantWifi=m;else if(src==='video')l.montantVideo=m;
+    const oid=parseInt(p.get('opp_id'))||0,cid=parseInt(p.get('company_id'))||0;
+    l.ax=l.ax||{status:'todo'};
+    if(cid&&!l.ax.companyId)l.ax.companyId=cid;
+    // le Deviseur a créé (ou réutilisé) l'opportunité, déjà à l'étape 2 : la fiche ne doit pas en recréer une
+    if(oid&&!l.ax.oppId){l.ax={...l.ax,status:'sent',oppId:oid,stepIdx:1,sentAt:Date.now(),fromDeviseur:true}}
+    else if(oid&&l.ax.oppId===oid)l.ax.stepIdx=Math.max(l.ax.stepIdx??0,1);
+    window.AUTO_SYNC=l.id;
     l.budgetEstime=(src==='wifi'||src==='video')?String((Number(l.montantWifi)||0)+(Number(l.montantVideo)||0)):m;
     l.updatedAt=Date.now();localStorage.setItem(LS_L,JSON.stringify(leads));cur=l;setTimeout(()=>toast(`💶 Montant reçu du Deviseur : ${Number(m).toLocaleString('fr-FR')} € HT`),300)}}
   if(id){try{history.replaceState(null,'',location.pathname)}catch(e){}}})();
+// Synchronisation automatique après un chiffrage (si la clé Axonaut est renseignée et le réseau disponible)
+setTimeout(async()=>{const l=leads.find(x=>x.id===window.AUTO_SYNC);if(!l||l.ax?.status!=='sent'||!settings.apiKey||!navigator.onLine)return;
+  try{const r=await sendLead(l);if(r==='mis à jour')toast('🔄 Axonaut mis à jour (montant, étape, scoring)')}catch(e){toast('⚠️ Mise à jour Axonaut : '+netHelp(e),6000)}render()},1200);
 // onglet laissé en arrière-plan pendant un chiffrage : on recharge les données au retour
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'){persist(true);return}
@@ -322,8 +348,8 @@ function commentFor(l){const s=score(l),T=TEMPS[s.t];
   return[`[SETT 2026] Lead ${T.l} (${s.pct}/100)${s.cap?' – '+s.cap:''}`,
     `Typologie : ${lab(TYPES,l.type)}${hasClass(l.type)?' · Classement : '+lab(CLASS,l.classement):''} · Capacité : ${l.capaciteNb||lab(capDef(l.type).opts,l.capacite)} ${capDef(l.type).unit}`,
     `Timing : ${lab(TIMING,l.timing)} · Budget : ${lab(BUDGET,l.budget)} · Décideur présent : ${lab(DEC,l.decideur)}`,
-    `Prestataire actuel : ${l.prestataire||'—'} · Engagement : ${lab(ENG,l.engagement)}${ENGAGED.includes(l.engagement)?(l.resil?' · Résiliation ENVOYÉE':' · Résiliation non envoyée'):''}`,
-    l.consent?`Accord verbal d'utilisation des informations recueilli le ${new Date(l.consentAt||Date.now()).toLocaleDateString('fr-FR')}`:'',
+    `Prestataire actuel : ${l.prestataire||'—'} · Engagement : ${lab(ENG,l.engagement)}${ENGAGED.includes(l.engagement)?(l.resil?' · Résiliation ENVOYÉE':' · Résiliation non envoyée'):''}${validMY(l.finEngagement)?" · Fin d'engagement : "+l.finEngagement:''}`,
+    l.consent?`Accord verbal recueilli le ${new Date(l.consentAt||Date.now()).toLocaleDateString('fr-FR')} (en plus du consentement badge SETT)`:'Données issues du badge SETT (consentement organisateur et exposants partenaires)',
     `Fonction : ${l.fonction||'—'} · Tél ${l.telType||'?'} · Client actuel : ${l.client||'?'}`,
     `Action prévue : ${l.action||'—'} · Vu par : ${l.commercial||'—'}`,l.notes?`Notes : ${l.notes}`:''].filter(Boolean).join('\n')}
 // Même logique que le Deviseur Wifi : base = relais Cloudflare (ou axonaut.com), chemins /api/v2/…
@@ -351,12 +377,25 @@ $('#axTest').onclick=async()=>{const el=$('#axStatus');el.textContent='⏳ Test�
   try{const r=await fetch(`${axBase($('#sApi').value)}/api/v2/companies?page=1`,{headers:{...axH(),'userApiKey':$('#sKey').value.trim()}});
     el.textContent=r.ok?'✅ Connexion Axonaut OK':r.status===401?'❌ Clé API refusée (401)':(r.status===403||r.status===404)?`✅ Relais joignable (lecture des listes refusée : ${r.status})`:`❌ Erreur HTTP ${r.status}`}
   catch(e){el.textContent='❌ Blocage navigateur (CORS) ou réseau : renseignez l\'URL du relais Cloudflare. '+e.message}};
+// Lead déjà dans Axonaut : on fait seulement AVANCER l'étape (jamais reculer) et on met à jour le montant
+async function updateLead(l){
+  if(!l.ax||!l.ax.oppId)return'déjà envoyé';
+  const idx=stepIdx(stepKey(l));const body={};
+  if(idx>(l.ax.stepIdx??-1))body.pipe_step_name=stepName(l);
+  const amt=Number(l.budgetEstime)||0;if(amt&&amt!==l.ax.amount)body.amount=amt;
+  const com=commentFor(l);if(com!==l.ax.comment)body.comments=com;
+  const pr=probOf(l);if(pr!==l.ax.prob)body.probability=pr;
+  const mg=mgrOf(l);if(mg!==l.ax.manager)body.business_manager_email=mg;
+  if(!Object.keys(body).length)return'à jour';
+  const r=await fetch(axBase(settings.api)+'/api/v2/opportunities/'+l.ax.oppId,{method:'PATCH',headers:axH(),body:JSON.stringify(body)});
+  if(!r.ok){const t=await r.text();throw new Error(('HTTP '+r.status+' '+t).slice(0,300))}
+  if(body.pipe_step_name)l.ax.stepIdx=idx;if(body.amount)l.ax.amount=amt;
+  l.ax.comment=com;l.ax.prob=pr;l.ax.manager=mg;l.ax.updatedAt=Date.now();persist(true);return'mis à jour'}
 async function sendLead(l){
-  if(l.ax?.status==='sent')return'déjà envoyé';
+  if(l.ax?.status==='sent')return await updateLead(l);
   const name=l.entreprise||(l.prenom+' '+l.nom).trim();
   if(!name)throw new Error('Entreprise ou nom manquant');
   if(!settings.apiKey)throw new Error('Clé API Axonaut manquante (⚙)');
-  if(!l.consent)throw new Error('Accord verbal non coché : envoi bloqué');
   const s=score(l),T=TEMPS[s.t];
   l.ax=l.ax||{};
   try{
@@ -369,23 +408,26 @@ async function sendLead(l){
         if(l.client==='oui'&&!confirm(`« ${name} » est marqué client actuel mais reste introuvable dans Axonaut${found===undefined?' (recherche impossible)':''}.\nCréer un nouveau prospect quand même ?`))throw new Error('Envoi annulé (client existant à rattacher à la main)');
         const emp={firstname:l.prenom,lastname:l.nom||l.entreprise,email:l.email,job:l.fonction};
         if(l.tel){l.telType==='perso'?emp.cellphoneNumber=l.tel:emp.phoneNumber=l.tel}
-        const c=await ax('/companies',{name:name,is_prospect:true,is_customer:false,address_city:l.ville||undefined,business_manager:settings.manager,comments:commentFor(l),employees:(l.prenom||l.nom||l.email||l.tel)?[emp]:[]});
+        const c=await ax('/companies',{name:name,is_prospect:true,is_customer:false,address_city:l.ville||undefined,business_manager:mgrOf(l),comments:commentFor(l),employees:(l.prenom||l.nom||l.email||l.tel)?[emp]:[]});
         l.ax.companyId=c.id;if(Array.isArray(axIdx))axIdx.push({id:c.id,name});
       }}
-    const o=await ax('/opportunities',{company_id:l.ax.companyId,name:`SETT 2026 – ${name}`,pipe_name:settings.pipe,pipe_step_name:settings.step,business_manager_email:settings.manager,amount:Number(l.budgetEstime)||0,probability:T.prob,comments:commentFor(l),
-      employees:(l.email||l.tel||l.nom)?[{employee_firstname:l.prenom,employee_lastname:l.nom,employee_email:l.email,employee_phone:l.telType==='perso'?undefined:l.tel,employee_cellphone:l.telType==='perso'?l.tel:undefined}]:undefined});
-    l.ax={...l.ax,status:'sent',oppId:o.id,sentAt:Date.now(),error:''};
+    const payload={company_id:l.ax.companyId,name:`SETT 2026 – ${name}`,pipe_name:settings.pipe,pipe_step_name:stepName(l),business_manager_email:mgrOf(l),amount:Number(l.budgetEstime)||0,probability:probOf(l),comments:commentFor(l),
+      employees:(l.email||l.tel||l.nom)?[{employee_firstname:l.prenom,employee_lastname:l.nom,employee_email:l.email,employee_phone:l.telType==='perso'?undefined:l.tel,employee_cellphone:l.telType==='perso'?l.tel:undefined}]:undefined};
+    // Champ personnalisé « Origine » ; si Axonaut refuse la valeur, on recrée sans et on le signale
+    let o,noOrigine=false;
+    try{o=await ax('/opportunities',{...payload,custom_fields:{'Origine':settings.origine}})}
+    catch(e){if(!/HTTP (400|422)/.test(e.message))throw e;o=await ax('/opportunities',payload);noOrigine=true}
+    l.ax={...l.ax,status:'sent',oppId:o.id,stepIdx:stepIdx(stepKey(l)),amount:Number(l.budgetEstime)||0,comment:payload.comments,prob:payload.probability,manager:payload.business_manager_email,noOrigine,sentAt:Date.now(),error:''};
   }catch(e){l.ax.status='error';l.ax.error=String(e.message||e);persist(true);throw e}
   persist(true)}
 function netHelp(e){return/Failed to fetch|NetworkError|Load failed/i.test(e.message)?"Réseau ou blocage navigateur (CORS). Vérifiez l'URL du relais Cloudflare dans ⚙, ou utilisez l'Export CSV Axonaut (onglet Leads).":e.message}
 $('#sendAx').onclick=async()=>{if(isEmpty(cur))return toast('Fiche vide');const b=$('#sendAx');b.disabled=true;
-  try{persist(true);const r=await sendLead(cur);toast(r==='déjà envoyé'?'Déjà dans Axonaut (modifier la fiche directement dans Axonaut)':'✅ Prospect + opportunité créés dans le pipe '+settings.pipe)}
+  try{persist(true);const r=await sendLead(cur);toast(r==='mis à jour'?'🔄 Étape / montant mis à jour dans Axonaut':r==='à jour'?'Déjà à jour dans Axonaut':r==='déjà envoyé'?'Déjà dans Axonaut':'✅ Créé dans '+settings.pipe+' · étape « '+stepName(cur)+' »'+(cur.ax.noOrigine?' · ⚠️ champ Origine refusé par Axonaut : à renseigner à la main':''),6000)}
   catch(e){toast('⚠️ '+netHelp(e),7000)}b.disabled=false;render()};
-async function sendAll(){const pend=leads.filter(l=>l.ax?.status!=='sent'&&!isEmpty(l));const todo=pend.filter(l=>l.consent);const skip=pend.length-todo.length;
-  if(!todo.length)return toast(skip?`🔒 ${skip} lead(s) sans accord verbal : rien envoyé`:'Rien à envoyer');
-  if(skip)toast(`🔒 ${skip} lead(s) sans accord verbal ignoré(s)`,2500);
-  let ok=0,ko=0,last='';for(const l of todo){try{await sendLead(l);ok++}catch(e){ko++;last=netHelp(e);if(/Failed to fetch|CORS|Réseau|manquante/i.test(last))break}}
-  renderList();toast(`✅ ${ok} envoyé(s)${ko?` · ⚠️ ${ko} en échec : ${last}`:''}`,8000)}
+async function sendAll(){const todo=leads.filter(l=>!isEmpty(l));
+  if(!todo.length)return toast('Rien à envoyer');
+  let ok=0,ko=0,last='';for(const l of todo){try{const r=await sendLead(l);if(r!=='à jour')ok++}catch(e){ko++;last=netHelp(e);if(/Failed to fetch|CORS|Réseau|manquante/i.test(last))break}}
+  renderList();toast(`✅ ${ok} créé(s) ou mis à jour`+`${ko?` · ⚠️ ${ko} en échec : ${last}`:''}`,8000)}
 
 /* ---------- Sauvegarde / export ---------- */
 function dl(name,content,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
@@ -401,15 +443,14 @@ $('#bkCsv').onclick=()=>{
   const H=['Entreprise *','Prenom','Nom','Email','Telephone','Titre *','Montant *','Probabilite *','Commercial','Cycle commercial','Etape','Date etape','Date objectif','Commentaires','Importance','Urgence'];
   const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;const today=new Date().toISOString().slice(0,10);
   const U={now:5,q2:4,q3:2,far:1,none:1};
-  const skipped=leads.filter(l=>!isEmpty(l)&&!l.consent).length;
-  const rows=leads.filter(l=>!isEmpty(l)&&l.consent).map(l=>{const s=score(l),T=TEMPS[s.t];
-    return[l.entreprise||(l.prenom+' '+l.nom).trim(),l.prenom,l.nom,l.email,l.tel,`SETT 2026 – ${l.entreprise||l.nom}`,Number(l.budgetEstime)||0,T.prob,l.commercial,settings.pipe,settings.step,today,'',commentFor(l),T.imp,U[l.timing]||1].map(q).join(',')});
-  dl(`SETT2026-import-axonaut-${stamp()}.csv`,[H.map(q).join(','),...rows].join('\n'),'text/csv;charset=utf-8');toast(`📄 CSV généré (colonnes du fichier leads 2025)${skipped?` · 🔒 ${skipped} lead(s) sans accord verbal exclu(s)`:''}`,5000)};
+  const rows=leads.filter(l=>!isEmpty(l)).map(l=>{const s=score(l),T=TEMPS[s.t];
+    return[l.entreprise||(l.prenom+' '+l.nom).trim(),l.prenom,l.nom,l.email,l.tel,`SETT 2026 – ${l.entreprise||l.nom}`,Number(l.budgetEstime)||0,probOf(l),l.commercial,settings.pipe,stepName(l),today,'',commentFor(l),T.imp,U[l.timing]||1].map(q).join(',')});
+  dl(`SETT2026-import-axonaut-${stamp()}.csv`,[H.map(q).join(','),...rows].join('\n'),'text/csv;charset=utf-8');toast(`📄 CSV généré (colonnes du fichier leads 2025)`,5000)};
 
 /* ---------- Réglages ---------- */
-$('#btnSet').onclick=()=>{$('#sKey').value=settings.apiKey;$('#sMgr').value=settings.manager;$('#sPipe').value=settings.pipe;$('#sStep').value=settings.step;$('#sApi').value=settings.api;$('#sWifi').value=settings.urlWifi;$('#sVideo').value=settings.urlVideo;$('#dlg').showModal()};
+$('#btnSet').onclick=()=>{$('#sKey').value=settings.apiKey;$('#sMgr').value=settings.manager;$('#sPipe').value=settings.pipe;$('#sOrig').value=settings.origine;$('#sApi').value=settings.api;$('#sWifi').value=settings.urlWifi;$('#sVideo').value=settings.urlVideo;$('#dlg').showModal()};
 $('#sClose').onclick=()=>$('#dlg').close();
-$('#sSave').onclick=()=>{settings={...settings,apiKey:$('#sKey').value.trim(),manager:$('#sMgr').value.trim(),pipe:$('#sPipe').value.trim(),step:$('#sStep').value.trim(),api:$('#sApi').value.trim(),urlWifi:$('#sWifi').value.trim(),urlVideo:$('#sVideo').value.trim()};saveSettings();$('#dlg').close();toast('Réglages enregistrés')};
+$('#sSave').onclick=()=>{settings={...settings,apiKey:$('#sKey').value.trim(),manager:$('#sMgr').value.trim(),pipe:$('#sPipe').value.trim(),origine:$('#sOrig').value.trim(),api:$('#sApi').value.trim(),urlWifi:$('#sWifi').value.trim(),urlVideo:$('#sVideo').value.trim()};saveSettings();$('#dlg').close();toast('Réglages enregistrés')};
 
 /* ---------- Navigation / init ---------- */
 $('#tabEdit').onclick=()=>show('edit');$('#tabList').onclick=()=>{persist(true);show('list')};
