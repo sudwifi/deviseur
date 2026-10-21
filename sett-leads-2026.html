@@ -70,6 +70,15 @@ pre{background:var(--navy);color:#e2e8f0;padding:10px;border-radius:8px;overflow
 .chk{display:flex;gap:12px;align-items:center;font-size:15px;color:var(--ink);font-weight:700;background:var(--tint);padding:12px;border-radius:10px;margin:0}
 .chk input{width:28px;height:28px;flex:none;accent-color:var(--blue-dark)}.chk .hint{font-weight:600}
 .legend{width:100%;border-collapse:collapse;font-size:13px}.legend td{padding:4px 6px;border-bottom:1px solid var(--line)}
+/* Prochaine action */
+.nxrow{display:flex;flex-direction:column;gap:7px}
+.act{display:flex;align-items:center;gap:10px;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:11px 13px;font:700 15px var(--sans);color:var(--ink);width:100%}
+.act .tx{flex:1}.act small{display:block;font-weight:600;color:var(--mut);font-size:12px;margin-top:2px}
+.act.sug{border-color:var(--orange)}.act.on{background:var(--blue-dark);border-color:var(--blue-dark);color:#fff}.act.on small{color:#d6f0f8}
+.rec{color:var(--orange);font-size:16px}.act.on .rec{color:var(--yellow)}body.discreet .rec{display:none}
+.when{display:flex;flex-wrap:wrap;gap:7px;align-items:center}.when input[type=date]{width:auto;min-width:165px}
+.pv{background:var(--tint);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--ink);font-weight:600}.pv.warn{background:#fff1cf}
+.due{font-weight:700}.due.late{color:#dc2626}.due.today{color:var(--orange)}
 </style>
 </head>
 <body>
@@ -122,9 +131,10 @@ pre{background:var(--navy);color:#e2e8f0;padding:10px;border-radius:8px;overflow
 
   <div class="card"><h2>Suite à donner</h2>
     <div class="grid">
-      <div class="full"><label>Prochaine action</label><div class="chips" data-chip="action">
-        <button class="chip" data-v="Chiffrage sur le stand">Chiffrage sur stand</button><button class="chip" data-v="Démo Tableau de bord">Démo Tableau de bord</button>
-        <button class="chip" data-v="Rappel sous 48h">Rappel 48h</button><button class="chip" data-v="Envoi documentation">Envoi doc</button><button class="chip" data-v="Visite sur site">Visite sur site</button><button class="chip" data-v="Aucune">Aucune</button></div></div>
+      <div class="full"><label>Prochaine action <span class="hint" id="nxHint"></span></label><div class="nxrow" id="nxList"></div></div>
+      <div class="full" id="nxWhenBox"><label>Date de la prochaine étape</label>
+        <div class="when"><input type="date" id="nxDate"><button type="button" class="chip" data-q="0">Aujourd'hui</button><button type="button" class="chip" data-q="1">Demain</button><button type="button" class="chip" data-q="2">+ 48 h</button><button type="button" class="chip" data-q="5">+ 1 sem.</button><button type="button" class="chip hide" id="nxAuto">↺ auto</button></div></div>
+      <div class="full"><div class="pv" id="nxPv"></div></div>
       <div><label>Budget estimé (€ HT)</label><input type="number" inputmode="numeric" data-f="budgetEstime" placeholder="Rempli par le Deviseur si lien"></div>
       <div><label>Commercial</label><div class="chips" data-chip="commercial"><button class="chip" data-v="Virginie">Virginie</button><button class="chip" data-v="Stéphane">Stéphane</button><button class="chip" data-v="Anthony">Anthony</button><button class="chip" data-v="Amanda">Amanda</button></div></div>
       <div class="full"><label>Notes (besoins, contexte, concurrent en place…)</label><textarea data-f="notes"></textarea></div>
@@ -174,6 +184,9 @@ pre{background:var(--navy);color:#e2e8f0;padding:10px;border-radius:8px;overflow
     <div class="full"><label class="chk"><input type="checkbox" id="sDisc"><span>Mode discret face client <span class="hint">(bandeau neutre, codes P1–P4, points masqués)</span></span></label></div>
     <div class="full"><table class="legend"><tr><td><b>P1</b></td><td>Ultra chaud · rappel &lt; 24 h</td><td><b>P2</b></td><td>Chaud · 48 h</td></tr><tr><td><b>P3</b></td><td>Tiède · 5 jours</td><td><b>P4</b></td><td>Froid · nurturing</td></tr></table>
       <p class="hint" style="margin:6px 0 0">Appui long (½ s) sur le bandeau : détail du scoring pendant 4 s, puis retour au mode discret.</p></div>
+    <div class="full"><details><summary class="hint">Noms des étapes du pipe « Sett 2026 » (identiques à Axonaut, au caractère près)</summary><div class="grid" style="margin-top:8px">
+      <div><label>Étape 1</label><input type="text" id="sSt_stand"></div><div><label>Étape 2</label><input type="text" id="sSt_chiffre"></div><div><label>Étape 3</label><input type="text" id="sSt_recontact"></div><div><label>Étape 4</label><input type="text" id="sSt_rdv"></div><div><label>Étape 5</label><input type="text" id="sSt_devis"></div>
+      <p class="hint full" style="margin:0">Si tu renommes une étape dans Axonaut, renomme-la ici aussi ; sinon l'envoi échoue. Le Deviseur utilise les noms d'origine.</p></div></details></div>
     <div class="full"><label>URL du Deviseur Wifi</label><input type="url" id="sWifi" placeholder="https://…"></div>
     <div class="full"><label>URL du Deviseur vidéo</label><input type="url" id="sVideo" placeholder="https://…"></div>
   </div>
@@ -190,14 +203,14 @@ const DEF={apiKey:'',manager:'virginie@sudwifi.fr',pipe:'Sett 2026',origine:'SET
 const MGR={Virginie:'virginie@sudwifi.fr','Stéphane':'stephane@sudwifi.fr',Anthony:'anthony@sudwifi.fr',Amanda:'amanda@sudwifi.fr'};
 // Noms EXACTS des étapes du cycle « Sett 2026 » dans Axonaut
 const STEPS=[['stand','1. Visite sur Stand'],['chiffre','2 Chiffré / démo sur stand'],['recontact','3 À recontacter post-salon'],['rdv','4 RDV / visite planifié'],['devis','5 Devis à produire']];
-const ACT2STEP={'Chiffrage sur le stand':'chiffre','Démo Tableau de bord':'chiffre','Rappel sous 48h':'recontact','Envoi documentation':'recontact','Visite sur site':'rdv'};
 const stepIdx=k=>STEPS.findIndex(x=>x[0]===k);
-function stepKey(l){let k=ACT2STEP[l.action]||'stand';if(k==='stand'&&(Number(l.montantWifi)||Number(l.montantVideo)))k='chiffre';return k}
-const stepName=l=>STEPS[stepIdx(stepKey(l))][1];
+// Les noms d'étapes sont modifiables dans ⚙ (ils doivent rester identiques à ceux d'Axonaut)
+const stepLabel=k=>(settings.stepNames&&settings.stepNames[k])||STEPS[stepIdx(k)][1];
+const stepName=l=>stepLabel(stepKey(l));
 const mgrOf=l=>MGR[l.commercial]||settings.manager;
 const probOf=l=>Math.min(TEMPS[score(l).t].prob,50); // plafonné à 50 % tant que le devis n'est pas envoyé
 const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
-let settings={...DEF,...load(LS_S,{})},leads=load(LS_L,[]),cur=null,filter='all';
+let settings={...DEF,...load(LS_S,{})},leads=load(LS_L,[]),cur=null,filter='all',sortMode='prio';
 
 /* ---------- Scoring ---------- */
 const TEMPS={ultra:{l:'ULTRA CHAUD',e:'🔥🔥',c:'#e11d48',prob:90,imp:5},chaud:{l:'CHAUD',e:'🔥',c:'#f97316',prob:60,imp:4},tiede:{l:'TIÈDE',e:'🌤️',c:'#ca8a04',prob:30,imp:2},froid:{l:'FROID',e:'❄️',c:'#2563eb',prob:10,imp:1}};
@@ -238,6 +251,40 @@ function score(l){
   return{pct,t,rows,filled,total:rows.filter(r=>!r.na).length,cap};
 }
 
+
+/* ---------- Prochaine action : étape du pipe + date, selon la priorité ---------- */
+// Délais de relance en jours ouvrés, alignés sur la légende P1–P4 : P1 < 24 h · P2 48 h · P3 5 jours · P4 nurturing
+const SLA={ultra:1,chaud:2,tiede:5,froid:10};
+// d : nombre fixe de jours ouvrés | 'sla' = délai de la priorité | null = date à choisir (ex. date du RDV)
+const ACTIONS=[
+ {k:'bdc',l:'BDC signé → devis définitif',step:'devis',d:1,rec:['ultra','chaud']},
+ {k:'stand',l:'Chiffrage sur le stand',step:'chiffre',d:0,rec:['ultra','chaud','tiede']},
+ {k:'demo',l:'Démo Tableau de bord',step:'chiffre',d:0,rec:[]},
+ {k:'salon',l:'Recontacter sur le salon',step:'chiffre',d:0,rec:['ultra','chaud']},
+ {k:'rdv',l:'RDV / visite planifié(e)',step:'rdv',d:null,rec:['ultra','chaud','tiede']},
+ {k:'rappel',l:'Rappeler',step:'recontact',d:'sla',rec:['ultra','chaud','tiede']},
+ {k:'doc',l:'Envoi documentation',step:'recontact',d:2,rec:['tiede','froid']},
+ {k:'nurture',l:'Relance post-salon',step:'recontact',d:10,rec:['froid']},
+ {k:'none',l:'Aucune suite',step:'stand',d:null,rec:['froid']}
+];
+const LEG={'Chiffrage sur le stand':'stand','Démo Tableau de bord':'demo','Rappel sous 48h':'rappel','Envoi documentation':'doc','Visite sur site':'rdv','Aucune':'none'};
+leads.forEach(l=>{if(LEG[l.action])l.action=LEG[l.action]}); // fiches créées avant cette version
+const actOf=l=>ACTIONS.find(a=>a.k===l.action);
+const hasMontant=l=>!!(Number(l.montantWifi)||Number(l.montantVideo));
+const stepOf=(a,l)=>{let k=a?a.step:'stand';if(k==='stand'&&hasMontant(l))k='chiffre';return k};
+function stepKey(l){return stepOf(actOf(l),l)}
+const HOL=['2026-11-11','2026-12-25','2027-01-01']; // jours fériés dans la fenêtre de relance
+const isoD=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const isOff=d=>d.getDay()===0||d.getDay()===6||HOL.includes(isoD(d));
+function addBD(base,n){const d=new Date(base);d.setHours(12,0,0,0);while(n>0){d.setDate(d.getDate()+1);if(!isOff(d))n--}return d}
+// base = moment où l'action a été choisie (la date ne glisse donc pas quand on rouvre la fiche)
+function defDate(l,a,base){if(!a||a.d===null)return'';const s=score(l);const n=a.d==='sla'?SLA[s.filled?s.t:'tiede']:a.d;return isoD(addBD(base,n))}
+function syncDate(l){const a=actOf(l);if(a&&!l.actionManual)l.actionDate=defDate(l,a,l.actionAt||l.createdAt||Date.now())}
+const dueTs=l=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(l.actionDate||'');return m?Math.floor(new Date(+m[1],+m[2]-1,+m[3],12,0,0).getTime()/1000):0};
+const fmtLong=iso=>iso?new Date(iso+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'2-digit'}):'';
+const fmtFR=iso=>iso?new Date(iso+'T12:00:00').toLocaleDateString('fr-FR'):'';
+const dueState=l=>{if(!l.actionDate)return'';const t=isoD(new Date());return l.actionDate<t?'late':l.actionDate===t?'today':''};
+
 /* ---------- Mode discret ---------- */
 const CODE={ultra:'P1',chaud:'P2',tiede:'P3',froid:'P4'};
 const discreet=()=>settings.discreet!==false;
@@ -246,7 +293,7 @@ function applyDisc(){document.body.classList.toggle('discreet',discreet()&&!reve
 function reveal(){revealed=true;applyDisc();render();if(navigator.vibrate)navigator.vibrate(20);clearTimeout(hideT);hideT=setTimeout(()=>{revealed=false;applyDisc();render()},4000)}
 
 /* ---------- Données ---------- */
-const newLead=()=>({id:'L'+Date.now().toString(36),createdAt:Date.now(),updatedAt:Date.now(),entreprise:'',prenom:'',nom:'',email:'',tel:'',telType:'',fonction:'',ville:'',client:'',type:'',classement:'',capacite:'',capaciteNb:'',timing:'',budget:'',decideur:'',budgetEstime:'',montantWifi:'',montantVideo:'',action:'',commercial:settings.lastCommercial,notes:'',prestataire:'',engagement:'',finEngagement:'',resil:false,consent:false,consentAt:'',ax:{status:'todo'}});
+const newLead=()=>({id:'L'+Date.now().toString(36),createdAt:Date.now(),updatedAt:Date.now(),entreprise:'',prenom:'',nom:'',email:'',tel:'',telType:'',fonction:'',ville:'',client:'',type:'',classement:'',capacite:'',capaciteNb:'',timing:'',budget:'',decideur:'',budgetEstime:'',montantWifi:'',montantVideo:'',action:'',actionAt:'',actionDate:'',actionManual:false,commercial:settings.lastCommercial,notes:'',prestataire:'',engagement:'',finEngagement:'',resil:false,consent:false,consentAt:'',ax:{status:'todo'}});
 const isEmpty=l=>!(l.entreprise||l.nom||l.prenom||l.email||l.tel);
 let tmr;
 function persist(now){clearTimeout(tmr);const go=()=>{if(cur&&!isEmpty(cur)){cur.updatedAt=Date.now();const i=leads.findIndex(x=>x.id===cur.id);i<0?leads.unshift(cur):leads[i]=cur}
@@ -273,6 +320,7 @@ function render(){
   $('#critClass').classList.toggle('hide',!!cur.type&&!hasClass(cur.type));
   $$('[data-c]').forEach(c=>c.checked=!!cur[c.dataset.c]);
   $('#resilBox').classList.toggle('hide',!ENGAGED.includes(cur.engagement));
+  renderNext();
   $('#consentAt').textContent=cur.consent&&cur.consentAt?'· '+new Date(cur.consentAt).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
   const cd=capDef(cur.type);$('#capUnit').textContent=cur.type?`(${cd.unit})`:'';
   const cc=$$('#cCap .chip');cd.opts.forEach((o,i)=>{if(cc[i]){cc[i].innerHTML=`${esc(o[1])}<small>+${o[2]} pts</small>`;cc[i].dataset.v=o[0]}});
@@ -292,6 +340,39 @@ function render(){
   $('#sCap').classList.toggle('hide',!s.cap);$('#sCap').textContent=s.cap?'⚠ '+s.cap:'';
   updateAxBtn();
 }
+function renderNext(){
+  syncDate(cur);
+  const s=score(cur),sc=s.filled?s.t:null,D=discreet()&&!revealed,now=Date.now(),cb=actOf(cur);
+  const list=[...ACTIONS].sort((a,b)=>(sc&&b.rec.includes(sc)?1:0)-(sc&&a.rec.includes(sc)?1:0));
+  $('#nxHint').textContent=sc&&!D?'· recommandé pour '+TEMPS[sc].e+' '+TEMPS[sc].l:'';
+  $('#nxList').innerHTML=list.map(a=>{const rec=!!sc&&a.rec.includes(sc),dd=defDate(cur,a,now);
+    return`<button type="button" class="act${cb&&cb.k===a.k?' on':''}${rec&&!D?' sug':''}" data-nx="${a.k}"><span class="tx">${esc(a.l)}<small>→ ${esc(stepLabel(stepOf(a,cur)))}${dd?' · '+fmtLong(dd):a.d===null&&a.k==='rdv'?' · choisir la date':''}</small></span>${rec&&!D?'<span class="rec">★</span>':''}</button>`}).join('');
+  $('#nxWhenBox').classList.toggle('hide',!cb||cb.k==='none');
+  const di=$('#nxDate');if(di.value!==(cur.actionDate||''))di.value=cur.actionDate||'';
+  $('#nxAuto').classList.toggle('hide',!cur.actionManual);
+  const pv=$('#nxPv');let warn='';
+  if(!cb){pv.className='pv warn';pv.textContent="Choisis la prochaine action : elle fixe l'étape du pipe et la date de relance dans Axonaut.";return}
+  if(cb.k==='bdc'&&!hasMontant(cur))warn='BDC signé sans chiffrage : lance d’abord le Deviseur.';
+  else if(cb.k!=='none'&&!cur.actionDate)warn='Pas de date : choisis-en une pour programmer la prochaine étape.';
+  else if(cur.actionDate&&dueState(cur)==='late')warn='Date dépassée : à relancer sans attendre.';
+  else if(!D&&sc){
+    if((sc==='ultra'||sc==='chaud')&&['none','nurture','doc'].includes(cb.k))warn='Lead prioritaire : prévoir un contact plus rapide.';
+    else if(cb.k==='bdc'&&(sc==='froid'||sc==='tiede'))warn='BDC signé mais score faible : revérifier décideur et budget.'}
+  pv.className='pv'+(warn?' warn':'');
+  pv.innerHTML=`Axonaut → étape « ${esc(stepLabel(stepKey(cur)))} »${cur.actionDate?` · prochaine étape le <b>${fmtLong(cur.actionDate)}</b>`:''}${warn?`<br>⚠ ${esc(warn)}`:''}`;
+}
+function pickAction(k){const a=ACTIONS.find(x=>x.k===k);
+  if(cur.action===k){cur.action='';cur.actionDate='';cur.actionManual=false;cur.actionAt=''}
+  else{cur.action=k;cur.actionAt=Date.now();cur.actionManual=false;cur.actionDate=defDate(cur,a,cur.actionAt)}
+  render();persist()}
+document.addEventListener('click',e=>{if(!cur)return;
+  const b=e.target.closest('[data-nx]');if(b){e.preventDefault();return pickAction(b.dataset.nx)}
+  const q=e.target.closest('[data-q]');if(q){e.preventDefault();cur.actionDate=isoD(addBD(Date.now(),+q.dataset.q));cur.actionManual=true;render();persist();return}
+  if(e.target.id==='nxAuto'){cur.actionManual=false;syncDate(cur);render();persist()}});
+$('#nxDate').addEventListener('change',e=>{if(!cur)return;cur.actionDate=e.target.value;cur.actionManual=!!e.target.value;render();persist()});
+function needSync(l){if(l.ax?.status!=='sent')return false;const d=dueTs(l);return stepIdx(stepKey(l))!==(l.ax.stepIdx??-1)||(!!d&&d!==l.ax.due&&!l.ax.noDate)}
+const sentStep=l=>stepLabel((STEPS[l.ax?.stepIdx??0]||STEPS[0])[0]);
+function nxLine(l){const a=actOf(l);if(!a||a.k==='none')return'';return`<br><span class="due ${dueState(l)}">📅 ${esc(a.l)}${l.actionDate?' · '+fmtLong(l.actionDate):''}${dueState(l)==='late'?' · en retard':dueState(l)==='today'?' · aujourd’hui':''}</span>`}
 function updateAxBtn(){const st=cur.ax?.status;$('#sendAx').textContent=st==='sent'?'🔄 Mettre à jour Axonaut':'⬆ Axonaut'}
 function open_(l){cur=l;buildQual();render();show('edit');window.scrollTo(0,0)}
 function show(v){$('#viewEdit').classList.toggle('hide',v!=='edit');$('#viewList').classList.toggle('hide',v!=='list');$('#tabEdit').classList.toggle('act',v==='edit');$('#tabList').classList.toggle('act',v==='list');if(v==='list')renderList()}
@@ -320,18 +401,19 @@ function renderList(){
   $('#stats').innerHTML=['ultra','chaud','tiede','froid'].map(t=>`<div class="stat ${filter===t?'on':''}" data-t="${t}" style="background:${D?NEU[t]:TEMPS[t].c}"><b>${cnt(t)}</b>${D?CODE[t]:TEMPS[t].e+' '+TEMPS[t].l}</div>`).join('');
   const order={ultra:0,chaud:1,tiede:2,froid:3};
   const rows=withS.filter(x=>(filter==='all'||(x.s.t===filter&&x.s.filled>0))&&(!q||JSON.stringify(x.l).toLowerCase().includes(q)))
-    .sort((a,b)=>(a.s.filled?order[a.s.t]:9)-(b.s.filled?order[b.s.t]:9)||b.l.updatedAt-a.l.updatedAt);
+    .sort((a,b)=>{const pr=(a.s.filled?order[a.s.t]:9)-(b.s.filled?order[b.s.t]:9);if(sortMode==='due'){const da=a.l.actionDate||'9999',db=b.l.actionDate||'9999';return da<db?-1:da>db?1:pr||b.l.updatedAt-a.l.updatedAt}return pr||b.l.updatedAt-a.l.updatedAt});
   $('#list').innerHTML=rows.map(({l,s})=>{const T=TEMPS[s.t],none=!s.filled;const sent=l.ax?.status==='sent';
     return`<div class="lead" data-id="${l.id}" style="--c:${none?'#b7cbd4':D?NEU[s.t]:T.c}"><div class="t">${none?'—':D?CODE[s.t]:T.e+'<br>'+T.l}</div>
-    <div class="i"><b>${esc(l.entreprise||(l.prenom+' '+l.nom).trim()||'Sans nom')}</b><span>${esc((l.prenom+' '+l.nom).trim())}${l.tel?` · <a href="tel:${esc(l.tel)}">${esc(l.tel)}</a>`:''}</span></div>
-    <div class="s">${none||D?'':s.pct+'/100<br>'}${sent?'✅ '+esc((STEPS[l.ax.stepIdx??0]||STEPS[0])[1]):l.ax?.status==='error'?'⚠️ erreur':'⏳ à envoyer'}</div>
+    <div class="i"><b>${esc(l.entreprise||(l.prenom+' '+l.nom).trim()||'Sans nom')}</b><span>${esc((l.prenom+' '+l.nom).trim())}${l.tel?` · <a href="tel:${esc(l.tel)}">${esc(l.tel)}</a>`:''}</span>${nxLine(l)}</div>
+    <div class="s">${none||D?'':s.pct+'/100<br>'}${sent?(needSync(l)?'🔄 à synchroniser<br>':'✅ ')+esc(sentStep(l)):l.ax?.status==='error'?'⚠️ erreur':'⏳ à envoyer'}</div>
     <button class="ib" style="background:#fee2e2;color:#dc2626" data-del="${l.id}">🗑</button></div>`}).join('')||'<p class="hint" style="text-align:center">Aucun lead pour le moment.</p>';
-  const todo=leads.filter(l=>!isEmpty(l)).length;
-  $('#list').insertAdjacentHTML('afterbegin',`<div class="btns" style="margin-bottom:10px"><button class="btn ax" id="sendAll">⬆ Envoyer / mettre à jour Axonaut (${todo})</button><button class="btn sec" id="clrF">Tous (${leads.length})</button></div>`);
+  const todo=leads.filter(l=>!isEmpty(l)).length,late=leads.filter(l=>dueState(l)==='late').length,tod=leads.filter(l=>dueState(l)==='today').length;
+  $('#list').insertAdjacentHTML('afterbegin',`<div class="btns" style="margin-bottom:10px"><button class="btn ax" id="sendAll">⬆ Envoyer / mettre à jour Axonaut (${todo})</button><button class="btn sec" id="clrF">Tous (${leads.length})</button><button class="btn sec" id="sortB">${sortMode==='due'?'↕ Par échéance':'↕ Par priorité'}</button></div>`+(late||tod?`<div class="pv warn" style="margin-bottom:10px">📅 ${late?`<b>${late}</b> relance(s) en retard`:''}${late&&tod?' · ':''}${tod?`<b>${tod}</b> à faire aujourd’hui`:''}</div>`:''));
 }
 $('#viewList').addEventListener('click',e=>{
   const st=e.target.closest('.stat');if(st){filter=filter===st.dataset.t?'all':st.dataset.t;return renderList()}
   if(e.target.id==='clrF'){filter='all';return renderList()}
+  if(e.target.id==='sortB'){sortMode=sortMode==='due'?'prio':'due';return renderList()}
   if(e.target.id==='sendAll')return sendAll();
   const d=e.target.closest('[data-del]');if(d){if(confirm('Supprimer ce lead ?')){leads=leads.filter(x=>x.id!==d.dataset.del);persist(true);renderList()}return}
   if(e.target.closest('a'))return;
@@ -388,7 +470,7 @@ function commentFor(l){const s=score(l),T=TEMPS[s.t];
     `Prestataire actuel : ${l.prestataire||'—'} · Engagement : ${lab(ENG,l.engagement)}${ENGAGED.includes(l.engagement)?(l.resil?' · Résiliation ENVOYÉE':' · Résiliation non envoyée'):''}${validMY(l.finEngagement)?" · Fin d'engagement : "+l.finEngagement:''}`,
     l.consent?`Accord verbal recueilli le ${new Date(l.consentAt||Date.now()).toLocaleDateString('fr-FR')} (en plus du consentement badge SETT)`:'Données issues du badge SETT (consentement organisateur et exposants partenaires)',
     `Fonction : ${l.fonction||'—'} · Tél ${l.telType||'?'} · Client actuel : ${l.client||'?'}`,
-    `Action prévue : ${l.action||'—'} · Vu par : ${l.commercial||'—'}`,l.notes?`Notes : ${l.notes}`:''].filter(Boolean).join('\n')}
+    `Prochaine étape : ${(actOf(l)||{l:'—'}).l}${l.actionDate?' — '+fmtLong(l.actionDate):''} · Étape du pipe : ${stepName(l)} · Vu par : ${l.commercial||'—'}`,l.notes?`Notes : ${l.notes}`:''].filter(Boolean).join('\n')}
 // Même logique que le Deviseur Wifi : base = relais Cloudflare (ou axonaut.com), chemins /api/v2/…
 function axBase(raw){let u=(raw||'').trim().replace(/\/+$/,'');if(!u)return'https://axonaut.com';if(!/^https?:\/\//i.test(u))u='https://'+u;
   u=u.replace(/^(https?:\/\/)app\.axonaut\.com/i,'$1axonaut.com');return u.replace(/\/api(\/.*)?$/i,'')}
@@ -414,19 +496,26 @@ $('#axTest').onclick=async()=>{const el=$('#axStatus');el.textContent='⏳ Test�
   try{const r=await fetch(`${axBase($('#sApi').value)}/api/v2/companies?page=1`,{headers:{...axH(),'userApiKey':$('#sKey').value.trim()}});
     el.textContent=r.ok?'✅ Connexion Axonaut OK':r.status===401?'❌ Clé API refusée (401)':(r.status===403||r.status===404)?`✅ Relais joignable (lecture des listes refusée : ${r.status})`:`❌ Erreur HTTP ${r.status}`}
   catch(e){el.textContent='❌ Blocage navigateur (CORS) ou réseau : renseignez l\'URL du relais Cloudflare. '+e.message}};
-// Lead déjà dans Axonaut : on fait seulement AVANCER l'étape (jamais reculer) et on met à jour le montant
+// Lead déjà dans Axonaut : la fiche pilote l'étape (dans les deux sens) et la date de prochaine étape.
+// L'étape n'est envoyée que si elle a changé depuis le dernier envoi : un déplacement manuel dans Axonaut n'est donc pas écrasé.
+async function patchOpp(id,body){
+  const go=async b=>{const r=await fetch(axBase(settings.api)+'/api/v2/opportunities/'+id,{method:'PATCH',headers:axH(),body:JSON.stringify(b)});
+    if(!r.ok){const t=await r.text();const e=new Error(('HTTP '+r.status+' '+t).slice(0,300));e.status=r.status;throw e}};
+  try{await go(body);return{}}
+  catch(e){if(body.due_date_ts&&(e.status===400||e.status===422)){const b2={...body};delete b2.due_date_ts;if(Object.keys(b2).length)await go(b2);return{noDate:true}}throw e}}
 async function updateLead(l){
   if(!l.ax||!l.ax.oppId)return'déjà envoyé';
   const idx=stepIdx(stepKey(l));const body={};
-  if(idx>(l.ax.stepIdx??-1))body.pipe_step_name=stepName(l);
+  if(idx!==(l.ax.stepIdx??-1))body.pipe_step_name=stepName(l);
   const amt=Number(l.budgetEstime)||0;if(amt&&amt!==l.ax.amount)body.amount=amt;
   const com=commentFor(l);if(com!==l.ax.comment)body.comments=com;
   const pr=probOf(l);if(pr!==l.ax.prob)body.probability=pr;
   const mg=mgrOf(l);if(mg!==l.ax.manager)body.business_manager_email=mg;
+  const due=dueTs(l);if(due&&due!==l.ax.due)body.due_date_ts=due;
   if(!Object.keys(body).length)return'à jour';
-  const r=await fetch(axBase(settings.api)+'/api/v2/opportunities/'+l.ax.oppId,{method:'PATCH',headers:axH(),body:JSON.stringify(body)});
-  if(!r.ok){const t=await r.text();throw new Error(('HTTP '+r.status+' '+t).slice(0,300))}
+  const res=await patchOpp(l.ax.oppId,body);
   if(body.pipe_step_name)l.ax.stepIdx=idx;if(body.amount)l.ax.amount=amt;
+  if(body.due_date_ts){l.ax.noDate=!!res.noDate;if(!res.noDate)l.ax.due=due}
   l.ax.comment=com;l.ax.prob=pr;l.ax.manager=mg;l.ax.updatedAt=Date.now();persist(true);return'mis à jour'}
 async function sendLead(l){
   if(l.ax?.status==='sent')return await updateLead(l);
@@ -450,21 +539,28 @@ async function sendLead(l){
       }}
     const payload={company_id:l.ax.companyId,name:`SETT 2026 – ${name}`,pipe_name:settings.pipe,pipe_step_name:stepName(l),business_manager_email:mgrOf(l),amount:Number(l.budgetEstime)||0,probability:probOf(l),comments:commentFor(l),
       employees:(l.email||l.tel||l.nom)?[{employee_firstname:l.prenom,employee_lastname:l.nom,employee_email:l.email,employee_phone:l.telType==='perso'?undefined:l.tel,employee_cellphone:l.telType==='perso'?l.tel:undefined}]:undefined};
-    // Champ personnalisé « Origine » ; si Axonaut refuse la valeur, on recrée sans et on le signale
-    let o,noOrigine=false;
-    try{o=await ax('/opportunities',{...payload,custom_fields:{'Origine':settings.origine}})}
-    catch(e){if(!/HTTP (400|422)/.test(e.message))throw e;o=await ax('/opportunities',payload);noOrigine=true}
-    l.ax={...l.ax,status:'sent',oppId:o.id,stepIdx:stepIdx(stepKey(l)),amount:Number(l.budgetEstime)||0,comment:payload.comments,prob:payload.probability,manager:payload.business_manager_email,noOrigine,sentAt:Date.now(),error:''};
+    // « Origine » (champ personnalisé) et date de prochaine étape : si Axonaut refuse l'un des deux, on recrée sans et on le signale
+    const due=dueTs(l),dates={due_date_ts:due,pipe_step_date_ts:due};
+    let o,noOrigine=false,noDate=false,lastErr;
+    for(const [c,d] of [[true,true],[true,false],[false,true],[false,false]].filter(x=>x[1]?!!due:true)){
+      try{o=await ax('/opportunities',{...payload,...(c?{custom_fields:{'Origine':settings.origine}}:{}),...(d?dates:{})});noOrigine=!c;noDate=!!due&&!d;break}
+      catch(e){lastErr=e;if(!/HTTP (400|422)/.test(e.message))throw e}}
+    if(!o)throw lastErr;
+    l.ax={...l.ax,status:'sent',oppId:o.id,stepIdx:stepIdx(stepKey(l)),due:noDate?0:due,noDate,amount:Number(l.budgetEstime)||0,comment:payload.comments,prob:payload.probability,manager:payload.business_manager_email,noOrigine,sentAt:Date.now(),error:''};
   }catch(e){l.ax.status='error';l.ax.error=String(e.message||e);persist(true);throw e}
   persist(true)}
 function netHelp(e){return/Failed to fetch|NetworkError|Load failed/i.test(e.message)?"Réseau ou blocage navigateur (CORS). Vérifiez l'URL du relais Cloudflare dans ⚙, ou utilisez l'Export CSV Axonaut (onglet Leads).":e.message}
-$('#sendAx').onclick=async()=>{if(isEmpty(cur))return toast('Fiche vide');const b=$('#sendAx');b.disabled=true;
-  try{persist(true);const r=await sendLead(cur);toast(r==='mis à jour'?'🔄 Étape / montant mis à jour dans Axonaut':r==='à jour'?'Déjà à jour dans Axonaut':r==='déjà envoyé'?'Déjà dans Axonaut':'✅ Créé dans '+settings.pipe+' · étape « '+stepName(cur)+' »'+(cur.ax.noOrigine?' · ⚠️ champ Origine refusé par Axonaut : à renseigner à la main':''),6000)}
+$('#sendAx').onclick=async()=>{if(isEmpty(cur))return toast('Fiche vide');
+  if(cur.ax?.status!=='sent'&&!actOf(cur)&&!confirm("Aucune prochaine action choisie : le lead sera créé à l'étape « "+stepName(cur)+" » sans date de relance.\nContinuer quand même ?"))return;
+  const b=$('#sendAx');b.disabled=true;
+  try{persist(true);const r=await sendLead(cur);const dn=cur.ax.noDate?' · ⚠️ date de prochaine étape refusée par Axonaut : à programmer à la main':'';
+    toast(r==='mis à jour'?'🔄 Étape / date / montant mis à jour dans Axonaut'+dn:r==='à jour'?'Déjà à jour dans Axonaut':r==='déjà envoyé'?'Déjà dans Axonaut':'✅ Créé dans '+settings.pipe+' · étape « '+stepName(cur)+' »'+(cur.actionDate?' · prochaine étape le '+fmtLong(cur.actionDate):'')+(cur.ax.noOrigine?' · ⚠️ champ Origine refusé par Axonaut : à renseigner à la main':'')+dn,7000)}
   catch(e){toast('⚠️ '+netHelp(e),7000)}b.disabled=false;render()};
 async function sendAll(){const todo=leads.filter(l=>!isEmpty(l));
   if(!todo.length)return toast('Rien à envoyer');
-  let ok=0,ko=0,last='';for(const l of todo){try{const r=await sendLead(l);if(r!=='à jour')ok++}catch(e){ko++;last=netHelp(e);if(/Failed to fetch|CORS|Réseau|manquante/i.test(last))break}}
-  renderList();toast(`✅ ${ok} créé(s) ou mis à jour`+`${ko?` · ⚠️ ${ko} en échec : ${last}`:''}`,8000)}
+  let ok=0,ko=0,last='';const sansAct=todo.filter(l=>l.ax?.status!=='sent'&&!actOf(l)).length;
+  for(const l of todo){try{const r=await sendLead(l);if(r!=='à jour')ok++}catch(e){ko++;last=netHelp(e);if(/Failed to fetch|CORS|Réseau|manquante/i.test(last))break}}
+  renderList();toast(`✅ ${ok} créé(s) ou mis à jour`+`${sansAct?` · ⚠️ ${sansAct} créé(s) sans prochaine action`:''}${ko?` · ⚠️ ${ko} en échec : ${last}`:''}`,9000)}
 
 /* ---------- Sauvegarde / export ---------- */
 function dl(name,content,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
@@ -478,16 +574,16 @@ $('#fileImp').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{cons
   inc.forEach(l=>{const i=leads.findIndex(x=>x.id===l.id);if(i<0){leads.push(l);n++}else if((l.updatedAt||0)>(leads[i].updatedAt||0)){leads[i]=l;n++}});persist(true);renderList();toast(`📥 ${n} lead(s) importé(s)`)}catch(err){toast('Fichier invalide')}e.target.value=''};
 $('#bkCsv').onclick=()=>{
   const H=['Entreprise *','Prenom','Nom','Email','Telephone','Titre *','Montant *','Probabilite *','Commercial','Cycle commercial','Etape','Date etape','Date objectif','Commentaires','Importance','Urgence'];
-  const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;const today=new Date().toISOString().slice(0,10);
+  const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;const today=new Date().toLocaleDateString('fr-FR');
   const U={now:5,q2:4,q3:2,far:1,none:1};
   const rows=leads.filter(l=>!isEmpty(l)).map(l=>{const s=score(l),T=TEMPS[s.t];
-    return[l.entreprise||(l.prenom+' '+l.nom).trim(),l.prenom,l.nom,l.email,l.tel,`SETT 2026 – ${l.entreprise||l.nom}`,Number(l.budgetEstime)||0,probOf(l),l.commercial,settings.pipe,stepName(l),today,'',commentFor(l),T.imp,U[l.timing]||1].map(q).join(',')});
+    return[l.entreprise||(l.prenom+' '+l.nom).trim(),l.prenom,l.nom,l.email,l.tel,`SETT 2026 – ${l.entreprise||l.nom}`,Number(l.budgetEstime)||0,probOf(l),l.commercial,settings.pipe,stepName(l),today,fmtFR(l.actionDate),commentFor(l),T.imp,U[l.timing]||1].map(q).join(',')});
   dl(`SETT2026-import-axonaut-${stamp()}.csv`,[H.map(q).join(','),...rows].join('\n'),'text/csv;charset=utf-8');toast(`📄 CSV généré (colonnes du fichier leads 2025)`,5000)};
 
 /* ---------- Réglages ---------- */
-$('#btnSet').onclick=()=>{$('#sKey').value=settings.apiKey;$('#sMgr').value=settings.manager;$('#sPipe').value=settings.pipe;$('#sOrig').value=settings.origine;$('#sApi').value=settings.api;$('#sWifi').value=settings.urlWifi;$('#sVideo').value=settings.urlVideo;$('#sDisc').checked=discreet();$('#dlg').showModal()};
+$('#btnSet').onclick=()=>{$('#sKey').value=settings.apiKey;$('#sMgr').value=settings.manager;$('#sPipe').value=settings.pipe;$('#sOrig').value=settings.origine;$('#sApi').value=settings.api;$('#sWifi').value=settings.urlWifi;$('#sVideo').value=settings.urlVideo;$('#sDisc').checked=discreet();STEPS.forEach(([k])=>{$('#sSt_'+k).value=stepLabel(k)});$('#dlg').showModal()};
 $('#sClose').onclick=()=>$('#dlg').close();
-$('#sSave').onclick=()=>{settings={...settings,apiKey:$('#sKey').value.trim(),manager:$('#sMgr').value.trim(),pipe:$('#sPipe').value.trim(),origine:$('#sOrig').value.trim(),api:$('#sApi').value.trim(),urlWifi:$('#sWifi').value.trim(),urlVideo:$('#sVideo').value.trim(),discreet:$('#sDisc').checked};saveSettings();$('#dlg').close();applyDisc();render();toast('Réglages enregistrés')};
+$('#sSave').onclick=()=>{settings={...settings,apiKey:$('#sKey').value.trim(),manager:$('#sMgr').value.trim(),pipe:$('#sPipe').value.trim(),origine:$('#sOrig').value.trim(),api:$('#sApi').value.trim(),urlWifi:$('#sWifi').value.trim(),urlVideo:$('#sVideo').value.trim(),discreet:$('#sDisc').checked,stepNames:Object.fromEntries(STEPS.map(([k])=>[k,$('#sSt_'+k).value.trim()||STEPS[stepIdx(k)][1]]))};saveSettings();$('#dlg').close();applyDisc();render();toast('Réglages enregistrés')};
 
 /* ---------- Navigation / init ---------- */
 $('#tabEdit').onclick=()=>show('edit');$('#tabList').onclick=()=>{persist(true);show('list')};
