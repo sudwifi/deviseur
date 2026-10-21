@@ -131,9 +131,13 @@ pre{background:var(--navy);color:#e2e8f0;padding:10px;border-radius:8px;overflow
 
   <div class="card"><h2>Suite à donner</h2>
     <div class="grid">
-      <div class="full"><label>Prochaine action <span class="hint" id="nxHint"></span></label><div class="nxrow" id="nxList"></div></div>
-      <div class="full" id="nxWhenBox"><label>Date de la prochaine étape</label>
+      <div><label class="chk"><input type="checkbox" data-c="demo"><span>Démo faite sur le stand</span></label></div>
+      <div><label class="chk"><input type="checkbox" data-c="chiffreStand" id="chkChiffre"><span>Chiffré, budget annoncé <span class="hint">(auto si Deviseur)</span></span></label></div>
+      <div class="full"><label>Issue du passage : réaction du lead <span class="hint" id="nxHint"></span></label><div class="nxrow" id="nxList"></div></div>
+      <div class="full" id="nxWhenBox"><label id="nxWhenLbl">Date de l'action</label>
         <div class="when"><input type="date" id="nxDate"><button type="button" class="chip" data-q="0">Aujourd'hui</button><button type="button" class="chip" data-q="1">Demain</button><button type="button" class="chip" data-q="2">+ 48 h</button><button type="button" class="chip" data-q="5">+ 1 sem.</button><button type="button" class="chip hide" id="nxAuto">↺ auto</button></div></div>
+      <div><label>Concurrent(s) en lice</label><input type="text" data-f="concurrent" autocomplete="off" placeholder="Qui a-t-il vu ou va-t-il voir ?"></div>
+      <div><label>Parade : ce qui le fera signer</label><input type="text" data-f="parade" autocomplete="off" placeholder="Objection, argument clé, condition…"></div>
       <div class="full"><div class="pv" id="nxPv"></div></div>
       <div><label>Budget estimé (€ HT)</label><input type="number" inputmode="numeric" data-f="budgetEstime" placeholder="Rempli par le Deviseur si lien"></div>
       <div><label>Commercial</label><div class="chips" data-chip="commercial"><button class="chip" data-v="Virginie">Virginie</button><button class="chip" data-v="Stéphane">Stéphane</button><button class="chip" data-v="Anthony">Anthony</button><button class="chip" data-v="Amanda">Amanda</button></div></div>
@@ -252,38 +256,48 @@ function score(l){
 }
 
 
-/* ---------- Prochaine action : étape du pipe + date, selon la priorité ---------- */
-// Délais de relance en jours ouvrés, alignés sur la légende P1–P4 : P1 < 24 h · P2 48 h · P3 5 jours · P4 nurturing
+/* ---------- Issue du passage sur le stand → ce qu'on fait après son départ ---------- */
+// Délais en jours ouvrés, alignés sur la légende P1–P4 : P1 < 24 h · P2 48 h · P3 5 jours · P4 nurturing
 const SLA={ultra:1,chaud:2,tiede:5,froid:10};
-// d : nombre fixe de jours ouvrés | 'sla' = délai de la priorité | null = date à choisir (ex. date du RDV)
+// d : jours ouvrés après le passage | 'sla' = délai de la priorité | null = date à saisir (RDV)
+// lock : appel de verrouillage anti-concurrent, d jours ouvrés après l'action (−1 = la veille)
 const ACTIONS=[
- {k:'bdc',l:'BDC signé → devis définitif',step:'devis',d:1,rec:['ultra','chaud']},
- {k:'stand',l:'Chiffrage sur le stand',step:'chiffre',d:0,rec:['ultra','chaud','tiede']},
- {k:'demo',l:'Démo Tableau de bord',step:'chiffre',d:0,rec:[]},
- {k:'salon',l:'Recontacter sur le salon',step:'chiffre',d:0,rec:['ultra','chaud']},
- {k:'rdv',l:'RDV / visite planifié(e)',step:'rdv',d:null,rec:['ultra','chaud','tiede']},
- {k:'rappel',l:'Rappeler',step:'recontact',d:'sla',rec:['ultra','chaud','tiede']},
- {k:'doc',l:'Envoi documentation',step:'recontact',d:2,rec:['tiede','froid']},
- {k:'nurture',l:'Relance post-salon',step:'recontact',d:10,rec:['froid']},
- {k:'none',l:'Aucune suite',step:'stand',d:null,rec:['froid']}
+ {k:'signe',l:'Signé sur le stand (BDC)',todo:'Envoyer le devis « Contrat » en signature YouSign',step:'devis',d:1,need:1,lock:{d:3,t:'Vérifier la signature YouSign, relancer si non signé'},rec:['ultra','chaud']},
+ {k:'devis',l:'Veut le devis par mail',todo:'Envoyer le devis chiffré par mail',step:'devis',d:1,need:1,lock:{d:3,t:'Appel de verrouillage : devis reçu ? questions ? offre concurrente ?'},rec:['ultra','chaud','tiede']},
+ {k:'rdv',l:'RDV sur site (projet complexe)',todo:'RDV / visite sur site',step:'rdv',d:null,lock:{d:-1,t:'Confirmer le RDV la veille'},rec:['ultra','chaud']},
+ {k:'demande',l:'Demande de chiffrage (veut comparer)',todo:'Produire et envoyer le chiffrage',step:'devis',d:2,lock:{d:3,t:'Appel de verrouillage : chiffrage reçu ? avec qui compare-t-il ?'},rec:['chaud','tiede']},
+ {k:'salon',l:'À revoir sur le salon (indécis)',todo:'Le recontacter avant la fin du salon',step:'chiffre',d:0,lock:{d:2,t:'Rappel post-salon s’il n’est pas revenu'},rec:['ultra','chaud','tiede']},
+ {k:'rappel',l:'Projet plus tard',todo:'Rappeler',step:'recontact',d:'sla',rec:['chaud','tiede']},
+ {k:'nurture',l:'Pas de projet actuel',todo:'Relance post-salon (nurturing)',step:'recontact',d:10,rec:['tiede','froid']},
+ {k:'none',l:'Aucune suite',todo:'',step:'stand',d:null,rec:['froid']}
 ];
-const LEG={'Chiffrage sur le stand':'stand','Démo Tableau de bord':'demo','Rappel sous 48h':'rappel','Envoi documentation':'doc','Visite sur site':'rdv','Aucune':'none'};
-leads.forEach(l=>{if(LEG[l.action])l.action=LEG[l.action]}); // fiches créées avant cette version
+// fiches créées avec les versions précédentes
+const LEG={bdc:'signe',doc:'rappel','Rappel sous 48h':'rappel','Envoi documentation':'rappel','Visite sur site':'rdv','Aucune':'none'};
+leads.forEach(l=>{if(l.action==='stand'||l.action==='Chiffrage sur le stand'){l.chiffreStand=true;l.action=''}
+  if(l.action==='demo'||l.action==='Démo Tableau de bord'){l.demo=true;l.action=''}if(LEG[l.action])l.action=LEG[l.action]});
 const actOf=l=>ACTIONS.find(a=>a.k===l.action);
 const hasMontant=l=>!!(Number(l.montantWifi)||Number(l.montantVideo));
-const stepOf=(a,l)=>{let k=a?a.step:'stand';if(k==='stand'&&hasMontant(l))k='chiffre';return k};
+const doneChiffre=l=>hasMontant(l)||!!l.chiffreStand;
+const stepOf=(a,l)=>{let k=a?a.step:'stand';if(k==='stand'&&(doneChiffre(l)||l.demo))k='chiffre';return k};
 function stepKey(l){return stepOf(actOf(l),l)}
 const HOL=['2026-11-11','2026-12-25','2027-01-01']; // jours fériés dans la fenêtre de relance
 const isoD=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const isOff=d=>d.getDay()===0||d.getDay()===6||HOL.includes(isoD(d));
-function addBD(base,n){const d=new Date(base);d.setHours(12,0,0,0);while(n>0){d.setDate(d.getDate()+1);if(!isOff(d))n--}return d}
-// base = moment où l'action a été choisie (la date ne glisse donc pas quand on rouvre la fiche)
+function shiftBD(base,n){const d=new Date(base);d.setHours(12,0,0,0);const st=n<0?-1:1;n=Math.abs(n);while(n>0){d.setDate(d.getDate()+st);if(!isOff(d))n--}return d}
+const addBD=(b,n)=>shiftBD(b,n);
+// base = moment où l'issue a été choisie : la date ne glisse pas quand on rouvre la fiche
 function defDate(l,a,base){if(!a||a.d===null)return'';const s=score(l);const n=a.d==='sla'?SLA[s.filled?s.t:'tiede']:a.d;return isoD(addBD(base,n))}
 function syncDate(l){const a=actOf(l);if(a&&!l.actionManual)l.actionDate=defDate(l,a,l.actionAt||l.createdAt||Date.now())}
+const lockDate=l=>{const a=actOf(l);if(!a||!a.lock||!l.actionDate)return'';return isoD(shiftBD(new Date(l.actionDate+'T12:00:00'),a.lock.d))};
 const dueTs=l=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(l.actionDate||'');return m?Math.floor(new Date(+m[1],+m[2]-1,+m[3],12,0,0).getTime()/1000):0};
 const fmtLong=iso=>iso?new Date(iso+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'2-digit'}):'';
 const fmtFR=iso=>iso?new Date(iso+'T12:00:00').toLocaleDateString('fr-FR'):'';
 const dueState=l=>{if(!l.actionDate)return'';const t=isoD(new Date());return l.actionDate<t?'late':l.actionDate===t?'today':''};
+const evSig=l=>[l.action,l.actionDate,lockDate(l),mgrOf(l)].join('|');
+// heure du rappel : dans l'heure pour une action du jour (sur le salon), sinon 9 h
+function evTime(iso,a){const n=new Date();if(iso===isoD(n)&&a.d===0){const m=Math.min(n.getHours()*60+n.getMinutes()+60,18*60+30);const r=Math.ceil(m/15)*15;return`${String(Math.floor(r/60)).padStart(2,'0')}:${String(r%60).padStart(2,'0')}`}return'09:00'}
+function rfc(iso,hm){const[y,m,d]=iso.split('-').map(Number),[h,mi]=hm.split(':').map(Number);const off=-new Date(y,m-1,d,h,mi).getTimezoneOffset(),p=v=>String(v).padStart(2,'0');
+  return`${iso}T${p(h)}:${p(mi)}:00${off>=0?'+':'-'}${p(Math.floor(Math.abs(off)/60))}:${p(Math.abs(off)%60)}`}
 
 /* ---------- Mode discret ---------- */
 const CODE={ultra:'P1',chaud:'P2',tiede:'P3',froid:'P4'};
@@ -293,7 +307,7 @@ function applyDisc(){document.body.classList.toggle('discreet',discreet()&&!reve
 function reveal(){revealed=true;applyDisc();render();if(navigator.vibrate)navigator.vibrate(20);clearTimeout(hideT);hideT=setTimeout(()=>{revealed=false;applyDisc();render()},4000)}
 
 /* ---------- Données ---------- */
-const newLead=()=>({id:'L'+Date.now().toString(36),createdAt:Date.now(),updatedAt:Date.now(),entreprise:'',prenom:'',nom:'',email:'',tel:'',telType:'',fonction:'',ville:'',client:'',type:'',classement:'',capacite:'',capaciteNb:'',timing:'',budget:'',decideur:'',budgetEstime:'',montantWifi:'',montantVideo:'',action:'',actionAt:'',actionDate:'',actionManual:false,commercial:settings.lastCommercial,notes:'',prestataire:'',engagement:'',finEngagement:'',resil:false,consent:false,consentAt:'',ax:{status:'todo'}});
+const newLead=()=>({id:'L'+Date.now().toString(36),createdAt:Date.now(),updatedAt:Date.now(),entreprise:'',prenom:'',nom:'',email:'',tel:'',telType:'',fonction:'',ville:'',client:'',type:'',classement:'',capacite:'',capaciteNb:'',timing:'',budget:'',decideur:'',budgetEstime:'',montantWifi:'',montantVideo:'',action:'',actionAt:'',actionDate:'',actionManual:false,demo:false,chiffreStand:false,concurrent:'',parade:'',commercial:settings.lastCommercial,notes:'',prestataire:'',engagement:'',finEngagement:'',resil:false,consent:false,consentAt:'',ax:{status:'todo'}});
 const isEmpty=l=>!(l.entreprise||l.nom||l.prenom||l.email||l.tel);
 let tmr;
 function persist(now){clearTimeout(tmr);const go=()=>{if(cur&&!isEmpty(cur)){cur.updatedAt=Date.now();const i=leads.findIndex(x=>x.id===cur.id);i<0?leads.unshift(cur):leads[i]=cur}
@@ -343,23 +357,30 @@ function render(){
 function renderNext(){
   syncDate(cur);
   const s=score(cur),sc=s.filled?s.t:null,D=discreet()&&!revealed,now=Date.now(),cb=actOf(cur);
+  $('#chkChiffre').checked=doneChiffre(cur);$('#chkChiffre').disabled=hasMontant(cur);
   const list=[...ACTIONS].sort((a,b)=>(sc&&b.rec.includes(sc)?1:0)-(sc&&a.rec.includes(sc)?1:0));
   $('#nxHint').textContent=sc&&!D?'· recommandé pour '+TEMPS[sc].e+' '+TEMPS[sc].l:'';
   $('#nxList').innerHTML=list.map(a=>{const rec=!!sc&&a.rec.includes(sc),dd=defDate(cur,a,now);
-    return`<button type="button" class="act${cb&&cb.k===a.k?' on':''}${rec&&!D?' sug':''}" data-nx="${a.k}"><span class="tx">${esc(a.l)}<small>→ ${esc(stepLabel(stepOf(a,cur)))}${dd?' · '+fmtLong(dd):a.d===null&&a.k==='rdv'?' · choisir la date':''}</small></span>${rec&&!D?'<span class="rec">★</span>':''}</button>`}).join('');
+    return`<button type="button" class="act${cb&&cb.k===a.k?' on':''}${rec&&!D?' sug':''}" data-nx="${a.k}"><span class="tx">${esc(a.l)}<small>${a.todo?esc(a.todo)+(dd?' · '+fmtLong(dd):a.k==='rdv'?' · date du RDV à saisir':''):'pas de relance'}</small></span>${rec&&!D?'<span class="rec">★</span>':''}</button>`}).join('');
   $('#nxWhenBox').classList.toggle('hide',!cb||cb.k==='none');
+  $('#nxWhenLbl').textContent=cb&&cb.k==='rdv'?'Date du RDV':'Date de l’action';
   const di=$('#nxDate');if(di.value!==(cur.actionDate||''))di.value=cur.actionDate||'';
   $('#nxAuto').classList.toggle('hide',!cur.actionManual);
   const pv=$('#nxPv');let warn='';
-  if(!cb){pv.className='pv warn';pv.textContent="Choisis la prochaine action : elle fixe l'étape du pipe et la date de relance dans Axonaut.";return}
-  if(cb.k==='bdc'&&!hasMontant(cur))warn='BDC signé sans chiffrage : lance d’abord le Deviseur.';
-  else if(cb.k!=='none'&&!cur.actionDate)warn='Pas de date : choisis-en une pour programmer la prochaine étape.';
-  else if(cur.actionDate&&dueState(cur)==='late')warn='Date dépassée : à relancer sans attendre.';
-  else if(!D&&sc){
-    if((sc==='ultra'||sc==='chaud')&&['none','nurture','doc'].includes(cb.k))warn='Lead prioritaire : prévoir un contact plus rapide.';
-    else if(cb.k==='bdc'&&(sc==='froid'||sc==='tiede'))warn='BDC signé mais score faible : revérifier décideur et budget.'}
+  if(!cb){pv.className='pv warn';pv.textContent="Choisis l'issue du passage : elle fixe ce qu'on fait après son départ, la date, l'étape du pipe et les rappels Axonaut.";return}
+  const ld=lockDate(cur);
+  if(cb.need&&!doneChiffre(cur))warn='Pas de chiffrage : passe par le Deviseur ou coche « Chiffré, budget annoncé ».';
+  else if(cb.k!=='none'&&!cur.actionDate)warn=cb.k==='rdv'?'Saisis la date du RDV.':'Pas de date : choisis-en une.';
+  else if(cur.actionDate&&dueState(cur)==='late')warn='Date dépassée : à faire sans attendre.';
+  else if(cur.concurrent&&!cb.lock&&cb.k!=='none')warn='Concurrent en lice : choisis une issue avec appel de verrouillage, ou avance la date.';
+  else if(!D&&sc&&(sc==='ultra'||sc==='chaud')&&['nurture','none'].includes(cb.k))warn='Lead prioritaire : prévoir un contact plus rapide.';
+  else if(!D&&cb.k==='signe'&&(sc==='froid'||sc==='tiede'))warn='Signé mais score faible : revérifier décideur et budget.';
   pv.className='pv'+(warn?' warn':'');
-  pv.innerHTML=`Axonaut → étape « ${esc(stepLabel(stepKey(cur)))} »${cur.actionDate?` · prochaine étape le <b>${fmtLong(cur.actionDate)}</b>`:''}${warn?`<br>⚠ ${esc(warn)}`:''}`;
+  pv.innerHTML=(cb.todo?`À faire après son départ : <b>${esc(cb.todo)}</b>${cur.actionDate?` · <b>${fmtLong(cur.actionDate)}</b>`:''}`:'Aucune relance prévue')+
+    (cb.lock&&ld?`<br>🔒 ${esc(cb.lock.t)} · <b>${fmtLong(ld)}</b>`:'')+
+    (cur.parade?`<br>🛡 Parade : ${esc(cur.parade)}`:'')+
+    `<br>Axonaut → étape « ${esc(stepLabel(stepKey(cur)))} »${cb.todo&&cur.actionDate?` · ${cb.lock&&ld?2:1} rappel(s) au nom de ${esc(cur.commercial||'—')}`:''}`+
+    (warn?`<br>⚠ ${esc(warn)}`:'');
 }
 function pickAction(k){const a=ACTIONS.find(x=>x.k===k);
   if(cur.action===k){cur.action='';cur.actionDate='';cur.actionManual=false;cur.actionAt=''}
@@ -370,9 +391,10 @@ document.addEventListener('click',e=>{if(!cur)return;
   const q=e.target.closest('[data-q]');if(q){e.preventDefault();cur.actionDate=isoD(addBD(Date.now(),+q.dataset.q));cur.actionManual=true;render();persist();return}
   if(e.target.id==='nxAuto'){cur.actionManual=false;syncDate(cur);render();persist()}});
 $('#nxDate').addEventListener('change',e=>{if(!cur)return;cur.actionDate=e.target.value;cur.actionManual=!!e.target.value;render();persist()});
-function needSync(l){if(l.ax?.status!=='sent')return false;const d=dueTs(l);return stepIdx(stepKey(l))!==(l.ax.stepIdx??-1)||(!!d&&d!==l.ax.due&&!l.ax.noDate)}
+function needSync(l){if(l.ax?.status!=='sent')return false;return stepIdx(stepKey(l))!==(l.ax.stepIdx??-1)||evSig(l)!==l.ax.evSig}
 const sentStep=l=>stepLabel((STEPS[l.ax?.stepIdx??0]||STEPS[0])[0]);
-function nxLine(l){const a=actOf(l);if(!a||a.k==='none')return'';return`<br><span class="due ${dueState(l)}">📅 ${esc(a.l)}${l.actionDate?' · '+fmtLong(l.actionDate):''}${dueState(l)==='late'?' · en retard':dueState(l)==='today'?' · aujourd’hui':''}</span>`}
+function nxLine(l){const a=actOf(l);if(!a||a.k==='none')return'';const ld=lockDate(l),st=dueState(l);
+  return`<br><span class="due ${st}">📅 ${esc(a.todo)}${l.actionDate?' · '+fmtLong(l.actionDate):''}${st==='late'?' · en retard':st==='today'?' · aujourd’hui':''}</span>${a.lock&&ld?`<br><span class="due">🔒 ${fmtLong(ld)}</span>`:''}`}
 function updateAxBtn(){const st=cur.ax?.status;$('#sendAx').textContent=st==='sent'?'🔄 Mettre à jour Axonaut':'⬆ Axonaut'}
 function open_(l){cur=l;buildQual();render();show('edit');window.scrollTo(0,0)}
 function show(v){$('#viewEdit').classList.toggle('hide',v!=='edit');$('#viewList').classList.toggle('hide',v!=='list');$('#tabEdit').classList.toggle('act',v==='edit');$('#tabList').classList.toggle('act',v==='list');if(v==='list')renderList()}
@@ -470,7 +492,10 @@ function commentFor(l){const s=score(l),T=TEMPS[s.t];
     `Prestataire actuel : ${l.prestataire||'—'} · Engagement : ${lab(ENG,l.engagement)}${ENGAGED.includes(l.engagement)?(l.resil?' · Résiliation ENVOYÉE':' · Résiliation non envoyée'):''}${validMY(l.finEngagement)?" · Fin d'engagement : "+l.finEngagement:''}`,
     l.consent?`Accord verbal recueilli le ${new Date(l.consentAt||Date.now()).toLocaleDateString('fr-FR')} (en plus du consentement badge SETT)`:'Données issues du badge SETT (consentement organisateur et exposants partenaires)',
     `Fonction : ${l.fonction||'—'} · Tél ${l.telType||'?'} · Client actuel : ${l.client||'?'}`,
-    `Prochaine étape : ${(actOf(l)||{l:'—'}).l}${l.actionDate?' — '+fmtLong(l.actionDate):''} · Étape du pipe : ${stepName(l)} · Vu par : ${l.commercial||'—'}`,l.notes?`Notes : ${l.notes}`:''].filter(Boolean).join('\n')}
+    `Sur le stand : ${[l.demo&&'démo faite',doneChiffre(l)&&('chiffré'+(Number(l.budgetEstime)?' '+Number(l.budgetEstime).toLocaleString('fr-FR')+' € HT':''))].filter(Boolean).join(' · ')||'visite'}`,
+    `Issue : ${(actOf(l)||{l:'—'}).l}${actOf(l)?.todo?' → '+actOf(l).todo+(l.actionDate?' le '+fmtLong(l.actionDate):''):''}${lockDate(l)?' · Verrouillage le '+fmtLong(lockDate(l)):''}`,
+    (l.concurrent||l.parade)?`Concurrent(s) : ${l.concurrent||'—'} · Parade : ${l.parade||'—'}`:'',
+    `Étape du pipe : ${stepName(l)} · Vu par : ${l.commercial||'—'}`,l.notes?`Notes : ${l.notes}`:''].filter(Boolean).join('\n')}
 // Même logique que le Deviseur Wifi : base = relais Cloudflare (ou axonaut.com), chemins /api/v2/…
 function axBase(raw){let u=(raw||'').trim().replace(/\/+$/,'');if(!u)return'https://axonaut.com';if(!/^https?:\/\//i.test(u))u='https://'+u;
   u=u.replace(/^(https?:\/\/)app\.axonaut\.com/i,'$1axonaut.com');return u.replace(/\/api(\/.*)?$/i,'')}
@@ -503,6 +528,29 @@ async function patchOpp(id,body){
     if(!r.ok){const t=await r.text();const e=new Error(('HTTP '+r.status+' '+t).slice(0,300));e.status=r.status;throw e}};
   try{await go(body);return{}}
   catch(e){if(body.due_date_ts&&(e.status===400||e.status===422)){const b2={...body};delete b2.due_date_ts;if(Object.keys(b2).length)await go(b2);return{noDate:true}}throw e}}
+// Rappels = événements Axonaut planifiés (non faits) rattachés à l'opportunité, au nom du commercial
+function evContent(l){const s=score(l);return[`Lead ${CODE[s.t]} (${s.pct}/100) · ${(actOf(l)||{l:''}).l}`,
+  [(l.prenom+' '+l.nom).trim(),l.tel,l.email].filter(Boolean).join(' · '),
+  l.concurrent?'Concurrent(s) : '+l.concurrent:'',l.parade?'Parade : '+l.parade:'',
+  Number(l.budgetEstime)?'Budget annoncé : '+Number(l.budgetEstime).toLocaleString('fr-FR')+' € HT':''].filter(Boolean).join('\n')}
+async function createEvent(l,title,iso,hm,nature,content){
+  const base={company_id:l.ax.companyId,opportunity_id:l.ax.oppId,title:title.slice(0,250),content,date:rfc(iso,hm),duration:15,nature,users:[mgrOf(l)]};
+  const noUsers={...base};delete noUsers.users;
+  let last;for(const b of [{...base,is_done:false},{...base,is_done:'false'},{...noUsers,is_done:false}]){
+    try{const r=await ax('/events',b);return r&&r.id}catch(e){last=e;if(!/HTTP (400|422)/.test(e.message))throw e}}
+  throw last}
+async function syncEvents(l){
+  const sig=evSig(l);if(l.ax.evSig===sig)return false;const a=actOf(l);
+  // les rappels précédents (issue ou date changée) sont retirés, au mieux
+  for(const id of (l.ax.events||[])){try{const r=await fetch(axBase(settings.api)+'/api/v2/events/'+id,{method:'DELETE',headers:axH()});
+    if(!r.ok)await fetch(axBase(settings.api)+'/api/v2/events/'+id,{method:'PATCH',headers:axH(),body:JSON.stringify({is_done:true})})}catch(e){}}
+  const ids=[],name=l.entreprise||(l.prenom+' '+l.nom).trim(),ctx=evContent(l);
+  l.ax.events=[];
+  if(a&&a.todo&&l.actionDate){
+    ids.push(await createEvent(l,`[SETT] ${a.todo} – ${name}`,l.actionDate,evTime(l.actionDate,a),a.k==='rdv'?1:3,ctx));
+    const ld=lockDate(l);if(a.lock&&ld)ids.push(await createEvent(l,`[SETT] 🔒 ${a.lock.t} – ${name}`,ld,'09:00',3,ctx));
+  }
+  l.ax.events=ids.filter(Boolean);l.ax.evSig=sig;l.ax.evErr='';return true}
 async function updateLead(l){
   if(!l.ax||!l.ax.oppId)return'déjà envoyé';
   const idx=stepIdx(stepKey(l));const body={};
@@ -512,7 +560,8 @@ async function updateLead(l){
   const pr=probOf(l);if(pr!==l.ax.prob)body.probability=pr;
   const mg=mgrOf(l);if(mg!==l.ax.manager)body.business_manager_email=mg;
   const due=dueTs(l);if(due&&due!==l.ax.due)body.due_date_ts=due;
-  if(!Object.keys(body).length)return'à jour';
+  let ev=false;try{ev=await syncEvents(l)}catch(e){l.ax.evErr=String(e.message||e)}
+  if(!Object.keys(body).length){persist(true);return ev?'mis à jour':'à jour'}
   const res=await patchOpp(l.ax.oppId,body);
   if(body.pipe_step_name)l.ax.stepIdx=idx;if(body.amount)l.ax.amount=amt;
   if(body.due_date_ts){l.ax.noDate=!!res.noDate;if(!res.noDate)l.ax.due=due}
@@ -547,14 +596,15 @@ async function sendLead(l){
       catch(e){lastErr=e;if(!/HTTP (400|422)/.test(e.message))throw e}}
     if(!o)throw lastErr;
     l.ax={...l.ax,status:'sent',oppId:o.id,stepIdx:stepIdx(stepKey(l)),due:noDate?0:due,noDate,amount:Number(l.budgetEstime)||0,comment:payload.comments,prob:payload.probability,manager:payload.business_manager_email,noOrigine,sentAt:Date.now(),error:''};
+    try{await syncEvents(l)}catch(e){l.ax.evErr=String(e.message||e)}
   }catch(e){l.ax.status='error';l.ax.error=String(e.message||e);persist(true);throw e}
   persist(true)}
 function netHelp(e){return/Failed to fetch|NetworkError|Load failed/i.test(e.message)?"Réseau ou blocage navigateur (CORS). Vérifiez l'URL du relais Cloudflare dans ⚙, ou utilisez l'Export CSV Axonaut (onglet Leads).":e.message}
 $('#sendAx').onclick=async()=>{if(isEmpty(cur))return toast('Fiche vide');
   if(cur.ax?.status!=='sent'&&!actOf(cur)&&!confirm("Aucune prochaine action choisie : le lead sera créé à l'étape « "+stepName(cur)+" » sans date de relance.\nContinuer quand même ?"))return;
   const b=$('#sendAx');b.disabled=true;
-  try{persist(true);const r=await sendLead(cur);const dn=cur.ax.noDate?' · ⚠️ date de prochaine étape refusée par Axonaut : à programmer à la main':'';
-    toast(r==='mis à jour'?'🔄 Étape / date / montant mis à jour dans Axonaut'+dn:r==='à jour'?'Déjà à jour dans Axonaut':r==='déjà envoyé'?'Déjà dans Axonaut':'✅ Créé dans '+settings.pipe+' · étape « '+stepName(cur)+' »'+(cur.actionDate?' · prochaine étape le '+fmtLong(cur.actionDate):'')+(cur.ax.noOrigine?' · ⚠️ champ Origine refusé par Axonaut : à renseigner à la main':'')+dn,7000)}
+  try{persist(true);const r=await sendLead(cur);const dn=cur.ax.evErr?' · ⚠️ rappels non créés : '+cur.ax.evErr.slice(0,90):(cur.ax.events?.length?' · 📅 '+cur.ax.events.length+' rappel(s) planifié(s)':'');
+    toast(r==='mis à jour'?'🔄 Axonaut mis à jour (étape, rappels, montant)'+dn:r==='à jour'?'Déjà à jour dans Axonaut':r==='déjà envoyé'?'Déjà dans Axonaut':'✅ Créé dans '+settings.pipe+' · étape « '+stepName(cur)+' »'+(cur.actionDate?' · prochaine étape le '+fmtLong(cur.actionDate):'')+(cur.ax.noOrigine?' · ⚠️ champ Origine refusé par Axonaut : à renseigner à la main':'')+dn,7000)}
   catch(e){toast('⚠️ '+netHelp(e),7000)}b.disabled=false;render()};
 async function sendAll(){const todo=leads.filter(l=>!isEmpty(l));
   if(!todo.length)return toast('Rien à envoyer');
