@@ -67,6 +67,7 @@ dialog{border:0;border-radius:var(--r);padding:18px;max-width:560px;width:94%;fo
 dialog h3{font-family:var(--display);color:var(--blue-dark)}
 pre{background:var(--navy);color:#e2e8f0;padding:10px;border-radius:8px;overflow:auto;font-size:12px}
 .hint{font-size:12px;color:var(--mut)}.hide{display:none!important}
+.sols{display:grid;grid-template-columns:1fr 1fr;gap:8px}@media(max-width:560px){.sols{grid-template-columns:1fr}}
 .chk{display:flex;gap:12px;align-items:center;font-size:15px;color:var(--ink);font-weight:700;background:var(--tint);padding:12px;border-radius:10px;margin:0}
 .chk input{width:28px;height:28px;flex:none;accent-color:var(--blue-dark)}.chk .hint{font-weight:600}
 .legend{width:100%;border-collapse:collapse;font-size:13px}.legend td{padding:4px 6px;border-bottom:1px solid var(--line)}
@@ -126,6 +127,19 @@ pre{background:var(--navy);color:#e2e8f0;padding:10px;border-radius:8px;overflow
       <div style="max-width:200px;margin-bottom:8px"><label>Fin d'engagement (MM-YYYY)</label><input type="text" data-f="finEngagement" inputmode="numeric" placeholder="MM-YYYY" maxlength="7" autocomplete="off"></div>
       <div class="chips" id="cEng"></div>
       <label class="chk" id="resilBox" style="margin-top:8px"><input type="checkbox" data-c="resil"><span>Résiliation envoyée <span class="hint">(décoché = pas envoyée)</span></span></label>
+    </div>
+  </div>
+
+  <div class="card"><h2>Solutions qui l'intéressent</h2>
+    <div class="sols">
+      <label class="chk"><input type="checkbox" data-c="solWifi"><span>📶 Wifi</span></label>
+      <label class="chk"><input type="checkbox" data-c="solVideo"><span>📹 Vidéosurveillance</span></label>
+    </div>
+    <label style="margin-top:12px">Options <span class="hint">(non chiffrables dans les Deviseurs : à chiffrer à part)</span></label>
+    <div class="sols">
+      <label class="chk"><input type="checkbox" data-c="optCanal"><span>📺 Canal+ Room Streaming</span></label>
+      <label class="chk"><input type="checkbox" data-c="optAlerte"><span>🔊 Alerte évacuation sonore</span></label>
+      <label class="chk"><input type="checkbox" data-c="optOperateur"><span>🌐 Services opérateurs</span></label>
     </div>
   </div>
 
@@ -191,6 +205,8 @@ pre{background:var(--navy);color:#e2e8f0;padding:10px;border-radius:8px;overflow
     <div class="full"><details><summary class="hint">Noms des étapes du pipe « Sett 2026 » (identiques à Axonaut, au caractère près)</summary><div class="grid" style="margin-top:8px">
       <div><label>Étape 1</label><input type="text" id="sSt_stand"></div><div><label>Étape 2</label><input type="text" id="sSt_chiffre"></div><div><label>Étape 3</label><input type="text" id="sSt_recontact"></div><div><label>Étape 4</label><input type="text" id="sSt_rdv"></div><div><label>Étape 5</label><input type="text" id="sSt_devis"></div>
       <p class="hint full" style="margin:0">Si tu renommes une étape dans Axonaut, renomme-la ici aussi ; sinon l'envoi échoue. Le Deviseur utilise les noms d'origine.</p></div></details></div>
+    <div class="full"><details><summary class="hint">Valeurs du champ « Offre/solution concernée » (identiques à Axonaut, au caractère près)</summary><div class="grid" style="margin-top:8px">
+      <div><label>Wifi</label><input type="text" id="sSo_solWifi"></div><div><label>Vidéosurveillance</label><input type="text" id="sSo_solVideo"></div><div><label>Canal+ Room Streaming</label><input type="text" id="sSo_optCanal"></div><div><label>Alerte évacuation sonore</label><input type="text" id="sSo_optAlerte"></div><div><label>Services opérateur</label><input type="text" id="sSo_optOperateur"></div></div></details></div>
     <div class="full"><label>URL du Deviseur Wifi</label><input type="url" id="sWifi" placeholder="https://…"></div>
     <div class="full"><label>URL du Deviseur vidéo</label><input type="url" id="sVideo" placeholder="https://…"></div>
   </div>
@@ -276,6 +292,14 @@ const LEG={bdc:'signe',doc:'rappel','Rappel sous 48h':'rappel','Envoi documentat
 leads.forEach(l=>{if(l.action==='stand'||l.action==='Chiffrage sur le stand'){l.chiffreStand=true;l.action=''}
   if(l.action==='demo'||l.action==='Démo Tableau de bord'){l.demo=true;l.action=''}if(LEG[l.action])l.action=LEG[l.action]});
 const actOf=l=>ACTIONS.find(a=>a.k===l.action);
+const SOLS=[['solWifi','Wifi'],['solVideo','Vidéosurveillance']],OPTS=[['optCanal','Canal+ Room Streaming'],['optAlerte','Alerte évacuation sonore'],['optOperateur','Services opérateurs']];
+const pick=(arr,l)=>arr.filter(([k])=>l[k]).map(x=>x[1]);
+// Champ personnalisé Axonaut « Offre/solution concernée » : valeurs EXACTES (vérifiées sur les opportunités existantes, sauf l'alerte)
+const SOL_FIELD='Offre/solution concernée';
+const SOL_AX={solWifi:'Wifi',solVideo:'Vidéosurveillance',optCanal:'Canal+ Room Streaming',optAlerte:'Alerte évacuation sonore',optOperateur:'Services opérateur'};
+const solVal=k=>(settings.solNames&&settings.solNames[k])||SOL_AX[k];
+const solAx=l=>Object.keys(SOL_AX).filter(k=>l[k]).map(solVal);
+const solTxt=l=>{const a=pick(SOLS,l),o=pick(OPTS,l);return[a.join(' · '),o.length?'options : '+o.join(' · '):''].filter(Boolean).join(' + ')};
 const hasMontant=l=>!!(Number(l.montantWifi)||Number(l.montantVideo));
 const doneChiffre=l=>hasMontant(l)||!!l.chiffreStand;
 const stepOf=(a,l)=>{let k=a?a.step:'stand';if(k==='stand'&&(doneChiffre(l)||l.demo))k='chiffre';return k};
@@ -307,7 +331,7 @@ function applyDisc(){document.body.classList.toggle('discreet',discreet()&&!reve
 function reveal(){revealed=true;applyDisc();render();if(navigator.vibrate)navigator.vibrate(20);clearTimeout(hideT);hideT=setTimeout(()=>{revealed=false;applyDisc();render()},4000)}
 
 /* ---------- Données ---------- */
-const newLead=()=>({id:'L'+Date.now().toString(36),createdAt:Date.now(),updatedAt:Date.now(),entreprise:'',prenom:'',nom:'',email:'',tel:'',telType:'',fonction:'',ville:'',client:'',type:'',classement:'',capacite:'',capaciteNb:'',timing:'',budget:'',decideur:'',budgetEstime:'',montantWifi:'',montantVideo:'',action:'',actionAt:'',actionDate:'',actionManual:false,demo:false,chiffreStand:false,concurrent:'',parade:'',commercial:settings.lastCommercial,notes:'',prestataire:'',engagement:'',finEngagement:'',resil:false,consent:false,consentAt:'',ax:{status:'todo'}});
+const newLead=()=>({id:'L'+Date.now().toString(36),createdAt:Date.now(),updatedAt:Date.now(),entreprise:'',prenom:'',nom:'',email:'',tel:'',telType:'',fonction:'',ville:'',client:'',type:'',classement:'',capacite:'',capaciteNb:'',timing:'',budget:'',decideur:'',budgetEstime:'',montantWifi:'',montantVideo:'',action:'',actionAt:'',actionDate:'',actionManual:false,demo:false,chiffreStand:false,solWifi:false,solVideo:false,optCanal:false,optAlerte:false,optOperateur:false,concurrent:'',parade:'',commercial:settings.lastCommercial,notes:'',prestataire:'',engagement:'',finEngagement:'',resil:false,consent:false,consentAt:'',ax:{status:'todo'}});
 const isEmpty=l=>!(l.entreprise||l.nom||l.prenom||l.email||l.tel);
 let tmr;
 function persist(now){clearTimeout(tmr);const go=()=>{if(cur&&!isEmpty(cur)){cur.updatedAt=Date.now();const i=leads.findIndex(x=>x.id===cur.id);i<0?leads.unshift(cur):leads[i]=cur}
@@ -372,6 +396,7 @@ function renderNext(){
   if(cb.need&&!doneChiffre(cur))warn='Pas de chiffrage : passe par le Deviseur ou coche « Chiffré, budget annoncé ».';
   else if(cb.k!=='none'&&!cur.actionDate)warn=cb.k==='rdv'?'Saisis la date du RDV.':'Pas de date : choisis-en une.';
   else if(cur.actionDate&&dueState(cur)==='late')warn='Date dépassée : à faire sans attendre.';
+  else if(cb.k!=='none'&&!pick(SOLS,cur).length&&!pick(OPTS,cur).length)warn='Coche les solutions qui l\u2019intéressent.';
   else if(cur.concurrent&&!cb.lock&&cb.k!=='none')warn='Concurrent en lice : choisis une issue avec appel de verrouillage, ou avance la date.';
   else if(!D&&sc&&(sc==='ultra'||sc==='chaud')&&['nurture','none'].includes(cb.k))warn='Lead prioritaire : prévoir un contact plus rapide.';
   else if(!D&&cb.k==='signe'&&(sc==='froid'||sc==='tiede'))warn='Signé mais score faible : revérifier décideur et budget.';
@@ -379,6 +404,7 @@ function renderNext(){
   pv.innerHTML=(cb.todo?`À faire après son départ : <b>${esc(cb.todo)}</b>${cur.actionDate?` · <b>${fmtLong(cur.actionDate)}</b>`:''}`:'Aucune relance prévue')+
     (cb.lock&&ld?`<br>🔒 ${esc(cb.lock.t)} · <b>${fmtLong(ld)}</b>`:'')+
     (cur.parade?`<br>🛡 Parade : ${esc(cur.parade)}`:'')+
+    (pick(OPTS,cur).length&&cb.k!=='none'?`<br>➕ À chiffrer hors Deviseur : ${esc(pick(OPTS,cur).join(' · '))}${cur.optCanal?' (Cyrille, Canal+ Business, présent mer. 4 et jeu. 5)':''}`:'')+
     `<br>Axonaut → étape « ${esc(stepLabel(stepKey(cur)))} »${cb.todo&&cur.actionDate?` · ${cb.lock&&ld?2:1} rappel(s) au nom de ${esc(cur.commercial||'—')}`:''}`+
     (warn?`<br>⚠ ${esc(warn)}`:'');
 }
@@ -393,7 +419,8 @@ document.addEventListener('click',e=>{if(!cur)return;
 $('#nxDate').addEventListener('change',e=>{if(!cur)return;cur.actionDate=e.target.value;cur.actionManual=!!e.target.value;render();persist()});
 function needSync(l){if(l.ax?.status!=='sent')return false;return stepIdx(stepKey(l))!==(l.ax.stepIdx??-1)||evSig(l)!==l.ax.evSig}
 const sentStep=l=>stepLabel((STEPS[l.ax?.stepIdx??0]||STEPS[0])[0]);
-function nxLine(l){const a=actOf(l);if(!a||a.k==='none')return'';const ld=lockDate(l),st=dueState(l);
+function nxLine(l){const so=solTxt(l)?`<br><span class="due" style="font-weight:600">🧩 ${esc(solTxt(l))}</span>`:'';return so+nxLine0(l)}
+function nxLine0(l){const a=actOf(l);if(!a||a.k==='none')return'';const ld=lockDate(l),st=dueState(l);
   return`<br><span class="due ${st}">📅 ${esc(a.todo)}${l.actionDate?' · '+fmtLong(l.actionDate):''}${st==='late'?' · en retard':st==='today'?' · aujourd’hui':''}</span>${a.lock&&ld?`<br><span class="due">🔒 ${fmtLong(ld)}</span>`:''}`}
 function updateAxBtn(){const st=cur.ax?.status;$('#sendAx').textContent=st==='sent'?'🔄 Mettre à jour Axonaut':'⬆ Axonaut'}
 function open_(l){cur=l;buildQual();render();show('edit');window.scrollTo(0,0)}
@@ -463,7 +490,7 @@ $('#goVideo').onclick=()=>goDeviseur(settings.urlVideo,'Deviseur vidéo');
 window.name='sett_leads'; // permet aux Deviseurs de revenir sur cet onglet
 (function(){const p=new URLSearchParams(location.search);const id=p.get('lead_id'),m=p.get('montant'),src=p.get('src');
   if(id&&m){const l=leads.find(x=>x.id===id);if(l){
-    if(src==='wifi')l.montantWifi=m;else if(src==='video')l.montantVideo=m;
+    if(src==='wifi'){l.montantWifi=m;l.solWifi=true}else if(src==='video'){l.montantVideo=m;l.solVideo=true}
     const oid=parseInt(p.get('opp_id'))||0,cid=parseInt(p.get('company_id'))||0;
     l.ax=l.ax||{status:'todo'};
     if(cid&&!l.ax.companyId)l.ax.companyId=cid;
@@ -492,6 +519,7 @@ function commentFor(l){const s=score(l),T=TEMPS[s.t];
     `Prestataire actuel : ${l.prestataire||'—'} · Engagement : ${lab(ENG,l.engagement)}${ENGAGED.includes(l.engagement)?(l.resil?' · Résiliation ENVOYÉE':' · Résiliation non envoyée'):''}${validMY(l.finEngagement)?" · Fin d'engagement : "+l.finEngagement:''}`,
     l.consent?`Accord verbal recueilli le ${new Date(l.consentAt||Date.now()).toLocaleDateString('fr-FR')} (en plus du consentement badge SETT)`:'Données issues du badge SETT (consentement organisateur et exposants partenaires)',
     `Fonction : ${l.fonction||'—'} · Tél ${l.telType||'?'} · Client actuel : ${l.client||'?'}`,
+    `Solutions : ${pick(SOLS,l).join(' · ')||'—'}${pick(OPTS,l).length?' · Options hors Deviseur (à chiffrer à part) : '+pick(OPTS,l).join(' · '):''}`,
     `Sur le stand : ${[l.demo&&'démo faite',doneChiffre(l)&&('chiffré'+(Number(l.budgetEstime)?' '+Number(l.budgetEstime).toLocaleString('fr-FR')+' € HT':''))].filter(Boolean).join(' · ')||'visite'}`,
     `Issue : ${(actOf(l)||{l:'—'}).l}${actOf(l)?.todo?' → '+actOf(l).todo+(l.actionDate?' le '+fmtLong(l.actionDate):''):''}${lockDate(l)?' · Verrouillage le '+fmtLong(lockDate(l)):''}`,
     (l.concurrent||l.parade)?`Concurrent(s) : ${l.concurrent||'—'} · Parade : ${l.parade||'—'}`:'',
@@ -531,6 +559,7 @@ async function patchOpp(id,body){
 // Rappels = événements Axonaut planifiés (non faits) rattachés à l'opportunité, au nom du commercial
 function evContent(l){const s=score(l);return[`Lead ${CODE[s.t]} (${s.pct}/100) · ${(actOf(l)||{l:''}).l}`,
   [(l.prenom+' '+l.nom).trim(),l.tel,l.email].filter(Boolean).join(' · '),
+  solTxt(l)?'Intéressé par : '+solTxt(l):'',
   l.concurrent?'Concurrent(s) : '+l.concurrent:'',l.parade?'Parade : '+l.parade:'',
   Number(l.budgetEstime)?'Budget annoncé : '+Number(l.budgetEstime).toLocaleString('fr-FR')+' € HT':''].filter(Boolean).join('\n')}
 async function createEvent(l,title,iso,hm,nature,content){
@@ -560,8 +589,10 @@ async function updateLead(l){
   const pr=probOf(l);if(pr!==l.ax.prob)body.probability=pr;
   const mg=mgrOf(l);if(mg!==l.ax.manager)body.business_manager_email=mg;
   const due=dueTs(l);if(due&&due!==l.ax.due)body.due_date_ts=due;
+  const sv=solAx(l).join('|');let solMsg=false;
+  if(sv&&sv!==l.ax.solSent){try{await patchOpp(l.ax.oppId,{custom_fields:{[SOL_FIELD]:sv.split('|')}});l.ax.solSent=sv;l.ax.noSol=false;solMsg=true}catch(e){if(!/HTTP (400|422)/.test(e.message))throw e;l.ax.noSol=true}}
   let ev=false;try{ev=await syncEvents(l)}catch(e){l.ax.evErr=String(e.message||e)}
-  if(!Object.keys(body).length){persist(true);return ev?'mis à jour':'à jour'}
+  if(!Object.keys(body).length){persist(true);return ev||solMsg?'mis à jour':'à jour'}
   const res=await patchOpp(l.ax.oppId,body);
   if(body.pipe_step_name)l.ax.stepIdx=idx;if(body.amount)l.ax.amount=amt;
   if(body.due_date_ts){l.ax.noDate=!!res.noDate;if(!res.noDate)l.ax.due=due}
@@ -590,12 +621,13 @@ async function sendLead(l){
       employees:(l.email||l.tel||l.nom)?[{employee_firstname:l.prenom,employee_lastname:l.nom,employee_email:l.email,employee_phone:l.telType==='perso'?undefined:l.tel,employee_cellphone:l.telType==='perso'?l.tel:undefined}]:undefined};
     // « Origine » (champ personnalisé) et date de prochaine étape : si Axonaut refuse l'un des deux, on recrée sans et on le signale
     const due=dueTs(l),dates={due_date_ts:due,pipe_step_date_ts:due};
-    let o,noOrigine=false,noDate=false,lastErr;
-    for(const [c,d] of [[true,true],[true,false],[false,true],[false,false]].filter(x=>x[1]?!!due:true)){
-      try{o=await ax('/opportunities',{...payload,...(c?{custom_fields:{'Origine':settings.origine}}:{}),...(d?dates:{})});noOrigine=!c;noDate=!!due&&!d;break}
-      catch(e){lastErr=e;if(!/HTTP (400|422)/.test(e.message))throw e}}
+    let o,noOrigine=false,noDate=false,noSol=false,lastErr;
+    const sv=solAx(l),cfs=[...(sv.length?[{'Origine':settings.origine,[SOL_FIELD]:sv}]:[]),{'Origine':settings.origine},null];
+    for(const cf of cfs){for(const d of (due?[true,false]:[false])){
+      try{o=await ax('/opportunities',{...payload,...(cf?{custom_fields:cf}:{}),...(d?dates:{})});noOrigine=!cf;noSol=!!sv.length&&!(cf&&cf[SOL_FIELD]);noDate=!!due&&!d;break}
+      catch(e){lastErr=e;if(!/HTTP (400|422)/.test(e.message))throw e}}if(o)break}
     if(!o)throw lastErr;
-    l.ax={...l.ax,status:'sent',oppId:o.id,stepIdx:stepIdx(stepKey(l)),due:noDate?0:due,noDate,amount:Number(l.budgetEstime)||0,comment:payload.comments,prob:payload.probability,manager:payload.business_manager_email,noOrigine,sentAt:Date.now(),error:''};
+    l.ax={...l.ax,status:'sent',oppId:o.id,stepIdx:stepIdx(stepKey(l)),due:noDate?0:due,noDate,amount:Number(l.budgetEstime)||0,comment:payload.comments,prob:payload.probability,manager:payload.business_manager_email,noOrigine,noSol,solSent:noSol?'':sv.join('|'),sentAt:Date.now(),error:''};
     try{await syncEvents(l)}catch(e){l.ax.evErr=String(e.message||e)}
   }catch(e){l.ax.status='error';l.ax.error=String(e.message||e);persist(true);throw e}
   persist(true)}
@@ -603,7 +635,7 @@ function netHelp(e){return/Failed to fetch|NetworkError|Load failed/i.test(e.mes
 $('#sendAx').onclick=async()=>{if(isEmpty(cur))return toast('Fiche vide');
   if(cur.ax?.status!=='sent'&&!actOf(cur)&&!confirm("Aucune prochaine action choisie : le lead sera créé à l'étape « "+stepName(cur)+" » sans date de relance.\nContinuer quand même ?"))return;
   const b=$('#sendAx');b.disabled=true;
-  try{persist(true);const r=await sendLead(cur);const dn=cur.ax.evErr?' · ⚠️ rappels non créés : '+cur.ax.evErr.slice(0,90):(cur.ax.events?.length?' · 📅 '+cur.ax.events.length+' rappel(s) planifié(s)':'');
+  try{persist(true);const r=await sendLead(cur);const dn=(cur.ax.noSol?' · ⚠️ « Offre/solution concernée » refusée par Axonaut : vérifier les libellés dans ⚙':'')+(cur.ax.evErr?' · ⚠️ rappels non créés : '+cur.ax.evErr.slice(0,90):(cur.ax.events?.length?' · 📅 '+cur.ax.events.length+' rappel(s) planifié(s)':''));
     toast(r==='mis à jour'?'🔄 Axonaut mis à jour (étape, rappels, montant)'+dn:r==='à jour'?'Déjà à jour dans Axonaut':r==='déjà envoyé'?'Déjà dans Axonaut':'✅ Créé dans '+settings.pipe+' · étape « '+stepName(cur)+' »'+(cur.actionDate?' · prochaine étape le '+fmtLong(cur.actionDate):'')+(cur.ax.noOrigine?' · ⚠️ champ Origine refusé par Axonaut : à renseigner à la main':'')+dn,7000)}
   catch(e){toast('⚠️ '+netHelp(e),7000)}b.disabled=false;render()};
 async function sendAll(){const todo=leads.filter(l=>!isEmpty(l));
@@ -631,9 +663,9 @@ $('#bkCsv').onclick=()=>{
   dl(`SETT2026-import-axonaut-${stamp()}.csv`,[H.map(q).join(','),...rows].join('\n'),'text/csv;charset=utf-8');toast(`📄 CSV généré (colonnes du fichier leads 2025)`,5000)};
 
 /* ---------- Réglages ---------- */
-$('#btnSet').onclick=()=>{$('#sKey').value=settings.apiKey;$('#sMgr').value=settings.manager;$('#sPipe').value=settings.pipe;$('#sOrig').value=settings.origine;$('#sApi').value=settings.api;$('#sWifi').value=settings.urlWifi;$('#sVideo').value=settings.urlVideo;$('#sDisc').checked=discreet();STEPS.forEach(([k])=>{$('#sSt_'+k).value=stepLabel(k)});$('#dlg').showModal()};
+$('#btnSet').onclick=()=>{$('#sKey').value=settings.apiKey;$('#sMgr').value=settings.manager;$('#sPipe').value=settings.pipe;$('#sOrig').value=settings.origine;$('#sApi').value=settings.api;$('#sWifi').value=settings.urlWifi;$('#sVideo').value=settings.urlVideo;$('#sDisc').checked=discreet();STEPS.forEach(([k])=>{$('#sSt_'+k).value=stepLabel(k)});Object.keys(SOL_AX).forEach(k=>{$('#sSo_'+k).value=solVal(k)});$('#dlg').showModal()};
 $('#sClose').onclick=()=>$('#dlg').close();
-$('#sSave').onclick=()=>{settings={...settings,apiKey:$('#sKey').value.trim(),manager:$('#sMgr').value.trim(),pipe:$('#sPipe').value.trim(),origine:$('#sOrig').value.trim(),api:$('#sApi').value.trim(),urlWifi:$('#sWifi').value.trim(),urlVideo:$('#sVideo').value.trim(),discreet:$('#sDisc').checked,stepNames:Object.fromEntries(STEPS.map(([k])=>[k,$('#sSt_'+k).value.trim()||STEPS[stepIdx(k)][1]]))};saveSettings();$('#dlg').close();applyDisc();render();toast('Réglages enregistrés')};
+$('#sSave').onclick=()=>{settings={...settings,apiKey:$('#sKey').value.trim(),manager:$('#sMgr').value.trim(),pipe:$('#sPipe').value.trim(),origine:$('#sOrig').value.trim(),api:$('#sApi').value.trim(),urlWifi:$('#sWifi').value.trim(),urlVideo:$('#sVideo').value.trim(),discreet:$('#sDisc').checked,stepNames:Object.fromEntries(STEPS.map(([k])=>[k,$('#sSt_'+k).value.trim()||STEPS[stepIdx(k)][1]])),solNames:Object.fromEntries(Object.keys(SOL_AX).map(k=>[k,$('#sSo_'+k).value.trim()||SOL_AX[k]]))};saveSettings();$('#dlg').close();applyDisc();render();toast('Réglages enregistrés')};
 
 /* ---------- Navigation / init ---------- */
 $('#tabEdit').onclick=()=>show('edit');$('#tabList').onclick=()=>{persist(true);show('list')};
