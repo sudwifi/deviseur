@@ -292,11 +292,16 @@ details.set .in{padding-top:0}
         <button class="btn wht" id="bBdc" type="button">Générer le BDC CANAL+ (PDF)</button>
         <div class="status" id="sBdc"></div>
       </div>
+      <div class="acts" id="leadBox" hidden style="border-top:1px solid var(--line);background:var(--green-soft)">
+        <div class="status" id="leadInfo"></div>
+        <button class="btn sm" id="bRetour" type="button">↩ Renvoyer le chiffrage à la fiche lead SETT</button>
+      </div>
       <div class="acts" style="border-top:1px solid var(--line)">
         <div style="display:flex;gap:8px;align-items:end">
           <label class="f" style="flex:1">Entreprise Axonaut<input type="text" id="axSearch" placeholder="Nom du camping"></label>
           <button class="btn sm" id="bAxFind" type="button">Rechercher</button>
         </div>
+        <label class="f">ou ID entreprise Axonaut<input type="text" id="axCid" inputmode="numeric" placeholder="numéro dans l'adresse de la fiche client"><span class="hint">Prioritaire sur la recherche, utile si elle ne répond pas.</span></label>
         <div class="companies" id="axList"></div>
         <label class="chk"><input type="checkbox" id="axOpp" checked> <span>Créer aussi l'opportunité dans le pipe</span></label>
         <div class="pipe" id="pipeBox">
@@ -762,13 +767,16 @@ function oppComments(R){
 }
 async function axCreate(){
   const st=$("sAx");st.className="status";
-  const sel=$("axList").querySelector("input:checked");
-  if(!sel){st.className="status err";st.textContent="Recherchez puis sélectionnez l'entreprise Axonaut (ou « Créer comme prospect »).";return}
+  const L=window.SETT_LEAD;
+  const typedId=parseInt(($("axCid").value||"").replace(/\D/g,""),10)||0;
+  let sel=$("axList").querySelector("input:checked");
+  if(typedId) sel={value:String(typedId),dataset:{n:$("c_nom").value.trim()}};
+  if(!sel){st.className="status err";st.textContent="Indiquez l'ID entreprise Axonaut, ou recherchez puis sélectionnez l'entreprise (ou « Créer comme prospect »).";return}
   if(R.alerts.some(a=>a[0]==="b")&&!axCreate._forced){st.className="status err";st.innerHTML="Le chiffrage contient un point bloquant (voir alertes). Cliquez à nouveau pour créer le devis quand même.";axCreate._forced=true;return}
   axCreate._forced=false;
   const ax=await getAx();
   if(!ax){st.className="status err";st.textContent="Connexion à Axonaut indisponible dans cette vue.";return}
-  const mgr=$("axMgr").value.trim();
+  const mgr=(L&&L.manager)||$("axMgr").value.trim();
   $("bAx").disabled=true;let step="Entreprise";
   try{
     let companyId;
@@ -783,9 +791,11 @@ async function axCreate(){
       if(!companyId) throw {code:"tool_error",message:"identifiant de l'entreprise absent de la réponse"};
       $("axList").innerHTML=`<label><input type="radio" name="axc" value="${companyId}" checked> ${body.name.replace(/[<>&]/g,"")} <span class="hint">#${companyId} · créée</span></label>`;
     } else companyId=+sel.value;
+    if(L)L.companyId=companyId;
 
     let oppId=null,oppWhere="",cfNote="";
-    if($("axOpp").checked){
+    if(L&&L.oppId){oppId=L.oppId;oppWhere=" (opportunité de la fiche lead)"}
+    else if($("axOpp").checked){
       step="Opportunité";st.textContent="Création de l'opportunité…";
       const amount=$("axAmt").value==="ca"?Math.round(R.totHT):Math.round(R.com);
       const P=PIPES[PIPE];
@@ -801,6 +811,7 @@ async function axCreate(){
       catch(e){if(e&&e.code==="tool_error"&&!/pipe|step|étape/i.test(e.message||"")){res=await ax.callTool("create_opportunity",oppBody);cfNote=" (champs Origine / Offre à compléter à la main)"}else throw e}
       oppId=idOf(payloadOf(res));
       oppWhere=` dans « ${pipeName.trim()} › ${stepName} »`;
+      if(L&&oppId)L.oppId=oppId;
     }
     step="Devis";st.textContent="Création du devis…";
     const today=new Date(),iso=d=>d.toISOString().slice(0,10)+"T00:00:00+00:00";
@@ -832,7 +843,31 @@ $("axSearch").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefaul
 $("bAx").addEventListener("click",axCreate);
 $("bSave").addEventListener("click",saveJson);
 
-renderStatic();loadAll();update();
+renderStatic();loadAll();
+(function leadFromSett(){
+  const p=new URLSearchParams(location.search);const id=p.get("lead_id");if(!id)return;
+  window.SETT_LEAD={id,retour:p.get("retour")||"",manager:p.get("manager")||"",origine:p.get("origine")||"",
+    oppId:parseInt(p.get("opp_id"),10)||0,companyId:parseInt(p.get("axonaut_id"),10)||0};
+  const L=window.SETT_LEAD;
+  ["c_nom","c_rs","c_resp","c_adr","c_cp","c_ville","c_tel","c_mail","c_siret","c_tva","centrale","axCid","axSearch"].forEach(k=>$(k).value="");
+  S=structuredClone(DEF);$("axList").innerHTML="";
+  const set=(k,v)=>{if(v)$(k).value=v};
+  set("c_nom",p.get("entreprise")||[p.get("prenom"),p.get("nom")].filter(Boolean).join(" "));
+  set("c_resp",[p.get("prenom"),p.get("nom")].filter(Boolean).join(" "));
+  set("c_mail",p.get("email"));set("c_tel",p.get("tel"));set("c_ville",p.get("ville"));
+  if(L.companyId)$("axCid").value=L.companyId;
+  renderPipe("sett",PIPES.sett.step,L.origine||PIPES.sett.origine);
+  $("leadBox").hidden=false;
+  $("leadInfo").innerHTML=`Lead SETT chargé : <b>${($("c_nom").value||"—").replace(/[<>&]/g,"")}</b>${L.companyId?` · entreprise Axonaut #${L.companyId}`:" · entreprise pas encore synchronisée"}${L.oppId?` · opportunité #${L.oppId} réutilisée`:""}. Renseignez le nombre de mobil-homes équipés.`;
+  try{history.replaceState(null,"",location.pathname)}catch(e){}
+})();
+$("bRetour").addEventListener("click",()=>{
+  const L=window.SETT_LEAD;if(!L||!L.retour){toast("Lien de retour absent : rouvrez ce deviseur depuis la fiche lead.");return}
+  const url=L.retour+(L.retour.includes("?")?"&":"?")+"lead_id="+encodeURIComponent(L.id)+"&src=canal&montant="+Math.round(R.totHT)+
+    (L.oppId?"&opp_id="+L.oppId:"")+(L.companyId?"&company_id="+L.companyId:"");
+  window.open(url,"sett_leads");
+});
+update();
 if(!IN_CLAUDE){$("restBox").hidden=false;const sw=swGet();$("axKey").value=sw.axonautApiKey||"";$("axRelay").value=sw.axonautUrl||"";
   $("axKey").addEventListener("input",e=>swSet({axonautApiKey:e.target.value.trim()}));$("axRelay").addEventListener("input",e=>swSet({axonautUrl:e.target.value.trim()}));}
 </script>

@@ -135,7 +135,7 @@ pre{background:var(--navy);color:#e2e8f0;padding:10px;border-radius:8px;overflow
       <label class="chk"><input type="checkbox" data-c="solWifi"><span>📶 Wifi</span></label>
       <label class="chk"><input type="checkbox" data-c="solVideo"><span>📹 Vidéosurveillance</span></label>
     </div>
-    <label style="margin-top:12px">Options <span class="hint">(non chiffrables dans les Deviseurs : à chiffrer à part)</span></label>
+    <label style="margin-top:12px">Options <span class="hint">(Canal+ : Deviseur Canal+ ; les autres à chiffrer à part)</span></label>
     <div class="sols">
       <label class="chk"><input type="checkbox" data-c="optCanal"><span>📺 Canal+ Room Streaming</span></label>
       <label class="chk"><input type="checkbox" data-c="optAlerte"><span>🔊 Alerte évacuation sonore</span></label>
@@ -160,7 +160,7 @@ pre{background:var(--navy);color:#e2e8f0;padding:10px;border-radius:8px;overflow
   </div>
 
   <div class="card"><h2>Chiffrage</h2>
-    <div class="btns"><button class="btn" id="goWifi">📶 Deviseur Wifi</button><button class="btn" id="goVideo">📹 Deviseur vidéo</button></div>
+    <div class="btns"><button class="btn" id="goWifi">📶 Deviseur Wifi</button><button class="btn" id="goVideo">📹 Deviseur vidéo</button><button class="btn" id="goCanal">📺 Deviseur Canal+</button></div>
     <p class="hint" style="margin:8px 0 0">Les infos du lead sont transmises automatiquement, sans ressaisie.</p>
   </div>
 </section>
@@ -209,9 +209,10 @@ pre{background:var(--navy);color:#e2e8f0;padding:10px;border-radius:8px;overflow
       <div><label>Wifi</label><input type="text" id="sSo_solWifi"></div><div><label>Vidéosurveillance</label><input type="text" id="sSo_solVideo"></div><div><label>Canal+ Room Streaming</label><input type="text" id="sSo_optCanal"></div><div><label>Alerte évacuation sonore</label><input type="text" id="sSo_optAlerte"></div><div><label>Services opérateur</label><input type="text" id="sSo_optOperateur"></div></div></details></div>
     <div class="full"><label>URL du Deviseur Wifi</label><input type="url" id="sWifi" placeholder="https://…"></div>
     <div class="full"><label>URL du Deviseur vidéo</label><input type="url" id="sVideo" placeholder="https://…"></div>
+    <div class="full"><label>URL du Deviseur Canal+ <span class="hint">(vide = canalplus.html dans ce même dossier)</span></label><input type="url" id="sCanal" placeholder="https://sudwifi.github.io/deviseur/canalplus.html"></div>
   </div>
   <details style="margin-top:10px"><summary class="hint">Comment les Deviseurs récupèrent le lead</summary>
-    <p class="hint">Les Deviseurs (Wifi V15 et vidéo V5 « SETT ») lisent automatiquement : <code>lead_id, entreprise, prenom, nom, email, tel, ville, typo, capacite, axonaut_id, opp_id, manager, origine, retour</code>. Leur « → Axonaut » crée le devis dans le cycle « Sett 2026 », étape 2, au nom du commercial du lead. Leur « ↩ Fiche lead » renvoie le montant (Wifi + vidéo s'additionnent) et l'opportunité : la fiche se met alors à jour dans Axonaut toute seule.</p></details>
+    <p class="hint">Les Deviseurs (Wifi V15, vidéo V5 « SETT » et Canal+) lisent automatiquement : <code>lead_id, entreprise, prenom, nom, email, tel, ville, typo, capacite, axonaut_id, opp_id, manager, origine, retour</code>. Leur « → Axonaut » crée le devis dans le cycle « Sett 2026 », étape 2, au nom du commercial du lead. Leur « ↩ Fiche lead » renvoie le montant (Wifi + vidéo + Canal+ sur 36 mois s'additionnent) et l'opportunité : la fiche se met alors à jour dans Axonaut toute seule.</p></details>
   <div class="btns" style="margin-top:14px"><button class="btn sec" id="sClose">Annuler</button><button class="btn" id="sSave">Enregistrer</button></div>
 </dialog>
 
@@ -219,7 +220,7 @@ pre{background:var(--navy);color:#e2e8f0;padding:10px;border-radius:8px;overflow
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LS_L='sett2026_leads_v1',LS_S='sett2026_settings_v1',LS_B='sett2026_leads_backup';
-const DEF={apiKey:'',manager:'virginie@sudwifi.fr',pipe:'Sett 2026',origine:'SETT 2026 – stand',api:'',urlWifi:'',urlVideo:'',lastCommercial:'Virginie'};
+const DEF={apiKey:'',manager:'virginie@sudwifi.fr',pipe:'Sett 2026',origine:'SETT 2026 – stand',api:'',urlWifi:'',urlVideo:'',urlCanal:'',lastCommercial:'Virginie'};
 const MGR={Virginie:'virginie@sudwifi.fr','Stéphane':'stephane@sudwifi.fr',Anthony:'anthony@sudwifi.fr',Amanda:'amanda@sudwifi.fr'};
 // Noms EXACTS des étapes du cycle « Sett 2026 » dans Axonaut
 const STEPS=[['stand','1. Visite sur Stand'],['chiffre','2 Chiffré / démo sur stand'],['recontact','3 À recontacter post-salon'],['rdv','4 RDV / visite planifié'],['devis','5 Devis à produire']];
@@ -300,7 +301,8 @@ const SOL_AX={solWifi:'Wifi',solVideo:'Vidéosurveillance',optCanal:'Canal+ Room
 const solVal=k=>(settings.solNames&&settings.solNames[k])||SOL_AX[k];
 const solAx=l=>Object.keys(SOL_AX).filter(k=>l[k]).map(solVal);
 const solTxt=l=>{const a=pick(SOLS,l),o=pick(OPTS,l);return[a.join(' · '),o.length?'options : '+o.join(' · '):''].filter(Boolean).join(' + ')};
-const hasMontant=l=>!!(Number(l.montantWifi)||Number(l.montantVideo));
+const hasMontant=l=>!!(Number(l.montantWifi)||Number(l.montantVideo)||Number(l.montantCanal));
+const horsDev=l=>pick(OPTS,l).filter(o=>o!=='Canal+ Room Streaming');
 const doneChiffre=l=>hasMontant(l)||!!l.chiffreStand;
 const stepOf=(a,l)=>{let k=a?a.step:'stand';if(k==='stand'&&(doneChiffre(l)||l.demo))k='chiffre';return k};
 function stepKey(l){return stepOf(actOf(l),l)}
@@ -404,7 +406,8 @@ function renderNext(){
   pv.innerHTML=(cb.todo?`À faire après son départ : <b>${esc(cb.todo)}</b>${cur.actionDate?` · <b>${fmtLong(cur.actionDate)}</b>`:''}`:'Aucune relance prévue')+
     (cb.lock&&ld?`<br>🔒 ${esc(cb.lock.t)} · <b>${fmtLong(ld)}</b>`:'')+
     (cur.parade?`<br>🛡 Parade : ${esc(cur.parade)}`:'')+
-    (pick(OPTS,cur).length&&cb.k!=='none'?`<br>➕ À chiffrer hors Deviseur : ${esc(pick(OPTS,cur).join(' · '))}${cur.optCanal?' (Cyrille, Canal+ Business, présent mer. 4 et jeu. 5)':''}`:'')+
+    (horsDev(cur).length&&cb.k!=='none'?`<br>➕ À chiffrer hors Deviseur : ${esc(horsDev(cur).join(' · '))}`:'')+
+    (cur.optCanal&&!Number(cur.montantCanal)&&cb.k!=='none'?'<br>📺 Canal+ : à chiffrer avec le Deviseur Canal+ (Cyrille, Canal+ Business, présent mer. 4 et jeu. 5)':'')+
     `<br>Axonaut → étape « ${esc(stepLabel(stepKey(cur)))} »${cb.todo&&cur.actionDate?` · ${cb.lock&&ld?2:1} rappel(s) au nom de ${esc(cur.commercial||'—')}`:''}`+
     (warn?`<br>⚠ ${esc(warn)}`:'');
 }
@@ -485,12 +488,13 @@ function goDeviseur(url,name){
 }
 $('#goWifi').onclick=()=>goDeviseur(settings.urlWifi,'Deviseur Wifi');
 $('#goVideo').onclick=()=>goDeviseur(settings.urlVideo,'Deviseur vidéo');
+$('#goCanal').onclick=()=>goDeviseur(settings.urlCanal||new URL('canalplus.html',location.href).href,'Deviseur Canal+');
 // retour du montant depuis un deviseur : ?lead_id=…&montant=…
 // src=wifi|video : les deux montants s'additionnent dans « Budget estimé »
 window.name='sett_leads'; // permet aux Deviseurs de revenir sur cet onglet
 (function(){const p=new URLSearchParams(location.search);const id=p.get('lead_id'),m=p.get('montant'),src=p.get('src');
   if(id&&m){const l=leads.find(x=>x.id===id);if(l){
-    if(src==='wifi'){l.montantWifi=m;l.solWifi=true}else if(src==='video'){l.montantVideo=m;l.solVideo=true}
+    if(src==='wifi'){l.montantWifi=m;l.solWifi=true}else if(src==='video'){l.montantVideo=m;l.solVideo=true}else if(src==='canal'){l.montantCanal=m;l.optCanal=true}
     const oid=parseInt(p.get('opp_id'))||0,cid=parseInt(p.get('company_id'))||0;
     l.ax=l.ax||{status:'todo'};
     if(cid&&!l.ax.companyId)l.ax.companyId=cid;
@@ -498,7 +502,7 @@ window.name='sett_leads'; // permet aux Deviseurs de revenir sur cet onglet
     if(oid&&!l.ax.oppId){l.ax={...l.ax,status:'sent',oppId:oid,stepIdx:1,sentAt:Date.now(),fromDeviseur:true}}
     else if(oid&&l.ax.oppId===oid)l.ax.stepIdx=Math.max(l.ax.stepIdx??0,1);
     window.AUTO_SYNC=l.id;
-    l.budgetEstime=(src==='wifi'||src==='video')?String((Number(l.montantWifi)||0)+(Number(l.montantVideo)||0)):m;
+    l.budgetEstime=(src==='wifi'||src==='video'||src==='canal')?String((Number(l.montantWifi)||0)+(Number(l.montantVideo)||0)+(Number(l.montantCanal)||0)):m;
     l.updatedAt=Date.now();localStorage.setItem(LS_L,JSON.stringify(leads));cur=l;setTimeout(()=>toast(`💶 Montant reçu du Deviseur : ${Number(m).toLocaleString('fr-FR')} € HT`),300)}}
   if(id){try{history.replaceState(null,'',location.pathname)}catch(e){}}})();
 // Synchronisation automatique après un chiffrage (si la clé Axonaut est renseignée et le réseau disponible)
@@ -519,7 +523,7 @@ function commentFor(l){const s=score(l),T=TEMPS[s.t];
     `Prestataire actuel : ${l.prestataire||'—'} · Engagement : ${lab(ENG,l.engagement)}${ENGAGED.includes(l.engagement)?(l.resil?' · Résiliation ENVOYÉE':' · Résiliation non envoyée'):''}${validMY(l.finEngagement)?" · Fin d'engagement : "+l.finEngagement:''}`,
     l.consent?`Accord verbal recueilli le ${new Date(l.consentAt||Date.now()).toLocaleDateString('fr-FR')} (en plus du consentement badge SETT)`:'Données issues du badge SETT (consentement organisateur et exposants partenaires)',
     `Fonction : ${l.fonction||'—'} · Tél ${l.telType||'?'} · Client actuel : ${l.client||'?'}`,
-    `Solutions : ${pick(SOLS,l).join(' · ')||'—'}${pick(OPTS,l).length?' · Options hors Deviseur (à chiffrer à part) : '+pick(OPTS,l).join(' · '):''}`,
+    `Solutions : ${pick(SOLS,l).join(' · ')||'—'}${horsDev(l).length?' · Options hors Deviseur (à chiffrer à part) : '+horsDev(l).join(' · '):''}${l.optCanal?' · Canal+ Room Streaming'+(Number(l.montantCanal)?' : '+Number(l.montantCanal).toLocaleString('fr-FR')+' € HT sur 36 mois (Deviseur Canal+)':' (à chiffrer)'):''}`,
     `Sur le stand : ${[l.demo&&'démo faite',doneChiffre(l)&&('chiffré'+(Number(l.budgetEstime)?' '+Number(l.budgetEstime).toLocaleString('fr-FR')+' € HT':''))].filter(Boolean).join(' · ')||'visite'}`,
     `Issue : ${(actOf(l)||{l:'—'}).l}${actOf(l)?.todo?' → '+actOf(l).todo+(l.actionDate?' le '+fmtLong(l.actionDate):''):''}${lockDate(l)?' · Verrouillage le '+fmtLong(lockDate(l)):''}`,
     (l.concurrent||l.parade)?`Concurrent(s) : ${l.concurrent||'—'} · Parade : ${l.parade||'—'}`:'',
@@ -663,9 +667,9 @@ $('#bkCsv').onclick=()=>{
   dl(`SETT2026-import-axonaut-${stamp()}.csv`,[H.map(q).join(','),...rows].join('\n'),'text/csv;charset=utf-8');toast(`📄 CSV généré (colonnes du fichier leads 2025)`,5000)};
 
 /* ---------- Réglages ---------- */
-$('#btnSet').onclick=()=>{$('#sKey').value=settings.apiKey;$('#sMgr').value=settings.manager;$('#sPipe').value=settings.pipe;$('#sOrig').value=settings.origine;$('#sApi').value=settings.api;$('#sWifi').value=settings.urlWifi;$('#sVideo').value=settings.urlVideo;$('#sDisc').checked=discreet();STEPS.forEach(([k])=>{$('#sSt_'+k).value=stepLabel(k)});Object.keys(SOL_AX).forEach(k=>{$('#sSo_'+k).value=solVal(k)});$('#dlg').showModal()};
+$('#btnSet').onclick=()=>{$('#sKey').value=settings.apiKey;$('#sMgr').value=settings.manager;$('#sPipe').value=settings.pipe;$('#sOrig').value=settings.origine;$('#sApi').value=settings.api;$('#sWifi').value=settings.urlWifi;$('#sVideo').value=settings.urlVideo;$('#sCanal').value=settings.urlCanal||'';$('#sDisc').checked=discreet();STEPS.forEach(([k])=>{$('#sSt_'+k).value=stepLabel(k)});Object.keys(SOL_AX).forEach(k=>{$('#sSo_'+k).value=solVal(k)});$('#dlg').showModal()};
 $('#sClose').onclick=()=>$('#dlg').close();
-$('#sSave').onclick=()=>{settings={...settings,apiKey:$('#sKey').value.trim(),manager:$('#sMgr').value.trim(),pipe:$('#sPipe').value.trim(),origine:$('#sOrig').value.trim(),api:$('#sApi').value.trim(),urlWifi:$('#sWifi').value.trim(),urlVideo:$('#sVideo').value.trim(),discreet:$('#sDisc').checked,stepNames:Object.fromEntries(STEPS.map(([k])=>[k,$('#sSt_'+k).value.trim()||STEPS[stepIdx(k)][1]])),solNames:Object.fromEntries(Object.keys(SOL_AX).map(k=>[k,$('#sSo_'+k).value.trim()||SOL_AX[k]]))};saveSettings();$('#dlg').close();applyDisc();render();toast('Réglages enregistrés')};
+$('#sSave').onclick=()=>{settings={...settings,apiKey:$('#sKey').value.trim(),manager:$('#sMgr').value.trim(),pipe:$('#sPipe').value.trim(),origine:$('#sOrig').value.trim(),api:$('#sApi').value.trim(),urlWifi:$('#sWifi').value.trim(),urlVideo:$('#sVideo').value.trim(),urlCanal:$('#sCanal').value.trim(),discreet:$('#sDisc').checked,stepNames:Object.fromEntries(STEPS.map(([k])=>[k,$('#sSt_'+k).value.trim()||STEPS[stepIdx(k)][1]])),solNames:Object.fromEntries(Object.keys(SOL_AX).map(k=>[k,$('#sSo_'+k).value.trim()||SOL_AX[k]]))};saveSettings();$('#dlg').close();applyDisc();render();toast('Réglages enregistrés')};
 
 /* ---------- Navigation / init ---------- */
 $('#tabEdit').onclick=()=>show('edit');$('#tabList').onclick=()=>{persist(true);show('list')};
