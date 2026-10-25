@@ -439,7 +439,7 @@
           <div id="alert-15pct" class="alert-msg" style="display:none;margin-top:6px;"></div>
         </div>
         <div>
-          <label>Acompte client</label>
+          <label>Premier versement (location)</label>
           <div class="toggle-group">
             <div class="toggle-btn" id="acp-0" onclick="setAcompte(0)">0%</div>
             <div class="toggle-btn active" id="acp-30" onclick="setAcompte(30)">30%</div>
@@ -488,7 +488,7 @@
       <div class="card-body">
         <div class="leasing-block">
           <div class="leasing-row"><span class="lbl">CAPEX chantier HT</span><span class="val" id="leas-capex">—</span></div>
-          <div class="leasing-row"><span class="lbl">Acompte commande (<span id="leas-acp-pct">30</span>%)</span><span class="val" id="leas-acompte">—</span></div>
+          <div class="leasing-row"><span class="lbl">Premier versement location (<span id="leas-acp-pct">30</span>%)</span><span class="val" id="leas-acompte">—</span></div>
           <div class="leasing-row"><span class="lbl">Base financée leasing</span><span class="val" id="leas-base">—</span></div>
           <div class="leasing-row" id="row-rec-cap" style="display:none;"><span class="lbl">Récurrent capitalisé (<span id="leas-rec-mois">—</span> mois)</span><span class="val" id="leas-rec-cap">—</span></div>
           <div class="leasing-row" id="row-base-totale" style="display:none;"><span class="lbl">Base totale financée</span><span class="val" id="leas-total-base">—</span></div>
@@ -1434,12 +1434,8 @@ function updateClientView(r) {
     coutMensuelDetail = `${fmt(r.loyerTotal)} installation sur ${STATE.engagement} mois + ${fmt(r.recMensuel)} contrat de services`;
   }
 
-  const seuil = r.seuilChantier || 50000;
-  const chantierImportant = r.capexPV > seuil;
-  const acompteCash = chantierImportant ? r.capexPV*0.40 : r.acompteMontant;
-  const paiementIntermediaire = chantierImportant ? r.capexPV*0.30 : 0;
-  const paiementSolde = chantierImportant ? r.capexPV*0.30 : (r.capexPV - r.acompteMontant);
-  const acomptePctCash = chantierImportant ? 40 : STATE.acomptePct;
+  // Échelonnement aligné sur les conditions de règlement Axonaut (40 / 30 / 30)
+  const ech1 = r.capexPV * 0.40, ech2 = r.capexPV * 0.30, ech3 = r.capexPV * 0.30;
 
   const contenu = GAMMES[r.gamme].contenu.map(t => `<div class="cv-pack-row"><span>${t}</span><span class="check">✓</span></div>`).join('');
   const offresSalon = (r.remiseMontant > 0 || r.maintOfferte) ? `
@@ -1501,7 +1497,7 @@ function updateClientView(r) {
       <div class="cv-metric blue">
         <div class="cm-label">Coût initial</div>
         <div class="cm-value">${fmt(r.acompteMontant)}</div>
-        <div class="cm-sub">${r.acompteMontant > 0 ? 'Frais de mise en service' : 'Aucun frais de mise en service'}</div>
+        <div class="cm-sub">${r.acompteMontant > 0 ? 'Premier versement avant mise en location' : 'Aucun premier versement'}</div>
       </div>
       <div class="cv-metric sun">
         <div class="cm-label">Coût mensuel</div>
@@ -1513,10 +1509,10 @@ function updateClientView(r) {
 
     <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;margin-bottom:6px;">Option ${r.loc?'2':'1'} — Achat comptant</div>
     <div class="cv-pack" style="margin-bottom:10px;">
-      <div class="cv-pack-header" style="background:#16a34a;">Échelonnement du règlement matériel</div>
-      <div class="cv-pack-row"><span>Acompte à la commande${acomptePctCash>0?` (${acomptePctCash}%)`:''}</span><span style="font-weight:700;">${fmt(acompteCash)}</span></div>
-      ${chantierImportant?`<div class="cv-pack-row"><span>Paiement intermédiaire au début des travaux (30%)</span><span style="font-weight:700;">${fmt(paiementIntermediaire)}</span></div>`:''}
-      <div class="cv-pack-row"><span>Solde à la livraison / mise en service</span><span style="font-weight:700;">${fmt(paiementSolde)}</span></div>
+      <div class="cv-pack-header" style="background:#16a34a;">Échelonnement du règlement</div>
+      <div class="cv-pack-row"><span>À la commande (40 %)</span><span style="font-weight:700;">${fmt(ech1)}</span></div>
+      <div class="cv-pack-row"><span>À la livraison du matériel / ouverture du chantier (30 %)</span><span style="font-weight:700;">${fmt(ech2)}</span></div>
+      <div class="cv-pack-row"><span>À la mise en service (30 %)</span><span style="font-weight:700;">${fmt(ech3)}</span></div>
       <div class="cv-pack-row" style="background:#f8fafc;"><span style="font-weight:700;">Total investissement${r.remiseMontant>0?' (remise Salon déduite)':''}</span><span style="font-weight:700;">${fmt(r.capexPV)}</span></div>
     </div>
     <div class="cv-grid" style="grid-template-columns:1fr;margin-bottom:10px;">
@@ -1750,20 +1746,63 @@ async function testAxonaut() {
     el.textContent = '❌ Blocage navigateur (CORS) : renseignez l\'URL du relais Axonaut — ' + e.message; el.style.color='var(--red)';
   }
 }
-function buildAxonautProducts(r) {
-  const prods = r.lignes.map(l => ({ name: l.label, product_code: l.kind === 'remise' ? '' : l.ref, quantity: l.qty, price: Math.round(l.pv * 100) / 100, tax_rate: 20 }));
-  prods.push({ name: `Contrat de services Vidéo ${r.gammeLabel} (${r.nbCamTotal} caméras) – 12 mois`, product_code: `GAM-VID-${GAMMES[r.gamme].code}`, quantity: 12, price: Math.round(r.recMensuel * 100) / 100, tax_rate: 20 });
-  if (r.maintOfferte) prods.push({ name: 'Offre SETT 2026 : 6 premiers mois du contrat de services offerts', quantity: 1, price: -Math.round(r.valeurOfferte * 100) / 100, tax_rate: 20 });
-  return prods.filter(p => Number.isFinite(p.price) && Number.isFinite(p.quantity) && p.quantity > 0)
-    .map(p => { const o = { ...p, name: String(p.name || 'Article').slice(0, 250) }; if (!p.product_code) delete o.product_code; else o.product_code = String(p.product_code); return o; });
+// ═══════════════════ DEVIS AXONAUT « PRÊT À ENVOYER » ═══════════════════
+// ID des fiches produits Axonaut (catalogue au 25/10/2026) : la ligne du devis est rattachée à la fiche,
+// ce qui reprend son prix d'achat et évite toute création de doublon.
+const AX_IDS = {"CABL-FORFAIT": 40039586, "CABL-VID": 40219296, "DEPL": 40039592, "INF-ETANCH": 40219194, "INF-MAT4M-02": 33339580, "INF-ME26812737": 33339014, "MAT-OC200": 33339076, "MAT-TL-SG2210P": 33340110, "MAT-TPLEAP215-BRIDGEKIT": 33340102, "MAT-TPLEAP610-INDOOR": 33339810, "MAT-TPLEAP625-OUTDOORHD": 33339700, "MAT-TPLEAP650D120-OUTDOOR": 33339170, "MAT-TPLES205GP": 33340044, "MAT-TPLINSIGHTS245ZI": 40270116, "MAT-TPLINSIGHTS345-4G4MM": 40270118, "MAT-TPLINSIGHTS345S4MM": 40270120, "MAT-TPLINSIGHTS345ZI": 39543702, "MAT-TPLINSIGHTS35528MM": 40270122, "MAT-TPLINSIGHTS385DPS": 40270124, "MAT-TPLINSIGHTS445S28MM": 40270126, "MAT-TPLINSIGHTS445ZI": 40270128, "MAT-TPLINSIGHTS485PI": 40270130, "MAT-TPLINSIGHTS655I": 40270132, "MAT-TPLPOE4824G": 33338804, "MAT-TPLVIGIC24028MM": 40270134, "MAT-TPLVIGIC2404MM": 40270136, "MAT-TPLVIGIC240I28MM": 40270138, "MAT-TPLVIGIC240I4MM": 40270140, "MAT-TPLVIGIC25028MM": 40270142, "MAT-TPLVIGIC2504MM": 40270144, "MAT-TPLVIGIC340-W4MM": 40270152, "MAT-TPLVIGIC34028MM": 40270146, "MAT-TPLVIGIC3404MM": 40270148, "MAT-TPLVIGIC3406MM": 40270150, "MAT-TPLVIGIC340I28MM": 40270154, "MAT-TPLVIGIC340I4MM": 40270156, "MAT-TPLVIGIC340I6MM": 40270158, "MAT-TPLVIGIC340S4MM": 40270160, "MAT-TPLVIGIC35028MM": 40270162, "MAT-TPLVIGIC3504MM": 40270164, "MAT-TPLVIGIC440-W4MM": 40270170, "MAT-TPLVIGIC44028MM": 40270166, "MAT-TPLVIGIC4404MM": 40270168, "MAT-TPLVIGIC440I28MM": 40270174, "MAT-TPLVIGIC440I4MM": 40270176, "MAT-TPLVIGIC45028MM": 40270178, "MAT-TPLVIGIC4504MM": 40270180, "MAT-TPLVIGIC48528MM": 40270182, "MAT-TPLVIGIC540-4G4MM": 33338938, "MAT-TPLVIGIC540-W4MM": 40270186, "MAT-TPLVIGIC5404MM": 40270184, "MAT-TPLVIGIC540S4MM": 40270188, "MAT-TPLVIGIC540V": 33338942, "MO-JOUR-BINOME": 40269878, "TPLBEAMBRIDGE5URKIT": 35567932, "VID-302504398": 33339184, "VID-HIK303801047": 33339134, "VID-HIK303801489": 33339148, "VID-HIK303801490": 33339150, "VID-HIK303801508": 33339138, "VID-HIK303801531": 33339144, "VID-HIK303801591": 33339130, "VID-INSIGHTS28528MM": 33338924, "VID-INSIGHTS34528MM": 33338918, "VID-INSIGHTS38528MM": 33338920, "VID-INSIGHTS45528MM": 33338978, "VID-INSIGHTS48528MM": 33338980, "VID-TPLINSIGHTS24528MM": 33338922, "VID-TPLINSIGHTS385PI": 33340152, "VID-TPLINSIGHTS44528MM": 33338976, "VID-TPLVIGINVR1004H-4P": 33339656, "VID-TPLVIGINVR1008H-8P": 33339658, "VID-TPLVIGINVR2016H-16P": 33339652, "VID-TPLVIGINVR4032H": 33339654, "VID-TPLVIGISP6020": 33339750, "VID-TPLVIGISP9030": 33339748, "VID-TPLVJB-300": 33338862, "VID-VIGINVR4064H": 33340116};
+const r2 = n => Math.round(n * 100) / 100;
+function axLine(name, code, qty, pv, cr, chapter) {
+  const o = { name: String(name || 'Article').slice(0, 250), quantity: qty, price: r2(pv), tax_rate: 20, chapter };
+  if (code) { o.product_code = String(code); if (AX_IDS[code]) o.id = AX_IDS[code]; }
+  if (Number.isFinite(cr) && cr > 0) o.unit_job_costing = r2(cr);
+  return o;
 }
+// Envoi du devis avec repli : si Axonaut refuse un champ (prix d'achat, rattachement, chapitre), on réessaie sans.
+async function postQuotation(base, H, quote) {
+  const variantes = [
+    p => p,
+    p => { const o = { ...p }; delete o.unit_job_costing; return o; },
+    p => { const o = { ...p }; delete o.unit_job_costing; delete o.id; return o; },
+    p => { const o = { ...p }; delete o.unit_job_costing; delete o.id; delete o.chapter; return o; },
+  ];
+  let last = '';
+  for (let i = 0; i < variantes.length; i++) {
+    const body = { ...quote, products: quote.products.map(variantes[i]) };
+    const rq = await fetch(`${base}/api/v2/quotations`, { method: 'POST', headers: H, body: JSON.stringify(body) });
+    if (rq.ok) return { q: await rq.json(), niveau: i };
+    if (rq.status !== 400 && rq.status !== 422) throw new Error('Devis : ' + await axonautError(rq));
+    last = await axonautError(rq);
+    console.warn('Axonaut devis, variante', i, 'refusée :', last);
+  }
+  throw new Error('Devis : ' + last);
+}
+const NIVEAU_MSG = ['', ' (prix d\'achat non transmis : Axonaut a refusé le champ)', ' (lignes non rattachées aux fiches produits)', ' (sans sections)'];
+const fmtE = n => new Intl.NumberFormat('fr-FR', { minimumFractionDigits: (Math.round(n*100) % 100) ? 2 : 0, maximumFractionDigits: 2 }).format(n) + ' € HT';
+
+function buildAxonautProducts(r) {
+  const CH = { mat:'Matériel (livré programmé)', pose:'Installation et mise en service', remise:'Offre spéciale SETT 2026' };
+  return r.lignes.map(l => axLine(l.label, l.kind === 'remise' ? '' : l.ref, l.qty, l.pv, l.cr, CH[l.kind] || CH.mat))
+    .filter(p => Number.isFinite(p.price) && Number.isFinite(p.quantity) && p.quantity > 0);
+}
+// Texte affiché au client sur le devis (aucune donnée interne)
 function buildAxonautComments(r) {
-  return `Solution Vidéosurveillance — ${r.nomClient} — ${r.nbCamTotal} caméras\nProposition Sud Wifi du ${r.date} (deviseur Vidéo V6)\n` +
-    `Pose : ${String(r.jours).replace('.',',')} jour(s) binôme\n` +
-    (r.remiseMontant>0 ? `Remise Salon SETT 2026 : −${r.remisePct} % (−${Math.round(r.remiseMontant)} €)\n` : '') +
-    `CAPEX HT : ${Math.round(r.capexPV)} €\nAcompte (${STATE.acomptePct}%) : ${Math.round(r.acompteMontant)} €\n` +
-    (r.loc ? `Loyer : ${Math.round(r.loyerTotal)} €/mois (${STATE.engagement} mois, barème Locam ${r.loc.coef} %)\n` : '') +
-    `Contrat de services Vidéo ${r.gammeLabel} : ${r.recMensuel} €/mois` + (r.maintOfferte ? ` — 6 premiers mois offerts (${Math.round(r.valeurOfferte)} €)` : '');
+  const L = [];
+  L.push(`Solution de vidéosurveillance – ${r.nomClient}`);
+  L.push(`${r.nbCamTotal} caméra${r.nbCamTotal>1?'s':''} TP-Link VIGI livrée${r.nbCamTotal>1?'s':''} programmée${r.nbCamTotal>1?'s':''}, posée${r.nbCamTotal>1?'s':''} et mise${r.nbCamTotal>1?'s':''} en service par nos techniciens, avec enregistrement local et application VIGI. Durée d'installation estimée : ${fmtJours(r.jours)}.`);
+  if (r.remiseMontant > 0) L.push(`Offre spéciale SETT 2026 : remise Salon de −${r.remisePct} % sur le matériel et l'installation, déjà déduite (−${fmtE(r.remiseMontant)}).`);
+  let serv = `Contrat de services Vidéo ${r.gammeLabel} : ${fmtE(r.recMensuel)}/mois, engagement 12 mois, ${STATE.recurrentMode==='annuel' ? `réglé à l'année (${fmtE(r.caRecAnnuel)})` : 'réglé en 12 mensualités'}, facturé séparément de ce devis.`;
+  if (r.maintOfferte) serv += ` Offre SETT 2026 : les 6 premiers mois sont offerts (valeur ${fmtE(r.valeurOfferte)}).`;
+  L.push(serv);
+  if (r.loc) L.push(`Option location financière : ${fmtE(Math.round(r.loyerTotal))}/mois sur ${STATE.engagement} mois${STATE.leasingMode==='integre' ? ', contrat de services inclus' : ''}${r.acompteMontant>0 ? `, après un premier versement de ${fmtE(Math.round(r.acompteMontant))}` : ''}, sous réserve d'acceptation du dossier par l'organisme de financement.`);
+  return L.join('\n');
+}
+// Note interne (opportunité Axonaut)
+function buildAxonautInternal(r) {
+  return `Deviseur Vidéo V6 – ${r.date} – ${r.nbCamTotal} caméras\n` +
+    `Pose : ${String(r.jours).replace('.',',')} j binôme · CAPEX ${Math.round(r.capexPV)} € HT · coût de revient ${Math.round(r.capexCR)} € · coef ${(r.capexPV/r.capexCR).toFixed(2)}\n` +
+    (r.remiseMontant>0 ? `Remise Salon −${r.remisePct} % (−${Math.round(r.remiseMontant)} €)\n` : '') +
+    (r.loc ? `Leasing ${STATE.leasingMode} ${STATE.engagement} mois, barème Locam ${r.loc.coef} % → ${Math.round(r.loyerTotal)} €/mois\n` : '') +
+    `Contrat Vidéo ${r.gammeLabel} ${r.recMensuel} €/mois` + (r.maintOfferte ? ` – 6 mois offerts (${Math.round(r.valeurOfferte)} €)` : '');
 }
 async function pushToAxonaut() {
   if (!lastResult) { toast('Calculez d\'abord un projet.', 'error'); return; }
@@ -1823,7 +1862,7 @@ async function pushToAxonaut() {
       }
     } else if (L) {
       const oppBody = { company_id: company.id, name: `SETT 2026 – ${r.nomClient}`, pipe_name: SETT_PIPE, pipe_step_name: SETT_STEPS[1],
-        business_manager_email: manager, amount: Math.round(r.capexPV), probability: 50, comments: buildAxonautComments(r) };
+        business_manager_email: manager, amount: Math.round(r.capexPV), probability: 50, comments: buildAxonautInternal(r) };
       let ro = await fetch(`${base}/api/v2/opportunities`, { method: 'POST', headers: H, body: JSON.stringify({ ...oppBody, custom_fields: { 'Origine': L.origine || SETT_ORIGINE } }) });
       if (ro.status === 400 || ro.status === 422) ro = await fetch(`${base}/api/v2/opportunities`, { method: 'POST', headers: H, body: JSON.stringify(oppBody) });
       if (ro.ok) { const o = await ro.json(); oppId = o && o.id; oppNote = `opportunité n°${oppId} créée dans ${SETT_PIPE}`; }
@@ -1838,9 +1877,8 @@ async function pushToAxonaut() {
     const quote = { company_id: company.id, date: iso(today), expiry_date: iso(new Date(today.getTime() + 30 * 86400000)),
       business_manager: manager, comments: buildAxonautComments(r), products: buildAxonautProducts(r) };
     if (oppId) quote.opportunity_id = oppId;
-    const rq = await fetch(`${base}/api/v2/quotations`, { method: 'POST', headers: H, body: JSON.stringify(quote) });
-    if (!rq.ok) throw new Error('Devis : ' + await axonautError(rq));
-    const q = await rq.json();
+    const { q, niveau } = await postQuotation(base, H, quote);
+    oppNote += NIVEAU_MSG[niveau];
     try { idMap[nameKey] = company.id; localStorage.setItem('sw_axonaut_ids', JSON.stringify(idMap)); } catch(e) {}
     if (L) { L.companyId = company.id; if (oppId) L.oppId = oppId; }
     toast(`✅ Devis ${q.number || q.id || ''} créé dans Axonaut — ${oppNote}`, 'success');
