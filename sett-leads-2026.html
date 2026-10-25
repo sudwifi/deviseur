@@ -199,8 +199,8 @@ pre{background:var(--navy);color:#e2e8f0;padding:10px;border-radius:8px;overflow
     <div><label>Valeur du champ « Origine »</label><input type="text" id="sOrig"></div>
     <div class="full"><label>URL du relais Axonaut (Cloudflare) — le même que dans le Deviseur Wifi</label><input type="url" id="sApi" placeholder="https://axonaut-relais.xxx.workers.dev"></div>
     <div class="full"><button class="btn sec" id="axTest" type="button">🔌 Tester la connexion Axonaut</button><div class="hint" id="axStatus" style="margin-top:6px"></div></div>
-    <div class="full"><label class="chk"><input type="checkbox" id="sDisc"><span>Mode discret face client <span class="hint">(bandeau neutre, codes P1–P4, points masqués)</span></span></label></div>
-    <div class="full"><table class="legend"><tr><td><b>P1</b></td><td>Ultra chaud · rappel &lt; 24 h</td><td><b>P2</b></td><td>Chaud · 48 h</td></tr><tr><td><b>P3</b></td><td>Tiède · 5 jours</td><td><b>P4</b></td><td>Froid · nurturing</td></tr></table>
+    <div class="full"><label class="chk"><input type="checkbox" id="sDisc"><span>Mode discret face client <span class="hint">(bandeau neutre, codes A à D, points masqués)</span></span></label></div>
+    <div class="full"><table class="legend"><tr><td><b>A</b></td><td>Ultra chaud · rappel &lt; 24 h</td><td><b>B</b></td><td>Chaud · 48 h</td></tr><tr><td><b>C</b></td><td>Tiède · 5 jours</td><td><b>D</b></td><td>Froid · nurturing</td></tr></table>
       <p class="hint" style="margin:6px 0 0">Appui long (½ s) sur le bandeau : détail du scoring pendant 4 s, puis retour au mode discret.</p></div>
     <div class="full"><details><summary class="hint">Noms des étapes du pipe « Sett 2026 » (identiques à Axonaut, au caractère près)</summary><div class="grid" style="margin-top:8px">
       <div><label>Étape 1</label><input type="text" id="sSt_stand"></div><div><label>Étape 2</label><input type="text" id="sSt_chiffre"></div><div><label>Étape 3</label><input type="text" id="sSt_recontact"></div><div><label>Étape 4</label><input type="text" id="sSt_rdv"></div><div><label>Étape 5</label><input type="text" id="sSt_devis"></div>
@@ -274,7 +274,7 @@ function score(l){
 
 
 /* ---------- Issue du passage sur le stand → ce qu'on fait après son départ ---------- */
-// Délais en jours ouvrés, alignés sur la légende P1–P4 : P1 < 24 h · P2 48 h · P3 5 jours · P4 nurturing
+// Délais en jours ouvrés, alignés sur la légende A–D : A < 24 h · B 48 h · C 5 jours · D nurturing
 const SLA={ultra:1,chaud:2,tiede:5,froid:10};
 // d : jours ouvrés après le passage | 'sla' = délai de la priorité | null = date à saisir (RDV)
 // lock : appel de verrouillage anti-concurrent, d jours ouvrés après l'action (−1 = la veille)
@@ -326,7 +326,7 @@ function rfc(iso,hm){const[y,m,d]=iso.split('-').map(Number),[h,mi]=hm.split(':'
   return`${iso}T${p(h)}:${p(mi)}:00${off>=0?'+':'-'}${p(Math.floor(Math.abs(off)/60))}:${p(Math.abs(off)%60)}`}
 
 /* ---------- Mode discret ---------- */
-const CODE={ultra:'P1',chaud:'P2',tiede:'P3',froid:'P4'};
+const CODE={ultra:'A',chaud:'B',tiede:'C',froid:'D'};
 const discreet=()=>settings.discreet!==false;
 let revealed=false,pressT,hideT;
 function applyDisc(){document.body.classList.toggle('discreet',discreet()&&!revealed)}
