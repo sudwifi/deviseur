@@ -157,8 +157,7 @@ pre{background:var(--navy);color:#e2e8f0;padding:10px;border-radius:8px;overflow
   </div>
   <div class="card" id="blkSuite"><h2>Suite à donner</h2>
     <div class="grid">
-      <div><label class="chk"><input type="checkbox" data-c="demo"><span>Démo faite sur le stand</span></label></div>
-      <div><label class="chk"><input type="checkbox" data-c="chiffreStand" id="chkChiffre"><span>Chiffré, budget annoncé <span class="hint">(auto si Deviseur)</span></span></label></div>
+      <div class="full"><label class="chk"><input type="checkbox" data-c="chiffreStand" id="chkChiffre"><span>Chiffré, budget annoncé <span class="hint">(auto si Deviseur)</span></span></label></div>
       <div class="full"><label>Issue du passage : réaction du lead <span class="hint" id="nxHint"></span></label><div class="nxrow" id="nxList"></div></div>
       <div class="full" id="nxWhenBox"><label id="nxWhenLbl">Date de l'action</label>
         <div class="when"><input type="date" id="nxDate"><button type="button" class="chip" data-q="0">Aujourd'hui</button><button type="button" class="chip" data-q="1">Demain</button><button type="button" class="chip" data-q="2">+ 48 h</button><button type="button" class="chip" data-q="5">+ 1 sem.</button><button type="button" class="chip hide" id="nxAuto">↺ auto</button></div></div>
@@ -370,7 +369,6 @@ function render(){
   ['cType:type','cClass:classement','cCap:capacite','cTiming:timing','cBudget:budget','cDec:decideur','cEng:engagement'].forEach(s=>{const[id,k]=s.split(':');$$('#'+id+' .chip').forEach(b=>b.classList.toggle('on',cur[k]===b.dataset.v))});
   $('#critClass').classList.toggle('hide',!!cur.type&&!hasClass(cur.type));
   $$('[data-c]').forEach(c=>c.checked=!!cur[c.dataset.c]);
-  $('#resilBox').classList.toggle('hide',!ENGAGED.includes(cur.engagement));
   renderNext();
   {const h=$('#hName'),nm=(cur.entreprise||'').trim();h.textContent=nm||'Nom à renseigner';h.classList.toggle('empty',!nm)}
   $('#consentAt').textContent=cur.consent&&cur.consentAt?'· '+new Date(cur.consentAt).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
