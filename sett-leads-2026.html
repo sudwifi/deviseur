@@ -250,6 +250,7 @@ const CLASS=[['5','5 ★',10],['4','4 ★',8],['3','3 ★',6],['2','2 ★',3],['
 const TIMING=[['now','< 3 mois',25],['q2','3 à 6 mois',18],['q3','6 à 12 mois',9],['far','> 12 mois',4],['none','Pas de projet',0]];
 const BUDGET=[['ok','Validé',15],['wip','En cours',8],['unk','Non défini',2],['no','Aucun budget',0]];
 const DEC=[['yes','Oui',15],['inf','Prescripteur',7],['no','Non',0]];
+const FONC_DEC={'Gérant / Dirigeant':'yes','Directeur / Responsable':'inf','Technique / IT':'inf','Autre':'no'};
 const ENG=[['free','Aucun / libre',15],['m6','Fin < 6 mois',12],['m12','Fin dans 6–12 mois',8],['m24','Fin dans 12–24 mois',3],['m24p','Engagé > 24 mois',0],['unk','Ne sait pas',4]];
 const ENGAGED=['m6','m12','m24','m24p'];
 const CAPS={camping:['empl.',[49,149,299]],hotel:['chambres',[19,59,119]],collectif:['places',[49,149,299]],_:['postes / utilisateurs',[9,29,99]]};
@@ -452,7 +453,9 @@ document.addEventListener('change',e=>{const k=e.target.dataset?.c;if(!k||!cur)r
   if(k==='consent')cur.consentAt=e.target.checked?Date.now():'';
   render();persist()});
 document.addEventListener('click',e=>{const g=e.target.closest('[data-chip]');if(!g||!cur)return;const b=e.target.closest('.chip');if(!b)return;e.preventDefault();
-  const k=g.dataset.chip;cur[k]=cur[k]===b.dataset.v?'':b.dataset.v;if(k==='commercial'){settings.lastCommercial=cur[k];saveSettings()}render();persist()});
+  const k=g.dataset.chip;cur[k]=cur[k]===b.dataset.v?'':b.dataset.v;if(k==='commercial'){settings.lastCommercial=cur[k];saveSettings()}
+  if(k==='fonction'&&cur.fonction){const d=FONC_DEC[cur.fonction];if(d)cur.decideur=d} // Fonction → décisionnaire (modifiable ensuite à la main)
+  render();persist()});
 
 /* ---------- Liste ---------- */
 function renderList(){
