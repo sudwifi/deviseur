@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sud Wifi — Deviseur Wifi V16</title>
+<title>Sud Wifi — Deviseur Wifi V17</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700;800&family=Quicksand:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -424,6 +424,38 @@
   #toast { background: #ffffff; color: var(--text); border: 1px solid var(--border); }
 
   .header-logo { height: 50px; width: auto; display: block; }
+
+  /* ═══ V17 : comparatif Location / Achat ═══ */
+  .cmp-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .cmp-col { border:1.5px solid var(--border2); border-radius:8px; padding:14px; display:flex; flex-direction:column; gap:10px; background:#fff; }
+  .cmp-col.loc { border-color:#bfdbfe; background:#f5f9ff; }
+  .cmp-col.achat { border-color:#bbf7d0; background:#f5fdf8; }
+  .cmp-head { font-family:var(--display); font-weight:800; font-size:14px; color:var(--text); display:flex; align-items:center; gap:8px; }
+  .cmp-tag { font-family:var(--title); font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.8px; }
+  .cmp-step { border-top:1px dashed var(--border2); padding-top:8px; }
+  .cmp-step:first-of-type { border-top:none; padding-top:0; }
+  .cmp-lbl { font-family:var(--title); font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.8px; }
+  .cmp-big { font-family:var(--display); font-weight:800; font-size:24px; line-height:1.15; }
+  .cmp-col.loc .cmp-big { color:var(--blue-dark); }
+  .cmp-col.achat .cmp-big { color:var(--green); }
+  .cmp-mid { font-family:var(--display); font-weight:700; font-size:17px; color:var(--text); }
+  .cmp-sub { font-size:11px; color:var(--text3); line-height:1.45; }
+  .cmp-sub strong { color:var(--text2); }
+  .cv-cmp { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+  .cv-col { border-radius:8px; padding:14px; border:1.5px solid #e5e7eb; display:flex; flex-direction:column; gap:10px; break-inside:avoid; page-break-inside:avoid; }
+  .cv-col.loc { background:#f5f9ff; border-color:#bfdbfe; }
+  .cv-col.achat { background:#f3fdf6; border-color:#bbf7d0; }
+  .cv-col-head { font-family:'Montserrat',sans-serif; font-weight:800; font-size:14px; color:#1a2535; }
+  .cv-col-tag { font-size:10px; color:#6b7280; margin-top:2px; }
+  .cv-step { border-top:1px dashed #d1d5db; padding-top:8px; }
+  .cv-step:first-of-type { border-top:none; padding-top:0; }
+  .cv-lbl { font-size:10px; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; font-family:'Fira Sans',sans-serif; font-weight:600; }
+  .cv-big { font-family:'Montserrat',sans-serif; font-weight:800; font-size:22px; }
+  .cv-col.loc .cv-big { color:#007eb1; }
+  .cv-col.achat .cv-big { color:#16a34a; }
+  .cv-mid { font-family:'Montserrat',sans-serif; font-weight:700; font-size:16px; color:#1a2535; }
+  .cv-small { font-size:11px; color:#6b7280; line-height:1.45; }
+  @media (max-width: 900px) { .cmp-grid, .cv-cmp { grid-template-columns:1fr; } }
   .header { padding-top: 6px; padding-bottom: 6px; }
   .cv-logo-img { height: 64px; width: auto; display: block; }
 </style>
@@ -442,7 +474,7 @@
     </div>
   </div>
   <div class="header-right">
-    <div class="version-badge">V16 · SETT 2026</div>
+    <div class="version-badge">V17 · SETT 2026</div>
     <div class="header-actions">
       <button class="hbtn secondary" onclick="openTab('projets')">📁 Projets</button>
       <button class="hbtn secondary" onclick="importJSON()">⬆ Importer</button>
@@ -455,12 +487,12 @@
 
 <!-- TABS -->
 <div class="tabs">
-  <div class="tab active" onclick="openTab('chiffrage')">⚡ Chiffrage</div>
-  <div class="tab" onclick="openTab('marge')">📊 Analyse marge</div>
-  <div class="tab" onclick="openTab('materiel')">📦 Liste matériel</div>
-  <div class="tab" onclick="openTab('client')">📄 Vue client</div>
-  <div class="tab" onclick="openTab('projets')">📁 Projets</div>
-  <div class="tab" onclick="openTab('settings')">⚙ Paramètres</div>
+  <div class="tab active" data-tab="chiffrage" onclick="openTab('chiffrage')">⚡ Chiffrage</div>
+  <div class="tab" data-tab="marge" onclick="openTab('marge')" title="Usage interne : marges, coûts, financement">🎛 Pilotage</div>
+  <div class="tab" data-tab="materiel" onclick="openTab('materiel')">📦 Liste matériel</div>
+  <div class="tab" data-tab="client" onclick="openTab('client')">📄 Vue client</div>
+  <div class="tab" data-tab="projets" onclick="openTab('projets')">📁 Projets</div>
+  <div class="tab" data-tab="settings" onclick="openTab('settings')">⚙ Paramètres</div>
 </div>
 
 <!-- ═══════════════════ CHIFFRAGE ═══════════════════ -->
@@ -495,6 +527,22 @@
           <div style="font-size:9px;margin-top:2px;"><a href="#" onclick="resetJoursAuto();return false;" style="color:var(--text3);text-decoration:underline;" id="reset-jours" hidden>↺ recalcul auto</a></div>
           <div id="nuitee-info" style="font-size:10px;color:var(--text3);margin-top:3px;"></div>
         </div>
+        <div style="border-top:1px solid var(--border);margin:2px 0;"></div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="chkSpare" onchange="onSpareToggle(this.checked)">
+          <span><strong>Spare</strong> · matériel de secours laissé sur site</span>
+        </div>
+        <div id="spare-info" style="font-size:10px;color:var(--text3);margin-top:-4px;"></div>
+        <div id="spare-block" style="display:none;padding-left:22px;">
+          <div class="row">
+            <div><label>Adaptateurs PoE</label><input type="number" id="nbSparePoe" value="5" min="0" oninput="calc()"></div>
+            <div><label>Borne outdoor</label><input type="number" id="nbSpareAp" value="1" min="0" oninput="calc()"></div>
+          </div>
+          <div class="row" style="margin-top:6px;">
+            <div><label>Switch 5 ports</label><input type="number" id="nbSpareSw5" value="1" min="0" oninput="calc()"></div>
+            <div><label>Switch 10 ports</label><input type="number" id="nbSpareSw10" value="0" min="0" oninput="calc()"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -508,6 +556,17 @@
           <div class="typo-btn" onclick="setTypo('sante',this)"><span class="icon">🏥</span><span class="label">Santé</span></div>
           <div class="typo-btn" onclick="setTypo('senior',this)"><span class="icon">👴</span><span class="label">Senior</span></div>
         </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Gamme de bornes</span></div>
+      <div class="card-body">
+        <div class="toggle-group">
+          <div class="toggle-btn active" id="gen-w6" onclick="setWifiGen('w6')">Wifi 6</div>
+          <div class="toggle-btn" id="gen-w7" onclick="setWifiGen('w7')">Wifi 7</div>
+        </div>
+        <div id="gen-info" style="font-size:10px;color:var(--text3);line-height:1.45;"></div>
       </div>
     </div>
 
@@ -538,27 +597,11 @@
         </div>
         <div class="checkbox-row">
           <input type="checkbox" id="chkTV" onchange="toggleOpt('tv-nb', this); calc()">
-          <span>Option TV Canal+ (AP indoor premium)</span>
+          <span>AP Indoor pour Premium et/ou TV Canal+</span>
         </div>
         <div id="tv-nb" style="display:none; padding-left:22px;">
-          <label>Nb hébergements TV</label>
+          <label>Nb hébergements équipés (Premium / TV)</label>
           <input type="number" id="nbTV" value="20" min="1" oninput="calc()">
-        </div>
-        <div class="checkbox-row">
-          <input type="checkbox" id="chkTel" onchange="toggleOpt('tel-nb', this); calc()">
-          <span>Téléphonie IP</span>
-        </div>
-        <div id="tel-nb" style="display:none; padding-left:22px;">
-          <label>Nombre de postes</label>
-          <input type="number" id="nbPostes" value="20" min="1" oninput="calc()">
-        </div>
-        <div class="checkbox-row">
-          <input type="checkbox" id="chkVSI" onchange="toggleOpt('vsi-nb', this); calc()">
-          <span>Vidéosurveillance IP</span>
-        </div>
-        <div id="vsi-nb" style="display:none; padding-left:22px;">
-          <label>Nombre de caméras</label>
-          <input type="number" id="nbCam" value="8" min="1" oninput="calc()">
         </div>
         <div style="border-top:1px solid var(--border);margin:4px 0 2px;"></div>
         <div>
@@ -605,7 +648,7 @@
     <div class="card">
       <div class="card-header"><span class="card-title">Contrat de services (gammes)</span></div>
       <div class="card-body">
-        <div style="font-size:10px;color:var(--text3);line-height:1.4;">Gammes Sud Wifi · engagement 12 mois · facturé indépendamment du financement du matériel. Taille de site déduite du nombre de bornes.</div>
+        <div style="font-size:10px;color:var(--text3);line-height:1.4;">Engagement 12 mois. En location « services inclus », il est fondu dans le loyer ; en achat comptant, il est facturé à part. Taille de site déduite du nombre de bornes.</div>
         <div>
           <label>Gamme</label>
           <div class="toggle-group">
@@ -632,15 +675,15 @@
     </div>
 
     <div class="card">
-      <div class="card-header"><span class="card-title">Financement leasing</span></div>
+      <div class="card-header"><span class="card-title">Location longue durée</span></div>
       <div class="card-body">
         <div>
           <label>Mode</label>
           <div class="toggle-group">
-            <div class="toggle-btn active" id="leas-mode-sec" onclick="setLeasingMode('sec')">Sec (Capex)</div>
-            <div class="toggle-btn" id="leas-mode-integre" onclick="setLeasingMode('integre')">Avec services intégrés</div>
+            <div class="toggle-btn" id="leas-mode-integre" onclick="setLeasingMode('integre')">Services inclus dans le loyer</div>
+            <div class="toggle-btn active" id="leas-mode-sec" onclick="setLeasingMode('sec')">Services facturés à part</div>
           </div>
-          <div style="font-size:10px;color:var(--text3);margin-top:4px;">Sec : le loyer ne couvre que le Capex, le pack services est facturé à part par Sud Wifi. Intégré : le loyer inclut le pack services (2+3).</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px;">Inclus : un seul loyer tout compris (matériel + installation + portail + contrat de services choisi). À part : le loyer ne couvre que l'installation, le contrat de services est facturé par Sud Wifi.</div>
         </div>
         <div>
           <label>Durée</label>
@@ -649,15 +692,10 @@
             <div class="toggle-btn" id="eng-48" onclick="setEngagement(48)">48 mois</div>
             <div class="toggle-btn active" id="eng-60" onclick="setEngagement(60)">60 mois</div>
           </div>
-          <div id="leas-coef-info" style="font-size:10px;color:var(--text3);margin-top:4px;"></div>
-        </div>
-        <div id="leasing-rec-input-block" style="display:none;">
-          <label>Récurrent capitalisé (€/mois)</label>
-          <input type="number" id="recCapitalise" value="125" min="0" oninput="calc()">
-          <div id="alert-15pct" class="alert-msg" style="display:none;margin-top:6px;"></div>
+          
         </div>
         <div>
-          <label>Premier versement (location)</label>
+          <label>Versement à la commande (location)</label>
           <div class="toggle-group">
             <div class="toggle-btn" id="acp-0" onclick="setAcompte(0)">0%</div>
             <div class="toggle-btn active" id="acp-30" onclick="setAcompte(30)">30%</div>
@@ -672,11 +710,11 @@
       <div class="card-body">
         <div>
           <label>Durée portail</label>
-          <div class="toggle-group">
-            <div class="toggle-btn" id="adp-12" onclick="setAdipsys(12)">12 mois</div>
-            <div class="toggle-btn" id="adp-36" onclick="setAdipsys(36)">36 mois</div>
-            <div class="toggle-btn active" id="adp-60" onclick="setAdipsys(60)">60 mois</div>
+          <div class="toggle-group" style="pointer-events:none;">
+            <div class="toggle-btn" id="adp-36">36 mois</div>
+            <div class="toggle-btn active" id="adp-60">60 mois</div>
           </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px;">Suit la durée de location : 36 mois → portail 36 mois · 48 ou 60 mois → portail 60 mois.</div>
         </div>
       </div>
     </div>
@@ -702,7 +740,7 @@
             <div class="metric-sub" id="res-ap-in-type">—</div>
             <div style="font-size:9px;margin-top:2px;"><a href="#" onclick="resetApAuto('in');return false;" style="color:var(--text3);text-decoration:underline;" id="reset-ap-in" hidden>↺ recalcul auto</a></div>
           </div>
-          <div class="metric"><div class="metric-label">Switches</div><div class="metric-value" id="res-switches">—</div><div class="metric-sub">TL-SG2210P</div></div>
+          <div class="metric"><div class="metric-label">Switches</div><div class="metric-value" id="res-switches">—</div><div class="metric-sub" id="res-switches-sub">TL-SG2210P</div></div>
           <div class="metric"><div class="metric-label">Mâts outdoor</div><div class="metric-value" id="res-mats">—</div><div class="metric-sub" id="res-mats-sub">INF-MAT4M-02</div></div>
           <div class="metric"><div class="metric-label">Contrôleur</div><div class="metric-value">1</div><div class="metric-sub">OC200 + Mikrotik</div></div>
           <div class="metric"><div class="metric-label">Adipsys</div><div class="metric-value accent" id="res-adipsys-cnx">—</div><div class="metric-sub" id="res-adipsys-ref">—</div></div>
@@ -711,46 +749,10 @@
     </div>
 
     <div class="card">
-      <div class="card-header">
-        <span class="card-title">CAPEX chantier</span>
-        <span class="badge green" id="badge-marge-capex">—%</span>
-      </div>
+      <div class="card-header"><span class="card-title">Ce que paie le client</span><span class="badge yellow" id="cmp-remise-badge" style="display:none;"></span></div>
       <div class="card-body">
-        <div class="metrics-grid" style="grid-template-columns:repeat(4,1fr)">
-          <div class="metric highlight"><div class="metric-label">CAPEX PV HT</div><div class="metric-value accent" id="res-capex-pv">—</div></div>
-          <div class="metric"><div class="metric-label">Coût de revient</div><div class="metric-value" id="res-capex-cr">—</div></div>
-          <div class="metric green"><div class="metric-label">Marge chantier</div><div class="metric-value green" id="res-marge-euro">—</div></div>
-          <div class="metric yellow"><div class="metric-label">Marge Adipsys</div><div class="metric-value yellow" id="res-adipsys-marge">—</div></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header"><span class="card-title">Structure financement</span></div>
-      <div class="card-body">
-        <div class="leasing-block">
-          <div class="leasing-row"><span class="lbl">CAPEX chantier HT (matériel + Adipsys)</span><span class="val" id="leas-capex">—</span></div>
-          <div class="leasing-row"><span class="lbl">Premier versement location (<span id="leas-acp-pct">30</span>%)</span><span class="val" id="leas-acompte">—</span></div>
-          <div class="leasing-row"><span class="lbl">Base financée leasing</span><span class="val" id="leas-base">—</span></div>
-          <div class="leasing-row" id="row-rec-cap" style="display:none;"><span class="lbl">Récurrent capitalisé (<span id="leas-rec-mois">—</span> mois)</span><span class="val" id="leas-rec-cap">—</span></div>
-          <div class="leasing-row" id="row-base-totale" style="display:none;"><span class="lbl">Base totale financée</span><span class="val" id="leas-total-base">—</span></div>
-          <div class="leasing-row separator big"><span class="lbl" id="leas-loyer-label">Loyer client (Capex uniquement)</span><span class="val" id="leas-loyer">—</span></div>
-          <div class="leasing-row green-row"><span class="lbl">↳ Sud Wifi reçoit du leaser à livraison</span><span class="val" id="leas-livraison">—</span></div>
-          <div class="leasing-row yellow-row" id="row-trimestriel" style="display:none;"><span class="lbl">↳ Sud Wifi reçoit / trimestre (récurrent)</span><span class="val" id="leas-trimestriel">—</span></div>
-          <div class="leasing-row" id="row-pack-note"><span class="lbl" style="color:var(--text3);font-size:11px;">Contrat de services facturé à part par Sud Wifi</span><span class="val" id="leas-pack-note" style="font-size:11px;color:var(--text3);">—</span></div>
-          <div class="leasing-row"><span class="lbl">Total encaissé Sud Wifi · <span id="leas-duree">60</span> mois</span><span class="val" id="leas-total-enc">—</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header"><span class="card-title">Récurrent affiché client</span></div>
-      <div class="card-body">
-        <div class="metrics-grid">
-          <div class="metric"><div class="metric-label">Contrat de services</div><div class="metric-value" id="res-pack">—</div><div class="metric-sub" id="res-pack-mode">—</div></div>
-          <div class="metric highlight"><div class="metric-label">CA récurrent/an</div><div class="metric-value accent" id="res-ca-rec">—</div></div>
-          <div class="metric green"><div class="metric-label">Marge récurrente/an</div><div class="metric-value green" id="res-marge-rec">—</div></div>
-        </div>
+        <div class="cmp-grid" id="cmp-grid"></div>
+        <div id="cmp-note" style="font-size:10px;color:var(--text3);line-height:1.45;"></div>
       </div>
     </div>
 
@@ -760,6 +762,53 @@
 <!-- ═══════════════════ MARGE ═══════════════════ -->
 <div id="tab-marge" class="main panel">
   <div style="flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;">
+    <div style="font-size:11px;color:var(--text3);">🔒 Onglet interne : coûts de revient, marges et flux de financement. À ne pas afficher devant le client.</div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Achat comptant · prix et marge</span>
+        <span class="badge green" id="badge-marge-capex">—%</span>
+      </div>
+      <div class="card-body">
+        <div class="metrics-grid" style="grid-template-columns:repeat(4,1fr)">
+          <div class="metric highlight"><div class="metric-label">Prix de vente HT</div><div class="metric-value accent" id="res-capex-pv">—</div></div>
+          <div class="metric"><div class="metric-label">Coût de revient</div><div class="metric-value" id="res-capex-cr">—</div></div>
+          <div class="metric green"><div class="metric-label">Marge chantier</div><div class="metric-value green" id="res-marge-euro">—</div></div>
+          <div class="metric yellow"><div class="metric-label">Marge Adipsys</div><div class="metric-value yellow" id="res-adipsys-marge">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Location longue durée · mécanique de financement</span></div>
+      <div class="card-body">
+        <div class="leasing-block">
+          <div class="leasing-row"><span class="lbl" style="color:var(--text3);font-size:11px;" id="leas-coef-info">—</span><span></span></div>
+          <div id="alert-15pct" class="alert-msg" style="display:none;"></div>
+          <div class="leasing-row"><span class="lbl">Prix de vente HT (matériel + pose + Adipsys)</span><span class="val" id="leas-capex">—</span></div>
+          <div class="leasing-row"><span class="lbl">Premier versement location (<span id="leas-acp-pct">30</span>%)</span><span class="val" id="leas-acompte">—</span></div>
+          <div class="leasing-row"><span class="lbl">Base financée leasing</span><span class="val" id="leas-base">—</span></div>
+          <div class="leasing-row" id="row-rec-cap" style="display:none;"><span class="lbl">Récurrent capitalisé (<span id="leas-rec-mois">—</span> mois)</span><span class="val" id="leas-rec-cap">—</span></div>
+          <div class="leasing-row" id="row-base-totale" style="display:none;"><span class="lbl">Base totale financée</span><span class="val" id="leas-total-base">—</span></div>
+          <div class="leasing-row separator big"><span class="lbl" id="leas-loyer-label">Loyer client</span><span class="val" id="leas-loyer">—</span></div>
+          <div class="leasing-row green-row"><span class="lbl">↳ Sud Wifi reçoit du leaser à livraison</span><span class="val" id="leas-livraison">—</span></div>
+          <div class="leasing-row yellow-row" id="row-trimestriel" style="display:none;"><span class="lbl">↳ Sud Wifi reçoit / trimestre (récurrent)</span><span class="val" id="leas-trimestriel">—</span></div>
+          <div class="leasing-row" id="row-pack-note"><span class="lbl" style="color:var(--text3);font-size:11px;">Contrat de services facturé à part par Sud Wifi</span><span class="val" id="leas-pack-note" style="font-size:11px;color:var(--text3);">—</span></div>
+          <div class="leasing-row"><span class="lbl">Total encaissé Sud Wifi · <span id="leas-duree">60</span> mois</span><span class="val" id="leas-total-enc">—</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Contrat de services</span></div>
+      <div class="card-body">
+        <div class="metrics-grid">
+          <div class="metric"><div class="metric-label">Contrat de services</div><div class="metric-value" id="res-pack">—</div><div class="metric-sub" id="res-pack-mode">—</div></div>
+          <div class="metric highlight"><div class="metric-label">CA récurrent/an</div><div class="metric-value accent" id="res-ca-rec">—</div></div>
+          <div class="metric green"><div class="metric-label">Marge récurrente/an</div><div class="metric-value green" id="res-marge-rec">—</div></div>
+        </div>
+      </div>
+    </div>
+
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div class="card">
         <div class="card-header"><span class="card-title">Détail marge par poste</span></div>
@@ -815,9 +864,9 @@
       </div>
       <div class="card-body" style="padding:0;">
         <table class="data-table">
-          <thead><tr><th>Référence</th><th>Désignation</th><th class="right">Qté</th><th class="right">CR unit.</th><th class="right">PV unit.</th><th class="right">CR total</th><th class="right">PV total</th><th class="right">Marge</th></tr></thead>
+          <thead><tr><th>Référence</th><th>Désignation</th><th class="right">Qté</th><th class="right">PV unit. HT</th><th class="right">Total HT</th></tr></thead>
           <tbody id="tbl-materiel"></tbody>
-          <tfoot><tr class="total-row"><td colspan="5">TOTAL</td><td class="right cr" id="mat-cr-total">—</td><td class="right pv" id="mat-pv-total">—</td><td class="right marge-cell" id="mat-marge-total">—</td></tr></tfoot>
+          <tfoot><tr class="total-row"><td colspan="4">TOTAL HT</td><td class="right pv" id="mat-pv-total">—</td></tr></tfoot>
         </table>
       </div>
     </div>
@@ -949,12 +998,10 @@
           <table class="data-table">
             <thead><tr><th>Univers</th><th class="right">Essentiel</th><th class="right">Pro</th><th class="right">Premium 360</th></tr></thead>
             <tbody>
-              <tr><td>Wifi · S ≤ 10 bornes</td><td class="right">49</td><td class="right">89</td><td class="right">149</td></tr>
-              <tr><td>Wifi · M 11–30 bornes</td><td class="right">99</td><td class="right">179</td><td class="right">299</td></tr>
-              <tr><td>Wifi · L 31–60 bornes</td><td class="right">179</td><td class="right">329</td><td class="right">549</td></tr>
-              <tr><td>Wifi · au-delà de 60 bornes</td><td class="right" colspan="3">base L + 5 € / borne</td></tr>
-              <tr><td>Téléphonie (≤ 10 postes, +2 €/poste)</td><td class="right">19</td><td class="right">39</td><td class="right">59</td></tr>
-              <tr><td>Vidéo (≤ 8 caméras, +3 €/caméra)</td><td class="right">25</td><td class="right">45</td><td class="right">79</td></tr>
+              <tr><td>Wifi · S ≤ 10 bornes</td><td class="right">39</td><td class="right">59</td><td class="right">99</td></tr>
+              <tr><td>Wifi · M 11–30 bornes</td><td class="right">69</td><td class="right">109</td><td class="right">169</td></tr>
+              <tr><td>Wifi · L 31–60 bornes</td><td class="right">119</td><td class="right">179</td><td class="right">279</td></tr>
+              <tr><td>Wifi · au-delà de 60 bornes</td><td class="right" colspan="3">base L + 3 € / borne</td></tr>
             </tbody>
           </table>
           <div style="font-size:10px;color:var(--text3);padding:8px 12px;">Produits Axonaut GAM-* · catégorie « SERVICES RÉCURRENTS SUD WIFI ».</div>
@@ -1025,15 +1072,31 @@ const MAT = {
   'EAP215-BRIDGE': { ref:'MAT-TPLEAP215-BRIDGEKIT', label:'Pont Wifi TP-Link EAP215-Bridge KIT (kit 2 unités, programmé)', cr:104.94, pv:262 },
   'BEAM-BRIDGE':   { ref:'TPLBEAMBRIDGE5URKIT',     label:'Pont Wifi TP-Link Beam Bridge 5 UR KIT (kit 2 unités, programmé)', cr:149.33, pv:476 },
   'CABLAGE':     { ref:'CABL-FORFAIT',              label:'Câblage + connectique (forfait par borne)',            cr:10,    pv:23  },
+  // Wifi 7 (V17) — pas encore dans Axonaut : prix publics HT relevés oct. 2026, coûts de revient ESTIMÉS à confirmer avec AC Nexitup
+  'EAP772-OUT':  { ref:'MAT-TPLEAP772-OUTDOOR',     label:'Borne Wifi 7 extérieure tri-bande TP-Link EAP772-Outdoor BE9300 (programmée)', cr:235, pv:449 },
+  'EAP723':      { ref:'MAT-TPLEAP723-INDOOR',      label:'Borne Wifi 7 intérieure TP-Link EAP723 BE3600 (programmée)', cr:95, pv:215 },
+  'SW10P':       { ref:'MAT-TPLSG2210MP',           label:'Switch Omada 10 ports PoE+ 150 W TL-SG2210MP (programmé)', cr:140.75, pv:318 },
+  // Kit Spare
+  'SW5':         { ref:'MAT-TPLES205GP',            label:'Switch Omada 5 ports PoE ES205GP (programmé)',         cr:32,    pv:108 },
+  'POE':         { ref:'MAT-TPLPOE4824G',           label:'Adaptateur PoE',                                      cr:11.56, pv:27  },
   'POSE':        { ref:'MO-JOUR-BINOME',            label:'Journée de pose et mise en service (binôme de techniciens)', cr:508.56, pv:1450 },
 };
 
-// Gammes de services (€ HT/mois, engagement 12 mois) — produits Axonaut GAM-*
-const GAMMES = {
-  ess:  { label:'Essentiel',   wifi:[49, 99, 179],  tel:19, vid:25 },
-  pro:  { label:'Pro',         wifi:[89, 179, 329], tel:39, vid:45 },
-  p360: { label:'Premium 360', wifi:[149, 299, 549], tel:59, vid:79 },
+// Générations de bornes : la bascule choisit automatiquement indoor, outdoor et switch adapté
+const WIFI_GEN = {
+  w6: { label:'Wifi 6', apIn:'EAP610', sw:'SW10', swLabel:'TL-SG2210P' },          // outdoor : selon la typologie (EAP650 D120 / EAP625-HD)
+  w7: { label:'Wifi 7', apIn:'EAP723', apOut:'EAP772-OUT', sw:'SW10P', swLabel:'TL-SG2210MP (PoE+ 150 W)' },
 };
+const SPARE_SEUIL_AR = 400; // km aller-retour (site à plus de 200 km du siège)
+
+// Gammes de services (€ HT/mois, engagement 12 mois) — produits Axonaut GAM-*
+// V17 : grille revue à la baisse (≈ −35/40 % sur Pro et Premium 360) — ancienne grille Pro 89/179/329, P360 149/299/549
+const GAMMES = {
+  ess:  { label:'Essentiel',   wifi:[39, 69, 119] },
+  pro:  { label:'Pro',         wifi:[59, 109, 179] },
+  p360: { label:'Premium 360', wifi:[99, 169, 279] },
+};
+const GAMME_EXTRA_BORNE = 3; // €/mois par borne au-delà de 60
 const GAMME_CONTENU = {
   ess:  ['Supervision du réseau et alertes', 'Mises à jour firmware et sécurité', 'Portail captif administré et conforme (logs légaux)', 'Support 5j/7 aux heures ouvrées'],
   pro:  ['Supervision, mises à jour et portail captif conforme (tout Essentiel)', 'Support prioritaire, 7j/7 en saison', 'Optimisation réseau et rapport d\'usage trimestriel', '1 visite préventive sur site par an'],
@@ -1044,7 +1107,7 @@ function tailleSite(nbBornes) {
   if (nbBornes <= 10) return { code:'S', idx:0, label:'S (jusqu\'à 10 bornes)', extra:0 };
   if (nbBornes <= 30) return { code:'M', idx:1, label:'M (11 à 30 bornes)', extra:0 };
   if (nbBornes <= 60) return { code:'L', idx:2, label:'L (31 à 60 bornes)', extra:0 };
-  return { code:'L', idx:2, label:`L + ${nbBornes-60} bornes au-delà de 60`, extra:(nbBornes-60)*5 };
+  return { code:'L', idx:2, label:`L + ${nbBornes-60} bornes au-delà de 60`, extra:(nbBornes-60)*GAMME_EXTRA_BORNE };
 }
 
 // Barème Locam (coefficient mensuel en % du montant financé HT) — terme à échoir, valeur de cession 50 €
@@ -1093,7 +1156,9 @@ let STATE = {
   recurrentMode:'saisonnier', acomptePct:30, leasingMode:'sec', chatVacanciers:'inclus', matsInclus:true,
   apOutOverride:null, apInOverride:null,
   gamme:'pro', remisePct:0, maintOfferte:false, joursOverride:null, recOverride:null,
+  wifiGen:'w6', spareManual:null,
 };
+STATE.leasingMode = 'integre'; // V17 : par défaut, le contrat de services est fondu dans le loyer
 let lastResult = null;
 
 // ═══════════════════ SETTINGS ═══════════════════
@@ -1160,17 +1225,7 @@ function openTab(name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
-  document.querySelectorAll('.tab').forEach(t => {
-    if (t.textContent.toLowerCase().includes(name) ||
-        (name==='chiffrage' && t.textContent.includes('Chiffrage')) ||
-        (name==='marge' && t.textContent.includes('marge')) ||
-        (name==='materiel' && t.textContent.includes('mat')) ||
-        (name==='client' && t.textContent.includes('client')) ||
-        (name==='projets' && t.textContent.includes('Projets')) ||
-        (name==='settings' && t.textContent.includes('Param'))) {
-      t.classList.add('active');
-    }
-  });
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   if (name === 'projets') renderProjects();
   if (name === 'settings') renderMaterialParams();
 }
@@ -1179,8 +1234,6 @@ function setTypo(name, el) {
   STATE.typo = name;
   document.querySelectorAll('.typo-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  const t = TYPOS[name];
-  if (t.telephonie) document.getElementById('chkTel').checked = true;
   if (name === 'camping' || name === 'village') setRecurrent('saisonnier');
   else setRecurrent('mensuel');
   calc();
@@ -1229,19 +1282,27 @@ function setEngagement(m) {
   if (![36,48,60].includes(m)) m = m < 42 ? 36 : 60; // anciens projets en 12 mois
   STATE.engagement = m;
   [36,48,60].forEach(k => document.getElementById('eng-'+k).classList.toggle('active', k===m));
+  setAdipsys();
+}
+// Portail Adipsys : la durée suit la location (36 → 36 mois ; 48 et 60 → 60 mois)
+function adipsysPourDuree(m) { return m <= 36 ? 36 : 60; }
+function setAdipsys() {
+  STATE.adipsysDuree = adipsysPourDuree(STATE.engagement);
+  [36,60].forEach(k => document.getElementById('adp-'+k).classList.toggle('active', k===STATE.adipsysDuree));
   calc();
 }
-function setAdipsys(m) {
-  STATE.adipsysDuree = m;
-  [12,36,60].forEach(k => document.getElementById('adp-'+k).classList.remove('active'));
-  document.getElementById('adp-'+m).classList.add('active');
+function setWifiGen(g) {
+  STATE.wifiGen = WIFI_GEN[g] ? g : 'w6';
+  ['w6','w7'].forEach(k => document.getElementById('gen-'+k).classList.toggle('active', k===STATE.wifiGen));
+  STATE.apOutOverride = null; STATE.apInOverride = null;
   calc();
 }
+function onSpareToggle(on) { STATE.spareManual = !!on; calc(); }
 function setAcompte(pct) {
   STATE.acomptePct = pct;
   [0,30,50].forEach(k => document.getElementById('acp-'+k).classList.remove('active'));
   document.getElementById('acp-'+pct).classList.add('active');
-  document.getElementById('leas-acp-pct').textContent = pct;
+  setText('leas-acp-pct', pct);
   calc();
 }
 
@@ -1281,11 +1342,7 @@ function setLeasingMode(mode) {
   document.getElementById('row-base-totale').style.display = showIntegre ? 'flex' : 'none';
   document.getElementById('row-trimestriel').style.display = showIntegre ? 'flex' : 'none';
   document.getElementById('row-pack-note').style.display = showIntegre ? 'none' : 'flex';
-  document.getElementById('leasing-rec-input-block').style.display = showIntegre ? 'block' : 'none';
-  document.getElementById('leas-loyer-label').textContent = showIntegre ? 'Loyer client all-inclusive' : 'Loyer client (Capex uniquement)';
-  if (!showIntegre) {
-    document.getElementById('alert-15pct').style.display = 'none';
-  }
+  if (!showIntegre) document.getElementById('alert-15pct').style.display = 'none';
   calc();
 }
 
@@ -1301,15 +1358,20 @@ function calc() {
   const typo = TYPOS[STATE.typo];
   const nbH  = parseInt(document.getElementById('nbHeberg').value)||0;
   const distKm = parseInt(document.getElementById('distanceKm').value)||0;
-  const recCap = parseFloat(document.getElementById('recCapitalise').value)||0;
   const hasPonte = document.getElementById('chkPonte').checked;
   const nbPontes = parseInt(document.getElementById('nbPontes').value)||1;
   const hasTV    = document.getElementById('chkTV').checked;
   const nbTV     = parseInt(document.getElementById('nbTV').value)||0;
-  const hasTel   = document.getElementById('chkTel').checked;
-  const nbPostes = parseInt(document.getElementById('nbPostes').value)||0;
-  const hasVSI   = document.getElementById('chkVSI').checked;
-  const nbCam    = parseInt(document.getElementById('nbCam').value)||0;
+  const GEN = WIFI_GEN[STATE.wifiGen] || WIFI_GEN.w6;
+  // Spare : coché automatiquement au-delà de 400 km A/R, sauf choix manuel
+  const spareAuto = distKm > SPARE_SEUIL_AR;
+  const hasSpare = STATE.spareManual !== null ? STATE.spareManual : spareAuto;
+  document.getElementById('chkSpare').checked = hasSpare;
+  document.getElementById('spare-block').style.display = hasSpare ? 'block' : 'none';
+  setText('spare-info', spareAuto
+    ? `Site à ${Math.round(distKm/2)} km du siège : Spare recommandé${STATE.spareManual===false?' (désactivé à la main)':''}.`
+    : `Recommandé au-delà de ${SPARE_SEUIL_AR} km A/R (site à plus de ${SPARE_SEUIL_AR/2} km).`);
+  const spareQ = id => Math.max(0, parseInt(document.getElementById(id).value)||0);
   const jourPV   = parseFloat(document.getElementById('pJourPV').value)||1450;
   const jourCR   = parseFloat(document.getElementById('pJourCR').value)||508.56;
   const cadMat   = parseFloat(document.getElementById('pCadenceMat').value)||4.5;
@@ -1327,6 +1389,7 @@ function calc() {
   if (STATE.apInOverride !== null) nbAPIn = STATE.apInOverride;
   const nbAPTotal = nbAPOut + nbAPIn;
   const nbSwitches = Math.ceil(nbAPTotal / 5) + 1;
+  STATE.adipsysDuree = adipsysPourDuree(STATE.engagement);
   const adp = getAdipsys(nbH, STATE.adipsysDuree);
 
   // ── Jours de pose (binôme) : cadence Stéphane — 4,5 bornes/jour avec mât, 6,5 sans mât
@@ -1344,20 +1407,30 @@ function calc() {
     lignes.push({ ref:m.ref, label:m.label, qty, cr:m.cr, pv:m.pv, kind: key==='POSE' ? 'pose' : 'mat' });
   }
 
+  const apOutKey = GEN.apOut || typo.apOutKey || 'EAP650-D120';
   if (nbAPOut > 0) {
-    add(typo.apOutKey || 'EAP650-D120', nbAPOut);
+    add(apOutKey, nbAPOut);
     if (STATE.matsInclus) {
       add('MAT4M', nbAPOut);
       add('COFFRET', nbAPOut);
       add('ETANCH', nbAPOut);
     }
   }
-  if (nbAPIn > 0) add('EAP610', nbAPIn);
+  if (nbAPIn > 0) add(GEN.apIn, nbAPIn);
   add('CABLAGE', nbAPTotal);
-  add('SW10', nbSwitches);
+  add(GEN.sw, nbSwitches);
   add('OC200', 1);
   if (hasPonte) add(document.getElementById('pontType').value || 'EAP215-BRIDGE', nbPontes);
   add('POSE', jours);
+  // Kit Spare laissé sur site (matériel facturé, pas de pose)
+  const spare = hasSpare ? { poe:spareQ('nbSparePoe'), ap:spareQ('nbSpareAp'), sw5:spareQ('nbSpareSw5'), sw10:spareQ('nbSpareSw10') } : null;
+  if (spare) {
+    const addSpare = (key, qty, lbl) => { if (qty > 0) { const m = MAT_LIVE[key]; lignes.push({ ref:m.ref, label:`${lbl || m.label} — Spare`, qty, cr:m.cr, pv:m.pv, kind:'spare' }); } };
+    addSpare('POE', spare.poe);
+    addSpare(apOutKey, spare.ap);
+    addSpare('SW5', spare.sw5);
+    addSpare(GEN.sw, spare.sw10);
+  }
 
   // Déplacements
   const deplCR = distKm * coutKm;
@@ -1393,9 +1466,7 @@ function calc() {
   const taille = tailleSite(nbAPTotal);
   const wifiGrille = G.wifi[taille.idx] + taille.extra;
   const wifiMensuel = STATE.recOverride !== null ? STATE.recOverride : wifiGrille;
-  const telMensuel = hasTel ? G.tel + 2 * Math.max(0, nbPostes - 10) : 0;
-  const vidMensuel = hasVSI ? G.vid + 3 * Math.max(0, nbCam - 8) : 0;
-  const recMensuel = wifiMensuel + telMensuel + vidMensuel; // valeur mensuelle sur 12 mois
+  const recMensuel = wifiMensuel; // valeur mensuelle sur 12 mois
   const caRecAnnuel = recMensuel * 12;
   const margeRecAnnuelle = (recMensuel - crPack) * 12;
   const echeance = STATE.recurrentMode === 'saisonnier' ? caRecAnnuel / 6
@@ -1405,6 +1476,8 @@ function calc() {
 
   // ── Leasing (barème Locam selon montant financé et durée)
   const isIntegre = STATE.leasingMode === 'integre';
+  // Services inclus : on capitalise exactement le contrat choisi (gamme, prix négocié éventuel)
+  const recCap = recMensuel;
   const recCapEff = isIntegre ? recCap : 0;
   const acompteMontant = capexPV * STATE.acomptePct / 100;
   const baseLeasee = capexPV - acompteMontant;
@@ -1428,7 +1501,8 @@ function calc() {
     loyerCAPEXSeul, min15pct, alerteMin, recCap, recCapEff, loc,
     baseTotale, loyerTotal, acompteMontant, baseLeasee,
     receveTrimestriel, receveTotalFin,
-    gamme:STATE.gamme, gammeLabel:G.label, taille, wifiGrille, wifiMensuel, telMensuel, vidMensuel, nbPostes, nbCam,
+    gamme:STATE.gamme, gammeLabel:G.label, taille, wifiGrille, wifiMensuel,
+    wifiGen:STATE.wifiGen, genLabel:GEN.label, swLabel:GEN.swLabel, spare, isIntegre,
     recMensuel, caRecAnnuel, margeRecAnnuelle, echeance, valeurOfferte, maintOfferte:STATE.maintOfferte,
     chatPrix, matsInclus:STATE.matsInclus,
     nomClient: document.getElementById('nomClient').value || '—',
@@ -1455,12 +1529,6 @@ function calc() {
   }
 
   // Alertes
-  if (isIntegre) {
-    document.getElementById('alert-15pct').style.display = alerteMin ? 'block' : 'none';
-    document.getElementById('alert-15pct').textContent = alerteMin ? `⚠ Minimum requis : ${fmt(min15pct)}/mois` : '';
-  } else {
-    document.getElementById('alert-15pct').style.display = 'none';
-  }
 
   updateUI(lastResult);
 }
@@ -1468,17 +1536,21 @@ function calc() {
 function updateUI(r) {
   const elApOut = document.getElementById('res-ap-out');
   if (document.activeElement !== elApOut) elApOut.value = r.nbAPOut||0;
-  setText('res-ap-out-type', r.nbAPOut > 0 ? (STATE.typo==='camping'?'EAP650 D120 directionnel':'EAP625-HD omni') : '—');
+  setText('res-ap-out-type', r.nbAPOut > 0 ? (r.wifiGen==='w7' ? 'Wifi 7 · EAP772-Outdoor' : (STATE.typo==='camping'?'Wifi 6 · EAP650 D120 directionnel':'Wifi 6 · EAP625-HD omni')) : '—');
   document.getElementById('reset-ap-out').hidden = (STATE.apOutOverride === null);
   const elApIn = document.getElementById('res-ap-in');
   if (document.activeElement !== elApIn) elApIn.value = r.nbAPIn||0;
-  setText('res-ap-in-type', r.nbAPIn > 0 ? 'EAP610' : '—');
+  setText('res-ap-in-type', r.nbAPIn > 0 ? (r.wifiGen==='w7' ? 'Wifi 7 · EAP723' : 'Wifi 6 · EAP610') : '—');
+  setText('res-switches-sub', r.swLabel);
+  setText('gen-info', r.wifiGen==='w7'
+    ? 'Outdoor EAP772-Outdoor (omni, tri-bande) · indoor EAP723 · switchs PoE+ TL-SG2210MP. Bornes à créer dans Axonaut, prix à confirmer.'
+    : 'Outdoor EAP650 D120 (camping) ou EAP625-HD (village) · indoor EAP610 · switchs TL-SG2210P.');
   document.getElementById('reset-ap-in').hidden = (STATE.apInOverride === null);
   setText('res-switches', r.nbSwitches);
   setText('res-mats', STATE.matsInclus ? (r.nbAPOut||'0') : (r.nbAPOut>0 ? 'Option' : '0'));
   setText('res-mats-sub', STATE.matsInclus ? 'INF-MAT4M-02' : 'À la charge du client');
   setText('res-adipsys-cnx', r.adp.cnxTier+' cnx');
-  setText('res-adipsys-ref', 'HM SaaS Expert '+STATE.adipsysDuree+'m');
+  setText('res-adipsys-ref', 'Portail '+STATE.adipsysDuree+' mois');
 
   setText('res-capex-pv', fmt(r.capexPV));
   setText('res-capex-cr', fmt(r.capexCR));
@@ -1490,9 +1562,7 @@ function updateUI(r) {
   document.getElementById('badge-marge-capex').className = 'badge '+(mpct>=55?'green':mpct>=45?'blue':'yellow');
 
   // Offres salon
-  setText('remise-info', r.remiseMontant > 0
-    ? `−${fmt(r.remiseMontant)} HT · marge chantier après remise : ${mpct} % (coef ${r.totalCR>0?(r.totalPV/r.totalCR).toFixed(2).replace('.',','):'—'})`
-    : 'Aucune remise appliquée.');
+  setText('remise-info', r.remiseMontant > 0 ? `−${fmt(r.remiseMontant)} HT déjà déduits.` : 'Aucune remise appliquée.');
   setText('maint-offerte-info', r.maintOfferte
     ? `Valeur offerte : ${fmt(r.valeurOfferte)} HT (6 × ${fmt(r.recMensuel)}) · facturation à partir du 7ᵉ mois`
     : '');
@@ -1502,8 +1572,6 @@ function updateUI(r) {
     : STATE.recurrentMode==='annuel' ? `soit ${fmt(r.echeance)} payable d'avance` : `soit ${fmt(r.echeance)}/mois`;
   let info = `<strong>Wifi ${r.gammeLabel} · site ${r.taille.label}</strong> : ${fmt(r.wifiMensuel)}/mois`
     + (r.wifiMensuel !== r.wifiGrille ? ` <span style="color:var(--yellow-ink)">(grille ${fmt(r.wifiGrille)})</span>` : '');
-  if (r.telMensuel) info += `<br>Téléphonie ${r.gammeLabel} (${r.nbPostes} postes) : ${fmt(r.telMensuel)}/mois`;
-  if (r.vidMensuel) info += `<br>Vidéo ${r.gammeLabel} (${r.nbCam} caméras) : ${fmt(r.vidMensuel)}/mois`;
   info += `<br>Total ${fmt(r.caRecAnnuel)}/an, ${factLbl}`;
   document.getElementById('rec-info').innerHTML = info;
 
@@ -1524,7 +1592,10 @@ function updateUI(r) {
     ? `Barème Locam ${STATE.engagement} mois · tranche ${r.loc.tranche} : ${r.loc.coef.toFixed(3).replace('.',',')} %/mois`
     : 'Montant financé < 300 € : pas de location financière.');
   const loyerLabelEl = document.getElementById('leas-loyer-label');
-  if (loyerLabelEl) loyerLabelEl.textContent = STATE.leasingMode==='integre' ? 'Loyer client all-inclusive' : 'Loyer client (Capex uniquement)';
+  if (loyerLabelEl) loyerLabelEl.textContent = STATE.leasingMode==='integre' ? 'Loyer client tout compris (services inclus)' : 'Loyer client (installation seule)';
+  const a15 = document.getElementById('alert-15pct');
+  if (a15) { a15.style.display = r.alerteMin ? 'block' : 'none'; a15.textContent = r.alerteMin ? `⚠ Services capitalisés sous le minimum leaser (15 % du loyer installation) : ${fmt(r.min15pct)}/mois` : ''; }
+  renderComparatif(r);
 
   setText('res-pack', fmt(r.recMensuel)+'/mois');
   setText('res-pack-mode', `${r.gammeLabel} · ${STATE.recurrentMode==='saisonnier'?'facturé avr–sept':STATE.recurrentMode==='annuel'?'facturé à l\'année':'12 mensualités'}`);
@@ -1536,13 +1607,47 @@ function updateUI(r) {
   updateClientView(r);
 }
 
+function factLibelle(r) {
+  return STATE.recurrentMode==='saisonnier' ? `réglés en 6 fois d'avril à septembre`
+    : STATE.recurrentMode==='annuel' ? `réglés en une fois` : `réglés en 12 mensualités`;
+}
+function renderComparatif(r) {
+  const el = document.getElementById('cmp-grid'); if (!el) return;
+  const services = `Contrat de services ${r.gammeLabel}`;
+  let loc;
+  if (!r.loc) {
+    loc = `<div class="cmp-col loc"><div class="cmp-head">① Location longue durée</div><div class="cmp-sub">Montant trop faible pour une location financière (minimum 300 € financés).</div></div>`;
+  } else {
+    const mensuel = r.isIntegre ? r.loyerTotal : r.loyerTotal + r.recMensuel;
+    const detail = r.isIntegre
+      ? `Matériel, installation, portail Wifi ${STATE.adipsysDuree} mois et <strong>${services}</strong> compris.`
+      : `Dont installation ${fmt(r.loyerTotal)} + ${services.toLowerCase()} ${fmt(r.recMensuel)} (moyenne mensuelle, facturé par Sud Wifi).`;
+    loc = `<div class="cmp-col loc">
+      <div><div class="cmp-head">① Location longue durée</div><div class="cmp-tag">${STATE.engagement} mois · location financière</div></div>
+      <div class="cmp-step"><div class="cmp-lbl">À la commande</div><div class="cmp-mid">${r.acompteMontant>0 ? fmt(r.acompteMontant) : 'Rien'}</div><div class="cmp-sub">${r.acompteMontant>0 ? `Versement initial (${STATE.acomptePct} %)` : 'Aucun versement initial'}</div></div>
+      <div class="cmp-step"><div class="cmp-lbl">Puis chaque mois · tout compris</div><div class="cmp-big">${fmt(mensuel)}<span style="font-size:12px;font-weight:600;color:var(--text3);"> /mois</span></div><div class="cmp-sub">${detail}</div></div>
+      <div class="cmp-step"><div class="cmp-sub">Pendant ${STATE.engagement} mois · sous réserve d'acceptation du dossier par l'organisme de financement.</div></div>
+    </div>`;
+  }
+  const ach = `<div class="cmp-col achat">
+    <div><div class="cmp-head">② Achat comptant</div><div class="cmp-tag">Vous êtes propriétaire de l'installation</div></div>
+    <div class="cmp-step"><div class="cmp-lbl">Prix d'achat</div><div class="cmp-big">${fmt(r.capexPV)}</div><div class="cmp-sub">Réglé en 3 fois : ${fmt(r.capexPV*0.4)} à la commande · ${fmt(r.capexPV*0.3)} à la livraison · ${fmt(r.capexPV*0.3)} à la mise en service. Portail Wifi ${STATE.adipsysDuree} mois inclus.</div></div>
+    <div class="cmp-step"><div class="cmp-lbl">Puis ${services}</div><div class="cmp-mid">${fmt(r.recMensuel)}<span style="font-size:12px;font-weight:600;color:var(--text3);"> /mois</span></div><div class="cmp-sub">Soit ${fmt(r.caRecAnnuel)} par an, ${factLibelle(r)} · engagement 12 mois, renouvelable${r.maintOfferte ? ' · <strong>6 premiers mois offerts</strong>' : ''}.</div></div>
+  </div>`;
+  el.innerHTML = loc + ach;
+  const b = document.getElementById('cmp-remise-badge');
+  b.style.display = r.remiseMontant > 0 ? '' : 'none';
+  b.textContent = r.remiseMontant > 0 ? `Remise Salon −${r.remisePct} % déduite` : '';
+  setText('cmp-note', `Prix HT · ${r.nbAPTotal} bornes ${r.genLabel}${r.spare ? ' + kit Spare sur site' : ''} · installation ${fmtJours(r.jours)}.`);
+}
+
 function updateMarge(r) {
   const tbody = document.getElementById('tbl-marge-detail');
   let html='', crMat=0, pvMat=0, crMO=0, pvMO=0;
   r.lignes.forEach(l => {
     const crT=l.cr*l.qty, pvT=l.pv*l.qty, mT=pvT-crT;
     const mp = pvT>0?Math.round(mT/pvT*100):0;
-    if (l.kind==='pose'){crMO+=crT;pvMO+=pvT;} else if (l.kind==='mat'){crMat+=crT;pvMat+=pvT;}
+    if (l.kind==='pose'){crMO+=crT;pvMO+=pvT;} else if (l.kind==='mat'||l.kind==='spare'){crMat+=crT;pvMat+=pvT;}
     const badge = l.kind==='remise' ? '' : `<span class="badge ${mp>=55?'green':mp>=45?'blue':'yellow'}">${mp}%</span>`;
     html+=`<tr><td>${l.label}</td><td class="right cr">${fmt(l.cr)}</td><td class="right pv">${fmt(l.pv)}</td><td class="right qty">${l.qty}</td><td class="right marge-cell">${fmt(mT)}</td><td class="right">${badge}</td></tr>`;
   });
@@ -1568,16 +1673,16 @@ function updateMarge(r) {
 
 function updateMateriel(r) {
   const tbody=document.getElementById('tbl-materiel');
-  let html='',crT=0,pvT=0;
+  let html='',pvT=0;
   r.lignes.forEach(l=>{
-    const cT=l.cr*l.qty,pT=l.pv*l.qty;
-    crT+=cT;pvT+=pT;
-    html+=`<tr><td class="ref">${l.ref}</td><td>${l.label}</td><td class="right qty">${String(l.qty).replace('.',',')}</td><td class="right cr">${fmt(l.cr)}</td><td class="right pv">${fmt(l.pv)}</td><td class="right cr">${fmt(cT)}</td><td class="right pv">${fmt(pT)}</td><td class="right marge-cell">${fmt(pT-cT)}</td></tr>`;
+    const pT=l.pv*l.qty;
+    pvT+=pT;
+    html+=`<tr><td class="ref">${l.kind==='remise'?'':l.ref}</td><td>${l.label}</td><td class="right qty">${String(l.qty).replace('.',',')}</td><td class="right pv">${fmt(l.pv)}</td><td class="right pv">${fmt(pT)}</td></tr>`;
   });
-  html+=`<tr><td class="ref">ADIPSYS-${r.adp.cnxTier}/${STATE.adipsysDuree}M</td><td>Portail Adipsys HM SaaS Expert</td><td class="right qty">1</td><td class="right cr">${fmt(r.adipsysCR)}</td><td class="right pv">${fmt(r.adipsysPV)}</td><td class="right cr">${fmt(r.adipsysCR)}</td><td class="right pv">${fmt(r.adipsysPV)}</td><td class="right marge-cell">${fmt(r.adipsysMarge)}</td></tr>`;
-  crT+=r.adipsysCR;pvT+=r.adipsysPV;
+  html+=`<tr><td class="ref">ADIPSYS-${r.adp.cnxTier}/${STATE.adipsysDuree}M</td><td>Portail de connexion Adipsys HM SaaS Expert · ${STATE.adipsysDuree} mois</td><td class="right qty">1</td><td class="right pv">${fmt(r.adipsysPV)}</td><td class="right pv">${fmt(r.adipsysPV)}</td></tr>`;
+  pvT+=r.adipsysPV;
   tbody.innerHTML=html;
-  setText('mat-cr-total',fmt(crT));setText('mat-pv-total',fmt(pvT));setText('mat-marge-total',fmt(pvT-crT));
+  setText('mat-pv-total',fmt(pvT));
 }
 
 function updateClientView(r) {
@@ -1603,11 +1708,10 @@ function updateClientView(r) {
     coutMensuelDetail = 'Montant trop faible pour une location financière';
   } else if (STATE.leasingMode === 'integre') {
     coutMensuelPrincipal = r.loyerTotal;
-    coutMensuelDetail = `Tout inclus · pendant ${STATE.engagement} mois`;
+    coutMensuelDetail = `Matériel, installation, portail de connexion et contrat de services ${r.gammeLabel} inclus, pendant ${STATE.engagement} mois`;
   } else {
-    coutMensuelPrincipal = r.loyerTotal + servMensuelAffiche;
-    coutMensuelDetail = `${fmt(r.loyerTotal)} installation sur ${STATE.engagement} mois + ${servLbl}`;
-    if (saison) coutMensuelDetail += ` · hors saison : ${fmt(r.loyerTotal)}/mois`;
+    coutMensuelPrincipal = r.loyerTotal + r.recMensuel;
+    coutMensuelDetail = `${fmt(r.loyerTotal)} d'installation + ${fmt(r.recMensuel)} de contrat de services ${r.gammeLabel} (moyenne mensuelle, ${factLibelle(r)})`;
   }
 
   // Échelonnement du paiement en cas d'achat comptant : aligné sur les conditions de règlement Axonaut (40 / 30 / 30)
@@ -1638,7 +1742,7 @@ function updateClientView(r) {
     </div>
 
     <div class="cv-title">Solution Wifi · ${nom}</div>
-    <div class="cv-sub">${r.nbHeberg} hébergements · ${r.typoLabel} · ${r.nbAPTotal} bornes Wifi 6 · installation en ${fmtJours(r.jours)}</div>
+    <div class="cv-sub">${r.nbHeberg} hébergements · ${r.typoLabel} · ${r.nbAPTotal} bornes ${r.genLabel} · installation en ${fmtJours(r.jours)}</div>
     <hr class="cv-divider">
 
     <div class="cv-pack">
@@ -1648,6 +1752,7 @@ function updateClientView(r) {
       ${STATE.chatVacanciers==='inclus'?`<div class="cv-pack-row"><span>Assistance aux vacanciers par mail et chat en direct 24/7 — instantanée, dans toutes les langues</span><span class="check">✓</span></div>`:''}
       <div class="cv-pack-row"><span>Signal disponible aux abords immédiats de chaque hébergement</span><span class="check">✓</span></div>
       <div class="cv-pack-row"><span>Matériel standard TP-Link Omada — non propriétaire, vous gardez la main</span><span class="check">✓</span></div>
+      ${r.spare ? `<div class="cv-pack-row"><span>Kit de secours laissé sur site (${[r.spare.poe?r.spare.poe+' adaptateurs PoE':'', r.spare.ap?r.spare.ap+' borne extérieure':'', r.spare.sw5?r.spare.sw5+' switch 5 ports':'', r.spare.sw10?r.spare.sw10+' switch 10 ports':''].filter(Boolean).join(', ')}) : dépannage immédiat guidé à distance</span><span class="check">✓</span></div>` : ''}
     </div>
 
     <div class="cv-pack">
@@ -1688,35 +1793,21 @@ function updateClientView(r) {
       Votre choix reste révisable chaque année.
     </div>`:''}
 
-    ${r.loc ? `
-    <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;margin-bottom:6px;">Option 1 — Location financière ${STATE.engagement} mois</div>
-    <div class="cv-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:6px;">
-      <div class="cv-metric blue">
-        <div class="cm-label">Coût initial</div>
-        <div class="cm-value">${fmt(r.acompteMontant)}</div>
-        <div class="cm-sub">${r.acompteMontant > 0 ? 'Premier versement avant mise en location' : 'Aucun premier versement'}</div>
-      </div>
-      <div class="cv-metric sun">
-        <div class="cm-label">Coût mensuel</div>
-        <div class="cm-value">${fmt(coutMensuelPrincipal)}</div>
-        <div class="cm-sub">${coutMensuelDetail}</div>
-      </div>
-    </div>
-    <div style="font-size:10px;color:#6b7280;margin-bottom:14px;">Loyers HT, terme à échoir, sous réserve d'acceptation du dossier par l'organisme de financement.</div>` : ''}
-
-    <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;margin-bottom:6px;">Option ${r.loc?'2':'1'} — Achat comptant</div>
-    <div class="cv-pack" style="margin-bottom:10px;">
-      <div class="cv-pack-header" style="background:#16a34a;">Échelonnement du règlement</div>
-      <div class="cv-pack-row"><span>À la commande (40 %)</span><span style="font-weight:700;">${fmt(ech1)}</span></div>
-      <div class="cv-pack-row"><span>À la livraison du matériel / ouverture du chantier (30 %)</span><span style="font-weight:700;">${fmt(ech2)}</span></div>
-      <div class="cv-pack-row"><span>À la mise en service du réseau (30 %)</span><span style="font-weight:700;">${fmt(ech3)}</span></div>
-      <div class="cv-pack-row" style="background:#f8fafc;"><span style="font-weight:700;">Total investissement${r.remiseMontant>0?' (remise Salon déduite)':''}</span><span style="font-weight:700;">${fmt(r.capexPV)}</span></div>
-    </div>
-    <div class="cv-grid" style="grid-template-columns:1fr;margin-bottom:10px;">
-      <div class="cv-metric green">
-        <div class="cm-label">Contrat de services ${r.gammeLabel}</div>
-        <div class="cm-value">${fmt(r.recMensuel)}<span style="font-size:12px;font-weight:500;color:#6b7280;">/mois</span></div>
-        <div class="cm-sub">Engagement 12 mois · ${saison ? `réglé d'avril à septembre (${fmt(r.echeance)}/mois)` : STATE.recurrentMode==='annuel' ? `réglé à l'année (${fmt(r.caRecAnnuel)})` : '12 mensualités'}${r.maintOfferte ? ' · 6 premiers mois offerts' : ''}</div>
+    <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;margin-bottom:8px;">Deux façons de vous équiper${r.remiseMontant>0?' · remise Salon déduite':''}</div>
+    <div class="cv-cmp">
+      ${r.loc ? `<div class="cv-col loc">
+        <div><div class="cv-col-head">① Location longue durée</div><div class="cv-col-tag">${STATE.engagement} mois · tout compris</div></div>
+        <div class="cv-step"><div class="cv-lbl">À la commande</div><div class="cv-mid">${r.acompteMontant>0 ? fmt(r.acompteMontant) : 'Aucun versement'}</div></div>
+        <div class="cv-step"><div class="cv-lbl">Puis chaque mois</div><div class="cv-big">${fmt(coutMensuelPrincipal)}<span style="font-size:12px;font-weight:500;color:#6b7280;"> /mois</span></div>
+          <div class="cv-small">${coutMensuelDetail}</div></div>
+        <div class="cv-step cv-small">Loyers HT, terme à échoir, sous réserve d'acceptation du dossier par l'organisme de financement.</div>
+      </div>` : ''}
+      <div class="cv-col achat">
+        <div><div class="cv-col-head">${r.loc?'②':'①'} Achat comptant</div><div class="cv-col-tag">Vous êtes propriétaire de l'installation</div></div>
+        <div class="cv-step"><div class="cv-lbl">Prix d'achat</div><div class="cv-big">${fmt(r.capexPV)}</div>
+          <div class="cv-small">${fmt(ech1)} à la commande · ${fmt(ech2)} à la livraison du matériel · ${fmt(ech3)} à la mise en service</div></div>
+        <div class="cv-step"><div class="cv-lbl">Puis contrat de services ${r.gammeLabel}</div><div class="cv-mid">${fmt(r.recMensuel)}<span style="font-size:12px;font-weight:500;color:#6b7280;"> /mois</span></div>
+          <div class="cv-small">Soit ${fmt(r.caRecAnnuel)} par an, ${factLibelle(r)} · engagement 12 mois${r.maintOfferte ? ' · 6 premiers mois offerts' : ''}</div></div>
       </div>
     </div>
 
@@ -1745,13 +1836,12 @@ function buildProjectData() {
       distanceKm: document.getElementById('distanceKm').value,
       nbJoursDeploiement: document.getElementById('nbJoursDeploiement').value,
       recurrentMensuel: document.getElementById('recurrentMensuel').value,
-      recCapitalise: document.getElementById('recCapitalise').value,
       chkPonte: document.getElementById('chkPonte').checked,
       nbPontes: document.getElementById('nbPontes').value,
       pontType: document.getElementById('pontType').value,
       chkTV: document.getElementById('chkTV').checked, nbTV: document.getElementById('nbTV').value,
-      chkTel: document.getElementById('chkTel').checked, nbPostes: document.getElementById('nbPostes').value,
-      chkVSI: document.getElementById('chkVSI').checked, nbCam: document.getElementById('nbCam').value,
+      nbSparePoe: document.getElementById('nbSparePoe').value, nbSpareAp: document.getElementById('nbSpareAp').value,
+      nbSpareSw5: document.getElementById('nbSpareSw5').value, nbSpareSw10: document.getElementById('nbSpareSw10').value,
       chatPrixMensuel: document.getElementById('chatPrixMensuel').value,
     },
     state: { ...STATE },
@@ -1792,7 +1882,7 @@ function renderProjects() {
     <div class="project-item">
       <div>
         <div class="pi-name">${p.nom}</div>
-        <div class="pi-meta">${p.result?.typoLabel||''} · ${p.result?.nbHeberg||'?'} héb. · CAPEX ${p.result ? fmt(p.result.capexPV) : '—'} · ${p.date||''}</div>
+        <div class="pi-meta">${p.result?.typoLabel||''} · ${p.result?.nbHeberg||'?'} héb. · achat ${p.result ? fmt(p.result.capexPV) : '—'} · ${p.date||''}</div>
       </div>
       <div class="pi-actions">
         <button class="pi-btn load" onclick="loadProject(${i})">📂 Charger</button>
@@ -1810,16 +1900,15 @@ function loadProject(i) {
   document.getElementById('nomClient').value = inp.nomClient||'';
   document.getElementById('nbHeberg').value  = inp.nbHeberg||100;
   document.getElementById('distanceKm').value= inp.distanceKm||60;
-  document.getElementById('recCapitalise').value    = inp.recCapitalise||125;
   document.getElementById('chkPonte').checked = inp.chkPonte||false;
   document.getElementById('nbPontes').value   = inp.nbPontes||1;
   document.getElementById('pontType').value   = inp.pontType||'EAP215-BRIDGE';
   document.getElementById('chkTV').checked    = inp.chkTV||false;
   document.getElementById('nbTV').value       = inp.nbTV||20;
-  document.getElementById('chkTel').checked   = inp.chkTel||false;
-  document.getElementById('nbPostes').value   = inp.nbPostes||20;
-  document.getElementById('chkVSI').checked   = inp.chkVSI||false;
-  document.getElementById('nbCam').value      = inp.nbCam||8;
+  document.getElementById('nbSparePoe').value  = inp.nbSparePoe ?? 5;
+  document.getElementById('nbSpareAp').value   = inp.nbSpareAp ?? 1;
+  document.getElementById('nbSpareSw5').value  = inp.nbSpareSw5 ?? 1;
+  document.getElementById('nbSpareSw10').value = inp.nbSpareSw10 ?? 0;
   document.getElementById('chatPrixMensuel').value = inp.chatPrixMensuel||0;
   // Restore state
   if (p.state) {
@@ -1837,13 +1926,15 @@ function loadProject(i) {
     STATE.matsInclus = s.matsInclus!==undefined ? s.matsInclus : true;
     STATE.apOutOverride = s.apOutOverride!==undefined ? s.apOutOverride : null;
     STATE.apInOverride = s.apInOverride!==undefined ? s.apInOverride : null;
+    STATE.spareManual = s.spareManual !== undefined ? s.spareManual : null;
+    STATE.wifiGen = s.wifiGen || 'w6';
+    ['w6','w7'].forEach(k => document.getElementById('gen-'+k).classList.toggle('active', k===STATE.wifiGen));
     // Update UI buttons
     document.querySelectorAll('.typo-btn').forEach((b,j)=>b.classList.remove('active'));
     const typoNames=['camping','hotel','village','sante','senior'];
     const ti = typoNames.indexOf(STATE.typo);
     if(ti>=0) document.querySelectorAll('.typo-btn')[ti].classList.add('active');
     setEngagement(STATE.engagement);
-    setAdipsys(STATE.adipsysDuree);
     setAcompte(STATE.acomptePct);
     setLeasingMode(STATE.leasingMode);
     setChatVacanciers(STATE.chatVacanciers);
@@ -1854,8 +1945,8 @@ function loadProject(i) {
     STATE.recOverride = recO;
     setRemiseSalon(s.remisePct || 0);
     setMaintOfferte(!!s.maintOfferte);
-    ['ponte-nb','tv-nb','tel-nb','vsi-nb'].forEach((id,i)=>{
-      const cbs=['chkPonte','chkTV','chkTel','chkVSI'];
+    ['ponte-nb','tv-nb'].forEach((id,i)=>{
+      const cbs=['chkPonte','chkTV'];
       document.getElementById(id).style.display = document.getElementById(cbs[i]).checked?'block':'none';
     });
   }
@@ -2013,7 +2104,7 @@ async function testAxonaut() {
 // ═══════════════════ DEVIS AXONAUT « PRÊT À ENVOYER » ═══════════════════
 // ID des fiches produits Axonaut (catalogue au 25/10/2026) : la ligne du devis est rattachée à la fiche,
 // ce qui reprend son prix d'achat et évite toute création de doublon.
-const AX_IDS = {"CABL-FORFAIT": 40039586, "CABL-VID": 40219296, "DEPL": 40039592, "INF-ETANCH": 40219194, "INF-MAT4M-02": 33339580, "INF-ME26812737": 33339014, "MAT-OC200": 33339076, "MAT-TL-SG2210P": 33340110, "MAT-TPLEAP215-BRIDGEKIT": 33340102, "MAT-TPLEAP610-INDOOR": 33339810, "MAT-TPLEAP625-OUTDOORHD": 33339700, "MAT-TPLEAP650D120-OUTDOOR": 33339170, "MAT-TPLES205GP": 33340044, "MAT-TPLINSIGHTS245ZI": 40270116, "MAT-TPLINSIGHTS345-4G4MM": 40270118, "MAT-TPLINSIGHTS345S4MM": 40270120, "MAT-TPLINSIGHTS345ZI": 39543702, "MAT-TPLINSIGHTS35528MM": 40270122, "MAT-TPLINSIGHTS385DPS": 40270124, "MAT-TPLINSIGHTS445S28MM": 40270126, "MAT-TPLINSIGHTS445ZI": 40270128, "MAT-TPLINSIGHTS485PI": 40270130, "MAT-TPLINSIGHTS655I": 40270132, "MAT-TPLPOE4824G": 33338804, "MAT-TPLVIGIC24028MM": 40270134, "MAT-TPLVIGIC2404MM": 40270136, "MAT-TPLVIGIC240I28MM": 40270138, "MAT-TPLVIGIC240I4MM": 40270140, "MAT-TPLVIGIC25028MM": 40270142, "MAT-TPLVIGIC2504MM": 40270144, "MAT-TPLVIGIC340-W4MM": 40270152, "MAT-TPLVIGIC34028MM": 40270146, "MAT-TPLVIGIC3404MM": 40270148, "MAT-TPLVIGIC3406MM": 40270150, "MAT-TPLVIGIC340I28MM": 40270154, "MAT-TPLVIGIC340I4MM": 40270156, "MAT-TPLVIGIC340I6MM": 40270158, "MAT-TPLVIGIC340S4MM": 40270160, "MAT-TPLVIGIC35028MM": 40270162, "MAT-TPLVIGIC3504MM": 40270164, "MAT-TPLVIGIC440-W4MM": 40270170, "MAT-TPLVIGIC44028MM": 40270166, "MAT-TPLVIGIC4404MM": 40270168, "MAT-TPLVIGIC440I28MM": 40270174, "MAT-TPLVIGIC440I4MM": 40270176, "MAT-TPLVIGIC45028MM": 40270178, "MAT-TPLVIGIC4504MM": 40270180, "MAT-TPLVIGIC48528MM": 40270182, "MAT-TPLVIGIC540-4G4MM": 33338938, "MAT-TPLVIGIC540-W4MM": 40270186, "MAT-TPLVIGIC5404MM": 40270184, "MAT-TPLVIGIC540S4MM": 40270188, "MAT-TPLVIGIC540V": 33338942, "MO-JOUR-BINOME": 40269878, "TPLBEAMBRIDGE5URKIT": 35567932, "VID-302504398": 33339184, "VID-HIK303801047": 33339134, "VID-HIK303801489": 33339148, "VID-HIK303801490": 33339150, "VID-HIK303801508": 33339138, "VID-HIK303801531": 33339144, "VID-HIK303801591": 33339130, "VID-INSIGHTS28528MM": 33338924, "VID-INSIGHTS34528MM": 33338918, "VID-INSIGHTS38528MM": 33338920, "VID-INSIGHTS45528MM": 33338978, "VID-INSIGHTS48528MM": 33338980, "VID-TPLINSIGHTS24528MM": 33338922, "VID-TPLINSIGHTS385PI": 33340152, "VID-TPLINSIGHTS44528MM": 33338976, "VID-TPLVIGINVR1004H-4P": 33339656, "VID-TPLVIGINVR1008H-8P": 33339658, "VID-TPLVIGINVR2016H-16P": 33339652, "VID-TPLVIGINVR4032H": 33339654, "VID-TPLVIGISP6020": 33339750, "VID-TPLVIGISP9030": 33339748, "VID-TPLVJB-300": 33338862, "VID-VIGINVR4064H": 33340116};
+const AX_IDS = {"CABL-FORFAIT": 40039586, "CABL-VID": 40219296, "DEPL": 40039592, "INF-ETANCH": 40219194, "INF-MAT4M-02": 33339580, "INF-ME26812737": 33339014, "MAT-OC200": 33339076, "MAT-TL-SG2210P": 33340110, "MAT-TPLEAP215-BRIDGEKIT": 33340102, "MAT-TPLEAP610-INDOOR": 33339810, "MAT-TPLEAP625-OUTDOORHD": 33339700, "MAT-TPLEAP650D120-OUTDOOR": 33339170, "MAT-TPLES205GP": 33340044, "MAT-TPLINSIGHTS245ZI": 40270116, "MAT-TPLINSIGHTS345-4G4MM": 40270118, "MAT-TPLINSIGHTS345S4MM": 40270120, "MAT-TPLINSIGHTS345ZI": 39543702, "MAT-TPLINSIGHTS35528MM": 40270122, "MAT-TPLINSIGHTS385DPS": 40270124, "MAT-TPLINSIGHTS445S28MM": 40270126, "MAT-TPLINSIGHTS445ZI": 40270128, "MAT-TPLINSIGHTS485PI": 40270130, "MAT-TPLINSIGHTS655I": 40270132, "MAT-TPLPOE4824G": 33338804, "MAT-TPLVIGIC24028MM": 40270134, "MAT-TPLVIGIC2404MM": 40270136, "MAT-TPLVIGIC240I28MM": 40270138, "MAT-TPLVIGIC240I4MM": 40270140, "MAT-TPLVIGIC25028MM": 40270142, "MAT-TPLVIGIC2504MM": 40270144, "MAT-TPLVIGIC340-W4MM": 40270152, "MAT-TPLVIGIC34028MM": 40270146, "MAT-TPLVIGIC3404MM": 40270148, "MAT-TPLVIGIC3406MM": 40270150, "MAT-TPLVIGIC340I28MM": 40270154, "MAT-TPLVIGIC340I4MM": 40270156, "MAT-TPLVIGIC340I6MM": 40270158, "MAT-TPLVIGIC340S4MM": 40270160, "MAT-TPLVIGIC35028MM": 40270162, "MAT-TPLVIGIC3504MM": 40270164, "MAT-TPLVIGIC440-W4MM": 40270170, "MAT-TPLVIGIC44028MM": 40270166, "MAT-TPLVIGIC4404MM": 40270168, "MAT-TPLVIGIC440I28MM": 40270174, "MAT-TPLVIGIC440I4MM": 40270176, "MAT-TPLVIGIC45028MM": 40270178, "MAT-TPLVIGIC4504MM": 40270180, "MAT-TPLVIGIC48528MM": 40270182, "MAT-TPLVIGIC540-4G4MM": 33338938, "MAT-TPLVIGIC540-W4MM": 40270186, "MAT-TPLVIGIC5404MM": 40270184, "MAT-TPLVIGIC540S4MM": 40270188, "MAT-TPLVIGIC540V": 33338942, "MO-JOUR-BINOME": 40269878, "MAT-TPLSG2210MP": 33340038, "TPLBEAMBRIDGE5URKIT": 35567932, "VID-302504398": 33339184, "VID-HIK303801047": 33339134, "VID-HIK303801489": 33339148, "VID-HIK303801490": 33339150, "VID-HIK303801508": 33339138, "VID-HIK303801531": 33339144, "VID-HIK303801591": 33339130, "VID-INSIGHTS28528MM": 33338924, "VID-INSIGHTS34528MM": 33338918, "VID-INSIGHTS38528MM": 33338920, "VID-INSIGHTS45528MM": 33338978, "VID-INSIGHTS48528MM": 33338980, "VID-TPLINSIGHTS24528MM": 33338922, "VID-TPLINSIGHTS385PI": 33340152, "VID-TPLINSIGHTS44528MM": 33338976, "VID-TPLVIGINVR1004H-4P": 33339656, "VID-TPLVIGINVR1008H-8P": 33339658, "VID-TPLVIGINVR2016H-16P": 33339652, "VID-TPLVIGINVR4032H": 33339654, "VID-TPLVIGISP6020": 33339750, "VID-TPLVIGISP9030": 33339748, "VID-TPLVJB-300": 33338862, "VID-VIGINVR4064H": 33340116};
 const r2 = n => Math.round(n * 100) / 100;
 function axLine(name, code, qty, pv, cr, chapter) {
   const o = { name: String(name || 'Article').slice(0, 250), quantity: qty, price: r2(pv), tax_rate: 20, chapter };
@@ -2044,7 +2135,7 @@ const NIVEAU_MSG = ['', ' (prix d\'achat non transmis : Axonaut a refusé le cha
 const fmtE = n => new Intl.NumberFormat('fr-FR', { minimumFractionDigits: (Math.round(n*100) % 100) ? 2 : 0, maximumFractionDigits: 2 }).format(n) + ' € HT';
 
 function buildAxonautProducts(r) {
-  const CH = { mat:'Matériel (livré programmé)', pose:'Installation et mise en service', remise:'Offre spéciale SETT 2026' };
+  const CH = { mat:'Matériel (livré programmé)', pose:'Installation et mise en service', spare:'Kit de secours laissé sur site', remise:'Offre spéciale SETT 2026' };
   const prods = r.lignes.map(l => axLine(l.label, l.kind === 'remise' ? '' : l.ref, l.qty, l.pv, l.cr, CH[l.kind] || CH.mat));
   prods.push(axLine(`Portail de connexion Adipsys HM SaaS Expert ${r.adp.cnxTier} connexions – ${STATE.adipsysDuree} mois`,
     `ADIPSYS-${r.adp.cnxTier}-${STATE.adipsysDuree}M-EXP`, 1, r.adipsysPV, r.adipsysCR, 'Portail de connexion'));
@@ -2053,16 +2144,13 @@ function buildAxonautProducts(r) {
 }
 // Texte affiché au client sur le devis (aucune donnée interne)
 function buildAxonautComments(r) {
-  const fact = STATE.recurrentMode==='saisonnier' ? `réglé d'avril à septembre (${fmtE(r.echeance)}/mois)`
-    : STATE.recurrentMode==='annuel' ? `réglé à l'année (${fmtE(r.caRecAnnuel)})` : 'réglé en 12 mensualités';
+  const fact = `soit ${fmtE(r.caRecAnnuel)} par an, ${factLibelle(r)}`;
   const L = [];
   L.push(`Solution Wifi – ${r.nomClient}`);
-  L.push(`${r.nbHeberg} hébergements · ${r.nbAPTotal} bornes Wifi 6 TP-Link Omada livrées programmées, posées et mises en service par nos techniciens. Durée d'installation estimée : ${fmtJours(r.jours)}.`);
+  L.push(`${r.nbHeberg} hébergements · ${r.nbAPTotal} bornes ${r.genLabel} TP-Link Omada livrées programmées, posées et mises en service par nos techniciens. Durée d'installation estimée : ${fmtJours(r.jours)}.`);
   if (r.remiseMontant > 0) L.push(`Offre spéciale SETT 2026 : remise Salon de −${r.remisePct} % sur le matériel et l'installation, déjà déduite (−${fmtE(r.remiseMontant)}).`);
   let serv = `Contrat de services Wifi ${r.gammeLabel} (site de ${r.nbAPTotal} bornes) : ${fmtE(r.wifiMensuel)}/mois`;
-  if (r.telMensuel) serv += ` + Téléphonie ${r.gammeLabel} : ${fmtE(r.telMensuel)}/mois`;
-  if (r.vidMensuel) serv += ` + Vidéo ${r.gammeLabel} : ${fmtE(r.vidMensuel)}/mois`;
-  serv += `, engagement 12 mois, ${fact}, facturé séparément de ce devis.`;
+  serv += `, ${fact}, engagement 12 mois. En achat comptant, il est facturé séparément de ce devis.`;
   if (r.maintOfferte) serv += ` Offre SETT 2026 : les 6 premiers mois sont offerts (valeur ${fmtE(r.valeurOfferte)}).`;
   L.push(serv);
   if (r.loc) L.push(`Option location financière : ${fmtE(Math.round(r.loyerTotal))}/mois sur ${STATE.engagement} mois${STATE.leasingMode==='integre' ? ', contrat de services inclus' : ''}${r.acompteMontant>0 ? `, après un premier versement de ${fmtE(Math.round(r.acompteMontant))}` : ''}, sous réserve d'acceptation du dossier par l'organisme de financement.`);
@@ -2070,10 +2158,10 @@ function buildAxonautComments(r) {
 }
 // Note interne (opportunité Axonaut) : chiffres de pilotage, jamais visibles par le client
 function buildAxonautInternal(r) {
-  return `Deviseur Wifi V16 – ${r.date} – ${r.nbHeberg} héb. ${r.typoLabel} – ${r.nbAPTotal} bornes\n` +
-    `Pose : ${String(r.jours).replace('.',',')} j binôme · CAPEX ${Math.round(r.capexPV)} € HT · coût de revient ${Math.round(r.capexCR)} € · coef ${(r.capexPV/r.capexCR).toFixed(2)}\n` +
+  return `Deviseur Wifi V17 – ${r.date} – ${r.nbHeberg} héb. ${r.typoLabel} – ${r.nbAPTotal} bornes\n` +
+    `Bornes ${r.genLabel}${r.spare ? ' + Spare' : ''} · Pose : ${String(r.jours).replace('.',',')} j binôme · achat ${Math.round(r.capexPV)} € HT · coût de revient ${Math.round(r.capexCR)} € · coef ${(r.capexPV/r.capexCR).toFixed(2)}\n` +
     (r.remiseMontant>0 ? `Remise Salon −${r.remisePct} % (−${Math.round(r.remiseMontant)} €)\n` : '') +
-    (r.loc ? `Leasing ${STATE.leasingMode} ${STATE.engagement} mois, barème Locam ${r.loc.coef} % → ${Math.round(r.loyerTotal)} €/mois\n` : '') +
+    (r.loc ? `Location ${STATE.leasingMode==='integre'?'services inclus':'services à part'} ${STATE.engagement} mois, barème Locam ${r.loc.coef} % → ${Math.round(r.loyerTotal)} €/mois\n` : '') +
     `Contrat ${r.gammeLabel} ${r.recMensuel} €/mois (${STATE.recurrentMode})` + (r.maintOfferte ? ` – 6 mois offerts (${Math.round(r.valeurOfferte)} €)` : '');
 }
 async function pushToAxonaut() {
@@ -2263,6 +2351,11 @@ const MAT_DEFAULTS = {
   'EAP215-BRIDGE': { label:'Pont EAP215-Bridge KIT (kit)',      cr:104.94, pv:262 },
   'BEAM-BRIDGE':   { label:'Pont Beam Bridge 5 UR KIT (kit)',   cr:149.33, pv:476 },
   'CABLAGE':     { label:'Câblage forfait/borne',                cr:10,    pv:23  },
+  'EAP772-OUT':  { label:'Borne ext. Wifi 7 EAP772-Outdoor (CR estimé)', cr:235, pv:449 },
+  'EAP723':      { label:'Borne int. Wifi 7 EAP723 (CR estimé)', cr:95,    pv:215 },
+  'SW10P':       { label:'Switch PoE+ TL-SG2210MP (programmé)',  cr:140.75, pv:318 },
+  'SW5':         { label:'Switch 5 ports ES205GP (Spare)',       cr:32,    pv:108 },
+  'POE':         { label:'Adaptateur PoE (Spare)',               cr:11.56, pv:27  },
 };
 
 function getMaterialSettings() {
@@ -2355,6 +2448,8 @@ function applyMaterialSettings() {
 loadSettings();
 applyMaterialSettings();
 renderLocam();
+setLeasingMode(STATE.leasingMode);
+setAdipsys();
 setRecurrent('saisonnier');
 calc();
 renderMaterialParams();
