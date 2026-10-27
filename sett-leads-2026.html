@@ -118,20 +118,20 @@ pre{background:var(--navy);color:#e2e8f0;padding:10px;border-radius:8px;overflow
   </div>
   <div class="card" id="blkProjet"><h2>Votre projet</h2>
     <label class="chk" style="margin-bottom:14px"><input type="checkbox" data-c="dejaEquipe"><span>Déjà équipé <span class="hint">(autre presta ou équipement interne · décoché = primo-équipement)</span></span></label>
-    <div class="crit"><label>1 · Typologie du site</label><div class="chips" id="cType"></div></div>
-    <div class="crit" id="critClass"><label>2 · Classement</label><div class="chips" id="cClass"></div></div>
-    <div class="crit"><label>3 · Capacité <span id="capUnit" class="hint"></span></label>
-      <div class="chips" id="cCap"></div>
-      <div style="margin-top:8px;max-width:220px"><input type="number" inputmode="numeric" data-f="capaciteNb" placeholder="Nombre exact (optionnel)"></div></div>
-    <div class="crit"><label>4 · Timing du projet</label><div class="chips" id="cTiming"></div></div>
-    <div class="crit"><label>5 · Budget validé</label><div class="chips" id="cBudget"></div></div>
-    <div class="crit"><label>6 · Interlocuteur décisionnaire</label><div class="chips" id="cDec"></div></div>
-    <div class="crit"><label>7 · Engagement chez le prestataire actuel</label>
-      <input type="text" data-f="prestataire" placeholder="Nom du prestataire actuel (optionnel)" autocomplete="off" style="max-width:340px;margin-bottom:8px">
-      <div style="max-width:200px;margin-bottom:8px"><label>Fin d'engagement (MM-YYYY)</label><input type="text" data-f="finEngagement" inputmode="numeric" placeholder="MM-YYYY" maxlength="7" autocomplete="off"></div>
+    <div class="crit"><label>1 · Engagement chez le prestataire actuel</label>
+      <select data-f="prestataire" style="max-width:340px;margin-bottom:8px"><option value="">Prestataire actuel…</option><option value="Osmozis">Osmozis</option><option value="Passman">Passman</option><option value="Wifirst">Wifirst</option><option value="IKD">IKD</option><option value="Wiizone">Wiizone</option><option value="Hotenet">Hotenet</option><option value="ISR">ISR</option><option value="Autre presta non spécialisé">Autre presta non spécialisé</option></select>
+      <div style="max-width:200px;margin-bottom:8px"><label>Depuis quand ? <span class="hint">(début de contrat / installation · MM-YYYY)</span></label><input type="text" data-f="depuis" inputmode="numeric" placeholder="MM-YYYY" maxlength="7" autocomplete="off"></div>
       <div class="chips" id="cEng"></div>
       <label class="chk" id="resilBox" style="margin-top:8px"><input type="checkbox" data-c="resil"><span>Résiliation envoyée <span class="hint">(décoché = pas envoyée)</span></span></label>
     </div>
+    <div class="crit"><label>2 · Typologie du site</label><div class="chips" id="cType"></div></div>
+    <div class="crit"><label>3 · Interlocuteur décisionnaire</label><div class="chips" id="cDec"></div></div>
+    <div class="crit" id="critClass"><label>4 · Classement</label><div class="chips" id="cClass"></div></div>
+    <div class="crit"><label>5 · Capacité <span id="capUnit" class="hint"></span></label>
+      <div class="chips" id="cCap"></div>
+      <div style="margin-top:8px;max-width:220px"><input type="number" inputmode="numeric" data-f="capaciteNb" placeholder="Nombre exact (optionnel)"></div></div>
+    <div class="crit"><label>6 · Timing du projet</label><div class="chips" id="cTiming"></div></div>
+    <div class="crit"><label>7 · Budget validé</label><div class="chips" id="cBudget"></div></div>
   </div>
   </div>
   <div class="colR">
@@ -344,7 +344,7 @@ function applyDisc(){document.body.classList.toggle('discreet',discreet()&&!reve
 function reveal(){revealed=true;applyDisc();render();if(navigator.vibrate)navigator.vibrate(20);clearTimeout(hideT);hideT=setTimeout(()=>{revealed=false;applyDisc();render()},4000)}
 
 /* ---------- Données ---------- */
-const newLead=()=>({id:'L'+Date.now().toString(36),createdAt:Date.now(),updatedAt:Date.now(),entreprise:'',prenom:'',nom:'',email:'',tel:'',telType:'',fonction:'',ville:'',client:'',type:'',classement:'',capacite:'',capaciteNb:'',timing:'',budget:'',decideur:'',budgetEstime:'',montantWifi:'',montantVideo:'',action:'',actionAt:'',actionDate:'',actionManual:false,demo:false,chiffreStand:false,solWifi:false,solVideo:false,optCanal:false,optAlerte:false,optOperateur:false,dejaEquipe:false,concurrent:'',parade:'',commercial:settings.lastCommercial,notes:'',prestataire:'',engagement:'',finEngagement:'',resil:false,consent:false,consentAt:'',ax:{status:'todo'}});
+const newLead=()=>({id:'L'+Date.now().toString(36),createdAt:Date.now(),updatedAt:Date.now(),entreprise:'',prenom:'',nom:'',email:'',tel:'',telType:'',fonction:'',ville:'',client:'',type:'',classement:'',capacite:'',capaciteNb:'',timing:'',budget:'',decideur:'',budgetEstime:'',montantWifi:'',montantVideo:'',action:'',actionAt:'',actionDate:'',actionManual:false,demo:false,chiffreStand:false,solWifi:false,solVideo:false,optCanal:false,optAlerte:false,optOperateur:false,dejaEquipe:false,depuis:'',concurrent:'',parade:'',commercial:settings.lastCommercial,notes:'',prestataire:'',engagement:'',finEngagement:'',resil:false,consent:false,consentAt:'',ax:{status:'todo'}});
 const isEmpty=l=>!(l.entreprise||l.nom||l.prenom||l.email||l.tel);
 let tmr;
 function persist(now){clearTimeout(tmr);const go=()=>{if(cur&&!isEmpty(cur)){cur.updatedAt=Date.now();const i=leads.findIndex(x=>x.id===cur.id);i<0?leads.unshift(cur):leads[i]=cur}
@@ -445,7 +445,7 @@ const validMY=v=>/^(0[1-9]|1[0-2])-\d{4}$/.test(v||'');
 const fmtMY=v=>{const d=String(v).replace(/\D/g,'').slice(0,6);return d.length>2?d.slice(0,2)+'-'+d.slice(2):d};
 function engFromMY(v){if(!validMY(v))return'';const[m,y]=v.split('-').map(Number);const n=new Date();const mo=(y-n.getFullYear())*12+(m-1-n.getMonth());return mo<=0?'free':mo<=6?'m6':mo<=12?'m12':mo<=24?'m24':'m24p'}
 document.addEventListener('input',e=>{const f=e.target.dataset?.f;if(!f||!cur)return;
-  if(f==='finEngagement')e.target.value=fmtMY(e.target.value);
+  if(f==='finEngagement'||f==='depuis')e.target.value=fmtMY(e.target.value);
   cur[f]=e.target.value;
   if(f==='capaciteNb'){cur.capacite=bucketOf(cur.capaciteNb)}
   if(f==='finEngagement'){const b=engFromMY(cur.finEngagement);if(b){cur.engagement=b;if(!ENGAGED.includes(b))cur.resil=false}}
@@ -533,7 +533,7 @@ function commentFor(l){const s=score(l),T=TEMPS[s.t];
   return[`[SETT 2026] Lead ${T.l} (${s.pct}/100)${s.cap?' – '+s.cap:''}`,
     `Typologie : ${lab(TYPES,l.type)}${hasClass(l.type)?' · Classement : '+lab(CLASS,l.classement):''} · Capacité : ${l.capaciteNb||lab(capDef(l.type).opts,l.capacite)} ${capDef(l.type).unit}`,
     `Timing : ${lab(TIMING,l.timing)} · Budget : ${lab(BUDGET,l.budget)} · Décideur présent : ${lab(DEC,l.decideur)}`,
-    `Équipement : ${l.dejaEquipe?'déjà équipé':'primo-équipement'} · Prestataire actuel : ${l.prestataire||'—'} · Engagement : ${lab(ENG,l.engagement)}${ENGAGED.includes(l.engagement)?(l.resil?' · Résiliation ENVOYÉE':' · Résiliation non envoyée'):''}${validMY(l.finEngagement)?" · Fin d'engagement : "+l.finEngagement:''}`,
+    `Équipement : ${l.dejaEquipe?'déjà équipé':'primo-équipement'} · Prestataire actuel : ${l.prestataire||'—'}${validMY(l.depuis)?' (depuis '+l.depuis+')':''} · Engagement : ${lab(ENG,l.engagement)}${ENGAGED.includes(l.engagement)?(l.resil?' · Résiliation ENVOYÉE':' · Résiliation non envoyée'):''}${validMY(l.finEngagement)?" · Fin d'engagement : "+l.finEngagement:''}`,
     l.consent?`Accord verbal recueilli le ${new Date(l.consentAt||Date.now()).toLocaleDateString('fr-FR')} (en plus du consentement badge SETT)`:'Données issues du badge SETT (consentement organisateur et exposants partenaires)',
     `Fonction : ${l.fonction||'—'} · Tél ${l.telType||'?'} · Client actuel : ${l.client||'?'}`,
     `Solutions : ${pick(SOLS,l).join(' · ')||'—'}${horsDev(l).length?' · Options hors Deviseur (à chiffrer à part) : '+horsDev(l).join(' · '):''}${l.optCanal?' · Canal+ Room Streaming'+(Number(l.montantCanal)?' : '+Number(l.montantCanal).toLocaleString('fr-FR')+' € HT sur 36 mois (Deviseur Canal+)':' (à chiffrer)'):''}`,
