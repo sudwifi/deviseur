@@ -727,8 +727,8 @@
           <div class="toggle-group">
             <div class="toggle-btn" id="eng-36" onclick="setEngagement(36)">36 mois</div>
             <div class="toggle-btn" id="eng-48" onclick="setEngagement(48)">48 mois</div>
-            <div class="toggle-btn active" id="eng-60" onclick="setEngagement(60)">60 mois</div>
-            <div class="toggle-btn" id="eng-63" onclick="setEngagement(63)">63 mois</div>
+            <div class="toggle-btn" id="eng-60" onclick="setEngagement(60)">60 mois</div>
+            <div class="toggle-btn active" id="eng-63" onclick="setEngagement(63)">63 mois</div>
           </div>
           
         </div>
@@ -1204,7 +1204,7 @@ const LOGO_SUDWIFI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQwAAADwCAYA
 
 // ═══════════════════ STATE ═══════════════════
 let STATE = {
-  typo:'camping', engagement:60, adipsysDuree:60,
+  typo:'camping', engagement:63, adipsysDuree:60,
   recurrentMode:'saisonnier', acomptePct:40, leasingMode:'sec', chatVacanciers:'inclus', matsInclus:true,
   apOutOverride:null, apInOverride:null,
   gamme:'pro', remisePct:0, maintOfferte:false, joursOverride:null, recOverride:null,
@@ -2004,7 +2004,7 @@ function loadProject(i) {
     STATE.typo = s.typo||'camping';
     STATE.leaser = s.leaser || 'grenke';
     syncLeaserUI();
-    STATE.engagement = s.engagement||60;
+    STATE.engagement = s.engagement||63;
     STATE.adipsysDuree = s.adipsysDuree||60;
     STATE.recurrentMode = s.recurrentMode||'saisonnier';
     STATE.acomptePct = s.acomptePct ?? 40;
