@@ -710,7 +710,7 @@
           <label>Versement à la commande (location)</label>
           <div class="toggle-group">
             <div class="toggle-btn" id="acp-0" onclick="setAcompte(0)">0%</div>
-            <div class="toggle-btn active" id="acp-30" onclick="setAcompte(30)">30%</div>
+            <div class="toggle-btn active" id="acp-40" onclick="setAcompte(40)">40%</div>
             <div class="toggle-btn" id="acp-50" onclick="setAcompte(50)">50%</div>
           </div>
         </div>
@@ -776,7 +776,7 @@
           <div class="leasing-row"><span class="lbl" style="color:var(--text3);font-size:11px;" id="leas-coef-info">—</span><span></span></div>
           <div id="alert-15pct" class="alert-msg" style="display:none;"></div>
           <div class="leasing-row"><span class="lbl">Prix de vente HT (matériel + pose + Adipsys)</span><span class="val" id="leas-capex">—</span></div>
-          <div class="leasing-row"><span class="lbl">Premier versement location (<span id="leas-acp-pct">30</span>%)</span><span class="val" id="leas-acompte">—</span></div>
+          <div class="leasing-row"><span class="lbl">Premier versement location (<span id="leas-acp-pct">40</span>%)</span><span class="val" id="leas-acompte">—</span></div>
           <div class="leasing-row"><span class="lbl">Base financée leasing</span><span class="val" id="leas-base">—</span></div>
           <div class="leasing-row" id="row-rec-cap" style="display:none;"><span class="lbl">Maintenance facturée par le leaser et reversée (<span id="leas-rec-mois">—</span> mois)</span><span class="val" id="leas-rec-cap">—</span></div>
           <div class="leasing-row" id="row-loyer-split" style="display:none;"><span class="lbl" style="font-size:11px;color:var(--text3);" id="leas-loyer-split">—</span><span></span></div>
@@ -1145,7 +1145,7 @@ const LOGO_SUDWIFI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQwAAADwCAYA
 // ═══════════════════ STATE ═══════════════════
 let STATE = {
   typo:'camping', engagement:60, adipsysDuree:60,
-  recurrentMode:'saisonnier', acomptePct:30, leasingMode:'sec', chatVacanciers:'inclus', matsInclus:true,
+  recurrentMode:'saisonnier', acomptePct:40, leasingMode:'sec', chatVacanciers:'inclus', matsInclus:true,
   apOutOverride:null, apInOverride:null,
   gamme:'pro', remisePct:0, maintOfferte:false, joursOverride:null, recOverride:null,
   wifiGen:'w6', spareManual:null,
@@ -1290,8 +1290,9 @@ function setWifiGen(g) {
 }
 function onSpareToggle(on) { STATE.spareManual = !!on; calc(); }
 function setAcompte(pct) {
+  if (![0,40,50].includes(pct)) pct = 40; // anciens projets à 30 %
   STATE.acomptePct = pct;
-  [0,30,50].forEach(k => document.getElementById('acp-'+k).classList.remove('active'));
+  [0,40,50].forEach(k => document.getElementById('acp-'+k).classList.remove('active'));
   document.getElementById('acp-'+pct).classList.add('active');
   setText('leas-acp-pct', pct);
   calc();
@@ -1623,7 +1624,7 @@ function renderComparatif(r) {
       : `Dont installation ${fmt(r.loyerTotal)} + ${services.toLowerCase()} ${fmt(r.recMensuel)} (moyenne mensuelle, facturé par Sud Wifi).`;
     loc = `<div class="cmp-col loc">
       <div><div class="cmp-head">① Location longue durée</div><div class="cmp-tag">${STATE.engagement} mois · location financière</div></div>
-      <div class="cmp-step"><div class="cmp-lbl">À la commande</div><div class="cmp-mid">${r.acompteMontant>0 ? fmt(r.acompteMontant) : 'Rien'}</div><div class="cmp-sub">${r.acompteMontant>0 ? `Versement initial (${STATE.acomptePct} %)` : 'Aucun versement initial'}</div></div>
+      <div class="cmp-step"><div class="cmp-lbl">À la commande</div><div class="cmp-mid">${r.acompteMontant>0 ? fmt(r.acompteMontant) : 'Rien'}</div><div class="cmp-sub">${r.acompteMontant>0 ? 'Versement initial' : 'Aucun versement initial'}</div></div>
       <div class="cmp-step"><div class="cmp-lbl">Puis chaque mois · tout compris</div><div class="cmp-big">${fmt(mensuel)}<span style="font-size:12px;font-weight:600;color:var(--text3);"> /mois</span></div><div class="cmp-sub">${detail}</div></div>
       <div class="cmp-step"><div class="cmp-sub">Pendant ${STATE.engagement} mois · sous réserve d'acceptation du dossier par l'organisme de financement.</div></div>
     </div>`;
@@ -1916,7 +1917,7 @@ function loadProject(i) {
     STATE.engagement = s.engagement||60;
     STATE.adipsysDuree = s.adipsysDuree||60;
     STATE.recurrentMode = s.recurrentMode||'saisonnier';
-    STATE.acomptePct = s.acomptePct ?? 30;
+    STATE.acomptePct = s.acomptePct ?? 40;
     // V16 : pose en jours, gammes, offres salon (absents des projets V15 → valeurs par défaut)
     STATE.joursOverride = s.joursOverride ?? null;
     STATE.recOverride = s.recOverride ?? null;
