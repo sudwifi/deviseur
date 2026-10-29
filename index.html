@@ -563,9 +563,12 @@
     <div class="card">
       <div class="card-header"><span class="card-title">Gamme de bornes</span></div>
       <div class="card-body">
-        <div class="toggle-group">
-          <div class="toggle-btn active" id="gen-w6" onclick="setWifiGen('w6')">Wifi 6</div>
-          <div class="toggle-btn" id="gen-w7" onclick="setWifiGen('w7')">Wifi 7</div>
+        <div>
+          <label>Bornes extérieures</label>
+          <div class="toggle-group">
+            <div class="toggle-btn active" id="genout-w6" onclick="setWifiGen('w6','out')">Wifi 6</div>
+            <div class="toggle-btn" id="genout-w7" onclick="setWifiGen('w7','out')">Wifi 7</div>
+          </div>
         </div>
         <div id="gen-info" style="font-size:10px;color:var(--text3);line-height:1.45;"></div>
         <div id="w7-out-block" style="display:none;">
@@ -574,6 +577,13 @@
             <option value="EAP772-OUT">EAP772-Outdoor · BE9300 tri-bande</option>
             <option value="EAP725-OUT">EAP725-Outdoor · BE3600 bi-bande</option>
           </select>
+        </div>
+        <div>
+          <label>Bornes intérieures</label>
+          <div class="toggle-group">
+            <div class="toggle-btn active" id="genin-w6" onclick="setWifiGen('w6','in')">Wifi 6</div>
+            <div class="toggle-btn" id="genin-w7" onclick="setWifiGen('w7','in')">Wifi 7</div>
+          </div>
         </div>
       </div>
     </div>
@@ -1168,7 +1178,7 @@ let STATE = {
   recurrentMode:'saisonnier', acomptePct:40, leasingMode:'sec', chatVacanciers:'inclus', matsInclus:true,
   apOutOverride:null, apInOverride:null,
   gamme:'pro', remisePct:0, maintOfferte:false, joursOverride:null, recOverride:null,
-  wifiGen:'w6', spareManual:null, w7Out:'EAP772-OUT',
+  wifiGen:'w6', genOut:'w6', genIn:'w6', spareManual:null, w7Out:'EAP772-OUT',
 };
 STATE.leasingMode = 'integre'; // V17 : par défaut, le contrat de services est fondu dans le loyer
 let lastResult = null;
@@ -1302,10 +1312,16 @@ function setAdipsys() {
   STATE.adipsysDuree = adipsysPourDuree(STATE.engagement);
   calc();
 }
-function setWifiGen(g) {
-  STATE.wifiGen = WIFI_GEN[g] ? g : 'w6';
-  ['w6','w7'].forEach(k => document.getElementById('gen-'+k).classList.toggle('active', k===STATE.wifiGen));
-  STATE.apOutOverride = null; STATE.apInOverride = null;
+// Génération choisie séparément pour l'extérieur et l'intérieur (which : 'out', 'in', ou absent = les deux)
+function setWifiGen(g, which) {
+  g = WIFI_GEN[g] ? g : 'w6';
+  if (which !== 'in') STATE.genOut = g;
+  if (which !== 'out') STATE.genIn = g;
+  STATE.wifiGen = STATE.genOut; // compatibilité anciens projets
+  ['w6','w7'].forEach(k => {
+    document.getElementById('genout-'+k).classList.toggle('active', k===STATE.genOut);
+    document.getElementById('genin-'+k).classList.toggle('active', k===STATE.genIn);
+  });
   calc();
 }
 function onSpareToggle(on) { STATE.spareManual = !!on; calc(); }
@@ -1374,7 +1390,10 @@ function calc() {
   const nbPontes = parseInt(document.getElementById('nbPontes').value)||1;
   const hasTV    = document.getElementById('chkTV').checked;
   const nbTV     = parseInt(document.getElementById('nbTV').value)||0;
-  const GEN = WIFI_GEN[STATE.wifiGen] || WIFI_GEN.w6;
+  const GEN_OUT = WIFI_GEN[STATE.genOut] || WIFI_GEN.w6, GEN_IN = WIFI_GEN[STATE.genIn] || WIFI_GEN.w6;
+  // Switch PoE+ dès qu'une borne Wifi 7 est posée (extérieure ou intérieure)
+  const GEN = (STATE.genOut==='w7' || STATE.genIn==='w7') ? WIFI_GEN.w7 : WIFI_GEN.w6;
+  const genLabel = STATE.genOut===STATE.genIn ? GEN_OUT.label : `${GEN_OUT.label} extérieur / ${GEN_IN.label} intérieur`;
   // Spare : coché automatiquement au-delà de 400 km A/R, sauf choix manuel
   const spareAuto = distKm > SPARE_SEUIL_AR;
   const hasSpare = STATE.spareManual !== null ? STATE.spareManual : spareAuto;
@@ -1419,7 +1438,7 @@ function calc() {
     lignes.push({ ref:m.ref, label:m.label, qty, cr:m.cr, pv:m.pv, kind: key==='POSE' ? 'pose' : 'mat' });
   }
 
-  const apOutKey = STATE.wifiGen==='w7' ? (STATE.w7Out || 'EAP772-OUT') : (typo.apOutKey || 'EAP650-D120');
+  const apOutKey = STATE.genOut==='w7' ? (STATE.w7Out || 'EAP772-OUT') : (typo.apOutKey || 'EAP650-D120');
   if (nbAPOut > 0) {
     add(apOutKey, nbAPOut);
     if (STATE.matsInclus) {
@@ -1428,7 +1447,7 @@ function calc() {
       add('ETANCH', nbAPOut);
     }
   }
-  if (nbAPIn > 0) add(GEN.apIn, nbAPIn);
+  if (nbAPIn > 0) add(GEN_IN.apIn, nbAPIn);
   add('CABLAGE', nbAPTotal);
   add(GEN.sw, nbSwitches);
   add('OC200', 1);
@@ -1515,7 +1534,7 @@ function calc() {
     baseTotale, loyerTotal, acompteMontant, baseLeasee,
     receveTrimestriel, receveTotalFin,
     gamme:STATE.gamme, gammeLabel:G.label, taille, wifiGrille, wifiMensuel,
-    wifiGen:STATE.wifiGen, genLabel:GEN.label, swLabel:GEN.swLabel, spare, isIntegre,
+    wifiGen:STATE.genOut, genOut:STATE.genOut, genIn:STATE.genIn, genLabel, swLabel:GEN.swLabel, spare, isIntegre,
     recMensuel, caRecAnnuel, margeRecAnnuelle, echeance, valeurOfferte, maintOfferte:STATE.maintOfferte,
     chatPrix, matsInclus:STATE.matsInclus,
     nomClient: document.getElementById('nomClient').value || '—',
@@ -1551,16 +1570,14 @@ function calc() {
 function updateUI(r) {
   const elApOut = document.getElementById('res-ap-out');
   if (document.activeElement !== elApOut) elApOut.value = r.nbAPOut||0;
-  setText('res-ap-out-type', r.nbAPOut > 0 ? (r.wifiGen==='w7' ? (STATE.w7Out==='EAP725-OUT' ? 'Wifi 7 · EAP725-Outdoor' : 'Wifi 7 · EAP772-Outdoor') : (STATE.typo==='camping'?'Wifi 6 · EAP650 D120 directionnel':'Wifi 6 · EAP625-HD omni')) : '—');
+  setText('res-ap-out-type', r.nbAPOut > 0 ? (r.genOut==='w7' ? (STATE.w7Out==='EAP725-OUT' ? 'Wifi 7 · EAP725-Outdoor' : 'Wifi 7 · EAP772-Outdoor') : (STATE.typo==='camping'?'Wifi 6 · EAP650 D120 directionnel':'Wifi 6 · EAP625-HD omni')) : '—');
   document.getElementById('reset-ap-out').hidden = (STATE.apOutOverride === null);
   const elApIn = document.getElementById('res-ap-in');
   if (document.activeElement !== elApIn) elApIn.value = r.nbAPIn||0;
-  setText('res-ap-in-type', r.nbAPIn > 0 ? (r.wifiGen==='w7' ? 'Wifi 7 · EAP775-Wall' : 'Wifi 6 · EAP610') : '—');
+  setText('res-ap-in-type', r.nbAPIn > 0 ? (r.genIn==='w7' ? 'Wifi 7 · EAP775-Wall' : 'Wifi 6 · EAP610') : '—');
   setText('res-switches-sub', r.swLabel);
-  setText('gen-info', r.wifiGen==='w7'
-    ? 'Bornes extérieures et intérieures TP-Link Omada Wifi 7.'
-    : 'Bornes extérieures et intérieures TP-Link Omada Wifi 6.');
-  document.getElementById('w7-out-block').style.display = r.wifiGen==='w7' ? 'block' : 'none';
+  setText('gen-info', '');
+  document.getElementById('w7-out-block').style.display = r.genOut==='w7' ? 'block' : 'none';
   const w7s = document.getElementById('w7Out'); if (w7s && w7s.value !== STATE.w7Out) w7s.value = STATE.w7Out;
   document.getElementById('reset-ap-in').hidden = (STATE.apInOverride === null);
   setText('res-switches', r.nbSwitches);
@@ -1952,8 +1969,13 @@ function loadProject(i) {
     STATE.apInOverride = s.apInOverride!==undefined ? s.apInOverride : null;
     STATE.spareManual = s.spareManual !== undefined ? s.spareManual : null;
     STATE.wifiGen = s.wifiGen || 'w6';
+    STATE.genOut = s.genOut || STATE.wifiGen;
+    STATE.genIn = s.genIn || STATE.wifiGen;
     STATE.w7Out = s.w7Out || 'EAP772-OUT';
-    ['w6','w7'].forEach(k => document.getElementById('gen-'+k).classList.toggle('active', k===STATE.wifiGen));
+    ['w6','w7'].forEach(k => {
+      document.getElementById('genout-'+k).classList.toggle('active', k===STATE.genOut);
+      document.getElementById('genin-'+k).classList.toggle('active', k===STATE.genIn);
+    });
     // Update UI buttons
     document.querySelectorAll('.typo-btn').forEach((b,j)=>b.classList.remove('active'));
     const typoNames=['camping','hotel','village','sante','senior'];
