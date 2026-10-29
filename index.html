@@ -787,9 +787,9 @@
           <div class="leasing-row"><span class="lbl">Prix de vente HT (matériel + pose + Adipsys)</span><span class="val" id="leas-capex">—</span></div>
           <div class="leasing-row"><span class="lbl">Premier versement location (<span id="leas-acp-pct">30</span>%)</span><span class="val" id="leas-acompte">—</span></div>
           <div class="leasing-row"><span class="lbl">Base financée leasing</span><span class="val" id="leas-base">—</span></div>
-          <div class="leasing-row" id="row-rec-cap" style="display:none;"><span class="lbl">Récurrent capitalisé (<span id="leas-rec-mois">—</span> mois)</span><span class="val" id="leas-rec-cap">—</span></div>
+          <div class="leasing-row" id="row-rec-cap" style="display:none;"><span class="lbl">Maintenance facturée par le leaser et reversée (<span id="leas-rec-mois">—</span> mois)</span><span class="val" id="leas-rec-cap">—</span></div>
           <div class="leasing-row" id="row-loyer-split" style="display:none;"><span class="lbl" style="font-size:11px;color:var(--text3);" id="leas-loyer-split">—</span><span></span></div>
-          <div class="leasing-row" id="row-base-totale" style="display:none;"><span class="lbl">Base totale financée</span><span class="val" id="leas-total-base">—</span></div>
+          <div class="leasing-row" id="row-base-totale" style="display:none !important;"><span class="lbl">Base financée</span><span class="val" id="leas-total-base">—</span></div>
           <div class="leasing-row separator big"><span class="lbl" id="leas-loyer-label">Loyer client</span><span class="val" id="leas-loyer">—</span></div>
           <div class="leasing-row green-row"><span class="lbl">↳ Sud Wifi reçoit du leaser à livraison</span><span class="val" id="leas-livraison">—</span></div>
           <div class="leasing-row yellow-row" id="row-trimestriel" style="display:none;"><span class="lbl">↳ Sud Wifi reçoit / trimestre (récurrent)</span><span class="val" id="leas-trimestriel">—</span></div>
@@ -1340,7 +1340,7 @@ function setLeasingMode(mode) {
   document.getElementById('leas-mode-'+mode).classList.add('active');
   const showIntegre = mode === 'integre';
   document.getElementById('row-rec-cap').style.display = showIntegre ? 'flex' : 'none';
-  document.getElementById('row-base-totale').style.display = showIntegre ? 'flex' : 'none';
+  document.getElementById('row-base-totale').style.display = 'none';
   document.getElementById('row-trimestriel').style.display = showIntegre ? 'flex' : 'none';
   document.getElementById('row-pack-note').style.display = showIntegre ? 'none' : 'flex';
   if (!showIntegre) document.getElementById('alert-15pct').style.display = 'none';
@@ -1477,18 +1477,19 @@ function calc() {
 
   // ── Leasing (barème Locam selon montant financé et durée)
   const isIntegre = STATE.leasingMode === 'integre';
-  // Services inclus : on capitalise exactement le contrat choisi (gamme, prix négocié éventuel)
+  // Services inclus : le leaser facture au client le contrat choisi EN PLUS du loyer, au montant indiqué,
+  // et nous le reverse à l'identique. La maintenance n'est pas financée : pas de coefficient dessus.
   const recCap = recMensuel;
   const recCapEff = isIntegre ? recCap : 0;
   const acompteMontant = capexPV * STATE.acomptePct / 100;
   const baseLeasee = capexPV - acompteMontant;
-  const baseTotale = baseLeasee + (recCapEff * STATE.engagement);
-  const loc = coefLocam(baseTotale, STATE.engagement);
+  const baseTotale = baseLeasee;
+  const loc = coefLocam(baseLeasee, STATE.engagement);
   const tauxM = loc ? loc.coef / 100 : 0;
   const loyerCAPEXSeul = baseLeasee * tauxM;
   const min15pct = loyerCAPEXSeul * 0.15;
   const alerteMin = isIntegre && recCap > 0 && recCap < min15pct;
-  const loyerTotal = baseTotale * tauxM;
+  const loyerTotal = loc ? loyerCAPEXSeul + recCapEff : 0;
   const receveTrimestriel = recCapEff * 3;
   const receveTotalFin = capexPV + (recCapEff * STATE.engagement);
 
@@ -1589,7 +1590,7 @@ function updateUI(r) {
   const split = document.getElementById('row-loyer-split');
   if (split) {
     split.style.display = r.isIntegre && r.loc ? 'flex' : 'none';
-    if (r.isIntegre && r.loc) setText('leas-loyer-split', `Dont installation ${fmt(r.loyerCAPEXSeul)} + services ${fmt(r.loyerTotal - r.loyerCAPEXSeul)} (contrat ${fmt(r.recMensuel)}/mois financé sur ${STATE.engagement} mois : le surcoût est le coût du financement). Le contrat n'est compté qu'une fois.`);
+    if (r.isIntegre && r.loc) setText('leas-loyer-split', `Dont loyer installation ${fmt(r.loyerCAPEXSeul)} + maintenance ${fmt(r.recCapEff)} (facturée par le leaser au montant indiqué, reversée à l'identique à Sud Wifi).`);
   }
   setText('leas-livraison', fmt(r.baseLeasee));
   setText('leas-trimestriel', r.receveTrimestriel>0?fmt(r.receveTrimestriel):'—');
