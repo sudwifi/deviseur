@@ -715,11 +715,20 @@
           <div style="font-size:10px;color:var(--text3);margin-top:4px;">Inclus : un seul loyer tout compris (matériel + installation + portail + contrat de services choisi). À part : le loyer ne couvre que l'installation, le contrat de services est facturé par Sud Wifi.</div>
         </div>
         <div>
+          <label>Organisme de financement</label>
+          <div class="toggle-group">
+            <div class="toggle-btn active" id="leaser-grenke" onclick="setLeaser('grenke')">Grenke</div>
+            <div class="toggle-btn" id="leaser-locam" onclick="setLeaser('locam')">Locam</div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px;">Grenke par défaut. Locam pour les dossiers refusés par Grenke (créations, entreprises de moins de 18 mois).</div>
+        </div>
+        <div>
           <label>Durée</label>
           <div class="toggle-group">
             <div class="toggle-btn" id="eng-36" onclick="setEngagement(36)">36 mois</div>
             <div class="toggle-btn" id="eng-48" onclick="setEngagement(48)">48 mois</div>
             <div class="toggle-btn active" id="eng-60" onclick="setEngagement(60)">60 mois</div>
+            <div class="toggle-btn" id="eng-63" onclick="setEngagement(63)">63 mois</div>
           </div>
           
         </div>
@@ -1029,13 +1038,13 @@
       </div>
 
       <div class="card">
-        <div class="card-header"><span class="card-title">Barème leasing Locam (coefficient mensuel en % du montant financé HT)</span></div>
+        <div class="card-header"><span class="card-title">Barèmes leasing Grenke / Locam (coefficient mensuel en % du montant financé HT)</span></div>
         <div class="card-body" style="padding:0;">
           <table class="data-table">
-            <thead><tr><th>Montant financé HT</th><th class="right">36 mois</th><th class="right">48 mois</th><th class="right">60 mois</th></tr></thead>
+            <thead><tr><th>Montant financé HT</th><th class="right">36 mois</th><th class="right">48 mois</th><th class="right">60 mois</th><th class="right">63 mois</th></tr></thead>
             <tbody id="locam-tbody"></tbody>
           </table>
-          <div style="font-size:10px;color:var(--text3);padding:8px 12px;line-height:1.5;">Location financière · terme à échoir · prélèvement · valeur de cession 50 € HT. Grenke est moins cher : si le dossier passe chez Grenke, le loyer réel sera un peu plus bas que celui affiché.</div>
+          <div style="font-size:10px;color:var(--text3);padding:8px 12px;line-height:1.5;">Grenke : coefficients relevés dans le simulateur (29/10/2026), interpolés entre les montants. Locam : terme à échoir, prélèvement, valeur de cession 50 € HT ; pas de 63 mois (calculé en 60 mois). Le loyer est affiché au client « à partir de » en attendant l'accord du leaser.</div>
         </div>
       </div>
 
@@ -1140,14 +1149,35 @@ const LOCAM = [
   { min:30000.01,max:100000,  c:{36:3.244, 48:2.515, 60:2.060}, label:'30 001 à 100 000 €' },
   { min:100000.01,max:Infinity,c:{36:3.200, 48:2.470, 60:2.014}, label:'Plus de 100 000 €' },
 ];
+// Barème Grenke (relevé dans le simulateur Grenke le 29/10/2026) : coefficient mensuel en % du prix d'achat HT,
+// points à 8 000 / 20 000 / 50 000 €, interpolation linéaire entre les points (plafonnée aux extrémités)
+const GRENKE = {
+  points: [8000, 20000, 50000],
+  c: { 36:[3.22, 3.20, 3.17], 48:[2.54, 2.53, 2.51], 60:[2.08, 2.07, 2.05], 63:[2.00, 1.99, 1.97] },
+};
+const LEASERS = { grenke:'Grenke', locam:'Locam' };
+function coefGrenke(montant, duree) {
+  if (montant < 300) return null;
+  const P = GRENKE.points, C = GRENKE.c[duree] || GRENKE.c[60];
+  let coef;
+  if (montant <= P[0]) coef = C[0];
+  else if (montant >= P[P.length-1]) coef = C[C.length-1];
+  else { let i = 0; while (montant > P[i+1]) i++; coef = C[i] + (C[i+1]-C[i]) * (montant-P[i]) / (P[i+1]-P[i]); }
+  return { coef, tranche: 'interpolé sur le simulateur' };
+}
 function coefLocam(montant, duree) {
   if (montant < 300) return null;
   const t = LOCAM.find(x => montant <= x.max) || LOCAM[LOCAM.length-1];
   return { coef: t.c[duree] || t.c[60], tranche: t.label };
 }
+function coefLeaser(montant, duree) {
+  return STATE.leaser === 'locam' ? coefLocam(montant, duree === 63 ? 60 : duree) : coefGrenke(montant, duree);
+}
 function renderLocam() {
   const tb = document.getElementById('locam-tbody'); if (!tb) return;
-  tb.innerHTML = LOCAM.map(t => `<tr><td>${t.label}</td><td class="right">${t.c[36].toFixed(3).replace('.',',')}</td><td class="right">${t.c[48].toFixed(3).replace('.',',')}</td><td class="right">${t.c[60].toFixed(3).replace('.',',')}</td></tr>`).join('');
+  const f = x => x.toFixed(3).replace('.',',');
+  tb.innerHTML = GRENKE.points.map((p,i) => `<tr><td><strong>Grenke</strong> · ${p.toLocaleString('fr-FR')} €</td><td class="right">${f(GRENKE.c[36][i])}</td><td class="right">${f(GRENKE.c[48][i])}</td><td class="right">${f(GRENKE.c[60][i])}</td><td class="right">${f(GRENKE.c[63][i])}</td></tr>`).join('')
+    + LOCAM.map(t => `<tr><td>Locam · ${t.label}</td><td class="right">${f(t.c[36])}</td><td class="right">${f(t.c[48])}</td><td class="right">${f(t.c[60])}</td><td class="right">—</td></tr>`).join('');
 }
 
 // Adipsys HM SaaS [cnx, start12, start36, start60, expert12, expert36, expert60]
@@ -1178,7 +1208,7 @@ let STATE = {
   recurrentMode:'saisonnier', acomptePct:40, leasingMode:'sec', chatVacanciers:'inclus', matsInclus:true,
   apOutOverride:null, apInOverride:null,
   gamme:'pro', remisePct:0, maintOfferte:false, joursOverride:null, recOverride:null,
-  wifiGen:'w6', genOut:'w6', genIn:'w6', spareManual:null, w7Out:'EAP772-OUT',
+  leaser:'grenke', wifiGen:'w6', genOut:'w6', genIn:'w6', spareManual:null, w7Out:'EAP772-OUT',
 };
 STATE.leasingMode = 'integre'; // V17 : par défaut, le contrat de services est fondu dans le loyer
 let lastResult = null;
@@ -1301,10 +1331,20 @@ function onRecManualInput(val) {
 }
 function resetRecAuto() { STATE.recOverride = null; calc(); }
 function setEngagement(m) {
-  if (![36,48,60].includes(m)) m = m < 42 ? 36 : 60; // anciens projets en 12 mois
+  if (![36,48,60,63].includes(m)) m = m < 42 ? 36 : 60; // anciens projets en 12 mois
+  if (m === 63 && STATE.leaser === 'locam') m = 60;       // Locam ne propose pas 63 mois
   STATE.engagement = m;
-  [36,48,60].forEach(k => document.getElementById('eng-'+k).classList.toggle('active', k===m));
+  [36,48,60,63].forEach(k => document.getElementById('eng-'+k).classList.toggle('active', k===m));
   setAdipsys();
+}
+function syncLeaserUI() {
+  ['grenke','locam'].forEach(k => document.getElementById('leaser-'+k).classList.toggle('active', k===STATE.leaser));
+  document.getElementById('eng-63').style.display = STATE.leaser === 'locam' ? 'none' : '';
+}
+function setLeaser(l) {
+  STATE.leaser = LEASERS[l] ? l : 'grenke';
+  syncLeaserUI();
+  setEngagement(STATE.engagement);
 }
 // Portail Adipsys : la durée suit la location (36 → 36 mois ; 48 et 60 → 60 mois)
 function adipsysPourDuree(m) { return m <= 36 ? 36 : 60; }
@@ -1521,7 +1561,7 @@ function calc() {
   const acompteMontant = capexPV * STATE.acomptePct / 100;
   const baseLeasee = capexPV - acompteMontant;
   const baseTotale = baseLeasee;
-  const loc = coefLocam(baseLeasee, STATE.engagement);
+  const loc = coefLeaser(baseLeasee, STATE.engagement);
   const tauxM = loc ? loc.coef / 100 : 0;
   const loyerCAPEXSeul = baseLeasee * tauxM;
   const min15pct = loyerCAPEXSeul * 0.15;
@@ -1637,7 +1677,7 @@ function updateUI(r) {
   setText('leas-duree', STATE.engagement);
   setText('leas-pack-note', fmt(r.recMensuel)+'/mois');
   setText('leas-coef-info', r.loc
-    ? `Barème Locam ${STATE.engagement} mois · tranche ${r.loc.tranche} : ${r.loc.coef.toFixed(3).replace('.',',')} %/mois`
+    ? `Barème ${LEASERS[STATE.leaser]} ${STATE.engagement} mois · ${r.loc.tranche} : ${r.loc.coef.toFixed(3).replace('.',',')} %/mois`
     : 'Montant financé < 300 € : pas de location financière.');
   const loyerLabelEl = document.getElementById('leas-loyer-label');
   if (loyerLabelEl) loyerLabelEl.textContent = STATE.leasingMode==='integre' ? 'Loyer client tout compris (services inclus)' : 'Loyer client (installation seule)';
@@ -1673,7 +1713,7 @@ function renderComparatif(r) {
     loc = `<div class="cmp-col loc">
       <div><div class="cmp-head">① Location longue durée</div><div class="cmp-tag">${STATE.engagement} mois · location financière</div></div>
       <div class="cmp-step"><div class="cmp-lbl">À la commande</div><div class="cmp-mid">${r.acompteMontant>0 ? fmt(r.acompteMontant) : 'Rien'}</div><div class="cmp-sub">${r.acompteMontant>0 ? 'Versement initial' : 'Aucun versement initial'}</div></div>
-      <div class="cmp-step"><div class="cmp-lbl">Puis chaque mois · tout compris</div><div class="cmp-big">${fmt(mensuel)}<span style="font-size:12px;font-weight:600;color:var(--text3);"> /mois</span></div><div class="cmp-sub">${detail}</div></div>
+      <div class="cmp-step"><div class="cmp-lbl">Puis chaque mois · tout compris</div><div class="cmp-big"><span style="font-size:12px;font-weight:600;color:var(--text3);">à partir de </span>${fmt(mensuel)}<span style="font-size:12px;font-weight:600;color:var(--text3);"> /mois</span></div><div class="cmp-sub">${detail}</div></div>
       <div class="cmp-step"><div class="cmp-sub">Pendant ${STATE.engagement} mois · sous réserve d'acceptation du dossier par l'organisme de financement.</div></div>
     </div>`;
   }
@@ -1846,7 +1886,7 @@ function updateClientView(r) {
       ${r.loc ? `<div class="cv-col loc">
         <div><div class="cv-col-head">① Location longue durée</div><div class="cv-col-tag">${STATE.engagement} mois · tout compris</div></div>
         <div class="cv-step"><div class="cv-lbl">À la commande</div><div class="cv-mid">${r.acompteMontant>0 ? fmt(r.acompteMontant) : 'Aucun versement'}</div></div>
-        <div class="cv-step"><div class="cv-lbl">Puis chaque mois</div><div class="cv-big">${fmt(coutMensuelPrincipal)}<span style="font-size:12px;font-weight:500;color:#6b7280;"> /mois</span></div>
+        <div class="cv-step"><div class="cv-lbl">Puis chaque mois</div><div class="cv-big"><span style="font-size:12px;font-weight:500;color:#6b7280;">à partir de </span>${fmt(coutMensuelPrincipal)}<span style="font-size:12px;font-weight:500;color:#6b7280;"> /mois</span></div>
           <div class="cv-small">${coutMensuelDetail}</div></div>
         <div class="cv-step cv-small">Loyers HT, terme à échoir, sous réserve d'acceptation du dossier par l'organisme de financement.</div>
       </div>` : ''}
@@ -1962,6 +2002,8 @@ function loadProject(i) {
   if (p.state) {
     const s = p.state;
     STATE.typo = s.typo||'camping';
+    STATE.leaser = s.leaser || 'grenke';
+    syncLeaserUI();
     STATE.engagement = s.engagement||60;
     STATE.adipsysDuree = s.adipsysDuree||60;
     STATE.recurrentMode = s.recurrentMode||'saisonnier';
@@ -2207,7 +2249,7 @@ function buildAxonautComments(r) {
   serv += `, ${fact}, engagement 12 mois. En achat comptant, il est facturé séparément de ce devis.`;
   if (r.maintOfferte) serv += ` Offre SETT 2026 : les 6 premiers mois sont offerts (valeur ${fmtE(r.valeurOfferte)}).`;
   L.push(serv);
-  if (r.loc) L.push(`Option location financière : ${fmtE(Math.round(r.loyerTotal))}/mois sur ${STATE.engagement} mois${STATE.leasingMode==='integre' ? ', contrat de services inclus' : ''}${r.acompteMontant>0 ? `, après un premier versement de ${fmtE(Math.round(r.acompteMontant))}` : ''}, sous réserve d'acceptation du dossier par l'organisme de financement.`);
+  if (r.loc) L.push(`Option location financière : à partir de ${fmtE(Math.round(r.loyerTotal))}/mois sur ${STATE.engagement} mois${STATE.leasingMode==='integre' ? ', contrat de services inclus' : ''}${r.acompteMontant>0 ? `, après un premier versement de ${fmtE(Math.round(r.acompteMontant))}` : ''}, sous réserve d'acceptation du dossier par l'organisme de financement.`);
   return L.join('\n');
 }
 // Note interne (opportunité Axonaut) : chiffres de pilotage, jamais visibles par le client
@@ -2215,7 +2257,7 @@ function buildAxonautInternal(r) {
   return `Deviseur Wifi V17 – ${r.date} – ${r.nbHeberg} héb. ${r.typoLabel} – ${r.nbAPTotal} bornes\n` +
     `Bornes ${r.genLabel}${r.spare ? ' + Spare' : ''} · Pose : ${String(r.jours).replace('.',',')} j binôme · achat ${Math.round(r.capexPV)} € HT · coût de revient ${Math.round(r.capexCR)} € · coef ${(r.capexPV/r.capexCR).toFixed(2)}\n` +
     (r.remiseMontant>0 ? `Remise Salon −${r.remisePct} % (−${Math.round(r.remiseMontant)} €)\n` : '') +
-    (r.loc ? `Location ${STATE.leasingMode==='integre'?'services inclus':'services à part'} ${STATE.engagement} mois, barème Locam ${r.loc.coef} % → ${Math.round(r.loyerTotal)} €/mois\n` : '') +
+    (r.loc ? `Location ${STATE.leasingMode==='integre'?'services inclus':'services à part'} ${STATE.engagement} mois, ${LEASERS[STATE.leaser]} ${r.loc.coef.toFixed(3)} % → à partir de ${Math.round(r.loyerTotal)} €/mois\n` : '') +
     `Contrat ${r.gammeLabel} ${r.recMensuel} €/mois (${STATE.recurrentMode})` + (r.maintOfferte ? ` – 6 mois offerts (${Math.round(r.valeurOfferte)} €)` : '');
 }
 async function pushToAxonaut() {
