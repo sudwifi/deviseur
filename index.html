@@ -438,6 +438,7 @@
   .cmp-big { font-family:var(--display); font-weight:800; font-size:24px; line-height:1.15; }
   .cmp-col.loc .cmp-big { color:var(--blue-dark); }
   .cmp-col.achat .cmp-big { color:var(--green); }
+  @media (max-width: 1100px) { .settings-duo { grid-template-columns:1fr !important; } }
   .cmp-mid { font-family:var(--display); font-weight:700; font-size:17px; color:var(--text); }
   .cmp-sub { font-size:11px; color:var(--text3); line-height:1.45; }
   .cmp-sub strong { color:var(--text2); }
@@ -618,33 +619,44 @@
       </div>
     </div>
 
-    <div class="card" style="border-color:var(--yellow-ink);">
-      <div class="card-header"><span class="card-title">🎪 Offres salon SETT 2026</span></div>
+  </div>
+
+  <!-- RÉSULTATS -->
+  <div class="col-right">
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Dimensionnement</span></div>
       <div class="card-body">
-        <div>
-          <label>Remise Salon (sur matériel, pose et déplacements · hors Adipsys)</label>
-          <div class="toggle-group" style="flex-wrap:wrap;">
-            <div class="toggle-btn active" id="rs-0" onclick="setRemiseSalon(0)">Aucune</div>
-            <div class="toggle-btn" id="rs-3" onclick="setRemiseSalon(3)">−3 %</div>
-            <div class="toggle-btn" id="rs-4" onclick="setRemiseSalon(4)">−4 %</div>
-            <div class="toggle-btn" id="rs-5" onclick="setRemiseSalon(5)">−5 %</div>
-            <div class="toggle-btn" id="rs-6" onclick="setRemiseSalon(6)">−6 %</div>
-            <div class="toggle-btn" id="rs-7" onclick="setRemiseSalon(7)">−7 %</div>
-            <div class="toggle-btn" id="rs-8" onclick="setRemiseSalon(8)">−8 %</div>
+        <div class="metrics-grid">
+          <div class="metric">
+            <div class="metric-label">AP outdoor</div>
+            <input type="number" id="res-ap-out" class="metric-value accent metric-input" min="0" oninput="onApManualInput('out', this.value)">
+            <div class="metric-sub" id="res-ap-out-type">—</div>
+            <div style="font-size:9px;margin-top:2px;"><a href="#" onclick="resetApAuto('out');return false;" style="color:var(--text3);text-decoration:underline;" id="reset-ap-out" hidden>↺ recalcul auto</a></div>
           </div>
-          <div id="remise-info" style="font-size:10px;color:var(--text3);margin-top:4px;"></div>
-        </div>
-        <div>
-          <label>6 mois de maintenance offerts</label>
-          <div class="toggle-group">
-            <div class="toggle-btn active" id="mo6-non" onclick="setMaintOfferte(false)">Non</div>
-            <div class="toggle-btn" id="mo6-oui" onclick="setMaintOfferte(true)">Oui · 6 mois offerts</div>
+          <div class="metric">
+            <div class="metric-label">AP indoor</div>
+            <input type="number" id="res-ap-in" class="metric-value accent metric-input" min="0" oninput="onApManualInput('in', this.value)">
+            <div class="metric-sub" id="res-ap-in-type">—</div>
+            <div style="font-size:9px;margin-top:2px;"><a href="#" onclick="resetApAuto('in');return false;" style="color:var(--text3);text-decoration:underline;" id="reset-ap-in" hidden>↺ recalcul auto</a></div>
           </div>
-          <div id="maint-offerte-info" style="font-size:10px;color:var(--text3);margin-top:4px;"></div>
+          <div class="metric"><div class="metric-label">Switches</div><div class="metric-value" id="res-switches">—</div><div class="metric-sub" id="res-switches-sub">TL-SG2210P</div></div>
+          <div class="metric"><div class="metric-label">Mâts outdoor</div><div class="metric-value" id="res-mats">—</div><div class="metric-sub" id="res-mats-sub">INF-MAT4M-02</div></div>
+          <div class="metric"><div class="metric-label">Contrôleur</div><div class="metric-value">1</div><div class="metric-sub">OC200 + Mikrotik</div></div>
+          <div class="metric"><div class="metric-label">Adipsys</div><div class="metric-value accent" id="res-adipsys-cnx">—</div><div class="metric-sub" id="res-adipsys-ref">—</div></div>
         </div>
       </div>
     </div>
 
+    <div class="card">
+      <div class="card-header"><span class="card-title">Ce que paie le client</span><span class="badge yellow" id="cmp-remise-badge" style="display:none;"></span></div>
+      <div class="card-body">
+        <div class="cmp-grid" id="cmp-grid"></div>
+        <div id="cmp-note" style="font-size:10px;color:var(--text3);line-height:1.45;"></div>
+      </div>
+    </div>
+
+    <div class="settings-duo" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;">
     <div class="card">
       <div class="card-header"><span class="card-title">Contrat de services (gammes)</span></div>
       <div class="card-body">
@@ -705,56 +717,35 @@
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-header"><span class="card-title">Portail Adipsys</span></div>
+    </div>
+
+    <div class="card" style="border-color:var(--yellow-ink);width:100%;max-width:640px;margin:0 auto;">
+      <div class="card-header"><span class="card-title">🎪 Offres salon SETT 2026</span></div>
       <div class="card-body">
         <div>
-          <label>Durée portail</label>
-          <div class="toggle-group" style="pointer-events:none;">
-            <div class="toggle-btn" id="adp-36">36 mois</div>
-            <div class="toggle-btn active" id="adp-60">60 mois</div>
+          <label>Remise Salon (sur matériel, pose et déplacements · hors Adipsys)</label>
+          <div class="toggle-group" style="flex-wrap:wrap;">
+            <div class="toggle-btn active" id="rs-0" onclick="setRemiseSalon(0)">Aucune</div>
+            <div class="toggle-btn" id="rs-3" onclick="setRemiseSalon(3)">−3 %</div>
+            <div class="toggle-btn" id="rs-4" onclick="setRemiseSalon(4)">−4 %</div>
+            <div class="toggle-btn" id="rs-5" onclick="setRemiseSalon(5)">−5 %</div>
+            <div class="toggle-btn" id="rs-6" onclick="setRemiseSalon(6)">−6 %</div>
+            <div class="toggle-btn" id="rs-7" onclick="setRemiseSalon(7)">−7 %</div>
+            <div class="toggle-btn" id="rs-8" onclick="setRemiseSalon(8)">−8 %</div>
           </div>
-          <div style="font-size:10px;color:var(--text3);margin-top:4px;">Suit la durée de location : 36 mois → portail 36 mois · 48 ou 60 mois → portail 60 mois.</div>
+          <div id="remise-info" style="font-size:10px;color:var(--text3);margin-top:4px;"></div>
+        </div>
+        <div>
+          <label>6 mois de maintenance offerts</label>
+          <div class="toggle-group">
+            <div class="toggle-btn active" id="mo6-non" onclick="setMaintOfferte(false)">Non</div>
+            <div class="toggle-btn" id="mo6-oui" onclick="setMaintOfferte(true)">Oui · 6 mois offerts</div>
+          </div>
+          <div id="maint-offerte-info" style="font-size:10px;color:var(--text3);margin-top:4px;"></div>
         </div>
       </div>
     </div>
 
-  </div>
-
-  <!-- RÉSULTATS -->
-  <div class="col-right">
-
-    <div class="card">
-      <div class="card-header"><span class="card-title">Dimensionnement</span></div>
-      <div class="card-body">
-        <div class="metrics-grid">
-          <div class="metric">
-            <div class="metric-label">AP outdoor</div>
-            <input type="number" id="res-ap-out" class="metric-value accent metric-input" min="0" oninput="onApManualInput('out', this.value)">
-            <div class="metric-sub" id="res-ap-out-type">—</div>
-            <div style="font-size:9px;margin-top:2px;"><a href="#" onclick="resetApAuto('out');return false;" style="color:var(--text3);text-decoration:underline;" id="reset-ap-out" hidden>↺ recalcul auto</a></div>
-          </div>
-          <div class="metric">
-            <div class="metric-label">AP indoor</div>
-            <input type="number" id="res-ap-in" class="metric-value accent metric-input" min="0" oninput="onApManualInput('in', this.value)">
-            <div class="metric-sub" id="res-ap-in-type">—</div>
-            <div style="font-size:9px;margin-top:2px;"><a href="#" onclick="resetApAuto('in');return false;" style="color:var(--text3);text-decoration:underline;" id="reset-ap-in" hidden>↺ recalcul auto</a></div>
-          </div>
-          <div class="metric"><div class="metric-label">Switches</div><div class="metric-value" id="res-switches">—</div><div class="metric-sub" id="res-switches-sub">TL-SG2210P</div></div>
-          <div class="metric"><div class="metric-label">Mâts outdoor</div><div class="metric-value" id="res-mats">—</div><div class="metric-sub" id="res-mats-sub">INF-MAT4M-02</div></div>
-          <div class="metric"><div class="metric-label">Contrôleur</div><div class="metric-value">1</div><div class="metric-sub">OC200 + Mikrotik</div></div>
-          <div class="metric"><div class="metric-label">Adipsys</div><div class="metric-value accent" id="res-adipsys-cnx">—</div><div class="metric-sub" id="res-adipsys-ref">—</div></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header"><span class="card-title">Ce que paie le client</span><span class="badge yellow" id="cmp-remise-badge" style="display:none;"></span></div>
-      <div class="card-body">
-        <div class="cmp-grid" id="cmp-grid"></div>
-        <div id="cmp-note" style="font-size:10px;color:var(--text3);line-height:1.45;"></div>
-      </div>
-    </div>
 
   </div>
 </div>
@@ -1289,7 +1280,6 @@ function setEngagement(m) {
 function adipsysPourDuree(m) { return m <= 36 ? 36 : 60; }
 function setAdipsys() {
   STATE.adipsysDuree = adipsysPourDuree(STATE.engagement);
-  [36,60].forEach(k => document.getElementById('adp-'+k).classList.toggle('active', k===STATE.adipsysDuree));
   calc();
 }
 function setWifiGen(g) {
