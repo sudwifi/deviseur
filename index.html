@@ -1419,7 +1419,13 @@ function calc() {
   if (STATE.apOutOverride !== null) nbAPOut = STATE.apOutOverride;
   if (STATE.apInOverride !== null) nbAPIn = STATE.apInOverride;
   const nbAPTotal = nbAPOut + nbAPIn;
-  const nbSwitches = Math.ceil(nbAPTotal / 5) + 1;
+  // Switchs : 1 pour 5 bornes + 1 de départ. TL-SG2210MP (PoE+) uniquement pour les bornes Wifi 7,
+  // TL-SG2210P pour les bornes Wifi 6 (EAP610 / EAP650 / EAP625 validées par Stéphane) et pour le switch de départ.
+  const nbAP7 = (STATE.genOut==='w7' ? nbAPOut : 0) + (STATE.genIn==='w7' ? nbAPIn : 0);
+  const nbAP6 = nbAPTotal - nbAP7;
+  const nbSwW7 = Math.ceil(nbAP7 / 5);
+  const nbSwW6 = Math.ceil(nbAP6 / 5) + 1;
+  const nbSwitches = nbSwW6 + nbSwW7;
   STATE.adipsysDuree = adipsysPourDuree(STATE.engagement);
   const adp = getAdipsys(nbH, STATE.adipsysDuree);
 
@@ -1449,7 +1455,8 @@ function calc() {
   }
   if (nbAPIn > 0) add(GEN_IN.apIn, nbAPIn);
   add('CABLAGE', nbAPTotal);
-  add(GEN.sw, nbSwitches);
+  add('SW10', nbSwW6);
+  add('SW10P', nbSwW7);
   add('OC200', 1);
   if (hasPonte) add(document.getElementById('pontType').value || 'EAP215-BRIDGE', nbPontes);
   add('POSE', jours);
@@ -1534,7 +1541,7 @@ function calc() {
     baseTotale, loyerTotal, acompteMontant, baseLeasee,
     receveTrimestriel, receveTotalFin,
     gamme:STATE.gamme, gammeLabel:G.label, taille, wifiGrille, wifiMensuel,
-    wifiGen:STATE.genOut, genOut:STATE.genOut, genIn:STATE.genIn, genLabel, swLabel:GEN.swLabel, spare, isIntegre,
+    wifiGen:STATE.genOut, genOut:STATE.genOut, genIn:STATE.genIn, genLabel, swLabel: nbSwW7 > 0 ? `${nbSwW6} TL-SG2210P + ${nbSwW7} TL-SG2210MP (PoE+)` : 'TL-SG2210P', spare, isIntegre,
     recMensuel, caRecAnnuel, margeRecAnnuelle, echeance, valeurOfferte, maintOfferte:STATE.maintOfferte,
     chatPrix, matsInclus:STATE.matsInclus,
     nomClient: document.getElementById('nomClient').value || '—',
