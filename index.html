@@ -754,6 +754,7 @@
 <div id="tab-marge" class="main panel">
   <div style="flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;">
     <div style="font-size:11px;color:var(--text3);">🔒 Onglet interne : coûts de revient, marges et flux de financement. À ne pas afficher devant le client.</div>
+    <div id="pil-w7-note" class="alert-msg" style="display:none;">⚠ Wifi 7 : EAP772-Outdoor, EAP723 et switch TL-SG2210MP. Les deux bornes ne sont pas encore créées dans Axonaut et leurs coûts de revient sont estimés : prix à confirmer avec AC Nexitup.</div>
     <div class="card">
       <div class="card-header"><span class="card-title">Pose et déplacement</span></div>
       <div class="card-body">
@@ -1549,8 +1550,10 @@ function updateUI(r) {
   setText('res-ap-in-type', r.nbAPIn > 0 ? (r.wifiGen==='w7' ? 'Wifi 7 · EAP723' : 'Wifi 6 · EAP610') : '—');
   setText('res-switches-sub', r.swLabel);
   setText('gen-info', r.wifiGen==='w7'
-    ? 'Outdoor EAP772-Outdoor (omni, tri-bande) · indoor EAP723 · switchs PoE+ TL-SG2210MP. Bornes à créer dans Axonaut, prix à confirmer.'
-    : 'Outdoor EAP650 D120 (camping) ou EAP625-HD (village) · indoor EAP610 · switchs TL-SG2210P.');
+    ? 'Bornes extérieures et intérieures TP-Link Omada Wifi 7, tri-bande.'
+    : 'Bornes extérieures et intérieures TP-Link Omada Wifi 6.');
+  const w7n = document.getElementById('pil-w7-note');
+  if (w7n) w7n.style.display = r.wifiGen==='w7' ? 'block' : 'none';
   document.getElementById('reset-ap-in').hidden = (STATE.apInOverride === null);
   setText('res-switches', r.nbSwitches);
   setText('res-mats', STATE.matsInclus ? (r.nbAPOut||'0') : (r.nbAPOut>0 ? 'Option' : '0'));
