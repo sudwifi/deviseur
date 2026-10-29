@@ -568,6 +568,13 @@
           <div class="toggle-btn" id="gen-w7" onclick="setWifiGen('w7')">Wifi 7</div>
         </div>
         <div id="gen-info" style="font-size:10px;color:var(--text3);line-height:1.45;"></div>
+        <div id="w7-out-block" style="display:none;">
+          <label>Borne extérieure Wifi 7</label>
+          <select id="w7Out" onchange="STATE.w7Out=this.value; calc()">
+            <option value="EAP772-OUT">EAP772-Outdoor · BE9300 tri-bande</option>
+            <option value="EAP725-OUT">EAP725-Outdoor · BE3600 bi-bande</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -754,7 +761,6 @@
 <div id="tab-marge" class="main panel">
   <div style="flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;">
     <div style="font-size:11px;color:var(--text3);">🔒 Onglet interne : coûts de revient, marges et flux de financement. À ne pas afficher devant le client.</div>
-    <div id="pil-w7-note" class="alert-msg" style="display:none;">⚠ Wifi 7 : EAP772-Outdoor, EAP723 et switch TL-SG2210MP. Les deux bornes ne sont pas encore créées dans Axonaut et leurs coûts de revient sont estimés : prix à confirmer avec AC Nexitup.</div>
     <div class="card">
       <div class="card-header"><span class="card-title">Pose et déplacement</span></div>
       <div class="card-body">
@@ -1077,8 +1083,10 @@ const MAT = {
   'BEAM-BRIDGE':   { ref:'TPLBEAMBRIDGE5URKIT',     label:'Pont Wifi TP-Link Beam Bridge 5 UR KIT (kit 2 unités, programmé)', cr:149.33, pv:476 },
   'CABLAGE':     { ref:'CABL-FORFAIT',              label:'Câblage + connectique (forfait par borne)',            cr:10,    pv:23  },
   // Wifi 7 (V17) — pas encore dans Axonaut : prix publics HT relevés oct. 2026, coûts de revient ESTIMÉS à confirmer avec AC Nexitup
-  'EAP772-OUT':  { ref:'MAT-TPLEAP772-OUTDOOR',     label:'Borne Wifi 7 extérieure tri-bande TP-Link EAP772-Outdoor BE9300 (programmée)', cr:235, pv:449 },
-  'EAP723':      { ref:'MAT-TPLEAP723-INDOOR',      label:'Borne Wifi 7 intérieure TP-Link EAP723 BE3600 (programmée)', cr:95, pv:215 },
+  // Wifi 7 : fiches Axonaut créées le 29/10/2026. Outdoor : coût de revient moyen 170 € HT (EAP772 179,17 € / EAP725 162,48 €)
+  'EAP772-OUT':  { ref:'MAT-TPLEAP772-OUTDOOR',     label:'Point d\'accès Wifi 7 extérieur TP-Link EAP772-Outdoor BE9300 (programmé)', cr:170, pv:448 },
+  'EAP725-OUT':  { ref:'MAT-TPLEAP725-OUTDOOR',     label:'Point d\'accès Wifi 7 intérieur/extérieur TP-Link EAP725-Outdoor BE3600 (programmé)', cr:170, pv:431.2 },
+  'EAP775-WALL': { ref:'MAT-TPLEAP775-WALL',        label:'Point d\'accès Wifi 7 mural TP-Link EAP775-Wall BE9300 (programmé)', cr:228.6, pv:596.5 },
   'SW10P':       { ref:'MAT-TPLSG2210MP',           label:'Switch Omada 10 ports PoE+ 150 W TL-SG2210MP (programmé)', cr:140.75, pv:318 },
   // Kit Spare
   'SW5':         { ref:'MAT-TPLES205GP',            label:'Switch Omada 5 ports PoE ES205GP (programmé)',         cr:32,    pv:108 },
@@ -1089,7 +1097,7 @@ const MAT = {
 // Générations de bornes : la bascule choisit automatiquement indoor, outdoor et switch adapté
 const WIFI_GEN = {
   w6: { label:'Wifi 6', apIn:'EAP610', sw:'SW10', swLabel:'TL-SG2210P' },          // outdoor : selon la typologie (EAP650 D120 / EAP625-HD)
-  w7: { label:'Wifi 7', apIn:'EAP723', apOut:'EAP772-OUT', sw:'SW10P', swLabel:'TL-SG2210MP (PoE+ 150 W)' },
+  w7: { label:'Wifi 7', apIn:'EAP775-WALL', apOut:'EAP772-OUT', sw:'SW10P', swLabel:'TL-SG2210MP (PoE+ 150 W)' }, // apOut : choix EAP772 / EAP725 (STATE.w7Out)
 };
 const SPARE_SEUIL_AR = 400; // km aller-retour (site à plus de 200 km du siège)
 
@@ -1160,7 +1168,7 @@ let STATE = {
   recurrentMode:'saisonnier', acomptePct:40, leasingMode:'sec', chatVacanciers:'inclus', matsInclus:true,
   apOutOverride:null, apInOverride:null,
   gamme:'pro', remisePct:0, maintOfferte:false, joursOverride:null, recOverride:null,
-  wifiGen:'w6', spareManual:null,
+  wifiGen:'w6', spareManual:null, w7Out:'EAP772-OUT',
 };
 STATE.leasingMode = 'integre'; // V17 : par défaut, le contrat de services est fondu dans le loyer
 let lastResult = null;
@@ -1411,7 +1419,7 @@ function calc() {
     lignes.push({ ref:m.ref, label:m.label, qty, cr:m.cr, pv:m.pv, kind: key==='POSE' ? 'pose' : 'mat' });
   }
 
-  const apOutKey = GEN.apOut || typo.apOutKey || 'EAP650-D120';
+  const apOutKey = STATE.wifiGen==='w7' ? (STATE.w7Out || 'EAP772-OUT') : (typo.apOutKey || 'EAP650-D120');
   if (nbAPOut > 0) {
     add(apOutKey, nbAPOut);
     if (STATE.matsInclus) {
@@ -1543,17 +1551,17 @@ function calc() {
 function updateUI(r) {
   const elApOut = document.getElementById('res-ap-out');
   if (document.activeElement !== elApOut) elApOut.value = r.nbAPOut||0;
-  setText('res-ap-out-type', r.nbAPOut > 0 ? (r.wifiGen==='w7' ? 'Wifi 7 · EAP772-Outdoor' : (STATE.typo==='camping'?'Wifi 6 · EAP650 D120 directionnel':'Wifi 6 · EAP625-HD omni')) : '—');
+  setText('res-ap-out-type', r.nbAPOut > 0 ? (r.wifiGen==='w7' ? (STATE.w7Out==='EAP725-OUT' ? 'Wifi 7 · EAP725-Outdoor' : 'Wifi 7 · EAP772-Outdoor') : (STATE.typo==='camping'?'Wifi 6 · EAP650 D120 directionnel':'Wifi 6 · EAP625-HD omni')) : '—');
   document.getElementById('reset-ap-out').hidden = (STATE.apOutOverride === null);
   const elApIn = document.getElementById('res-ap-in');
   if (document.activeElement !== elApIn) elApIn.value = r.nbAPIn||0;
-  setText('res-ap-in-type', r.nbAPIn > 0 ? (r.wifiGen==='w7' ? 'Wifi 7 · EAP723' : 'Wifi 6 · EAP610') : '—');
+  setText('res-ap-in-type', r.nbAPIn > 0 ? (r.wifiGen==='w7' ? 'Wifi 7 · EAP775-Wall' : 'Wifi 6 · EAP610') : '—');
   setText('res-switches-sub', r.swLabel);
   setText('gen-info', r.wifiGen==='w7'
-    ? 'Bornes extérieures et intérieures TP-Link Omada Wifi 7, tri-bande.'
+    ? 'Bornes extérieures et intérieures TP-Link Omada Wifi 7.'
     : 'Bornes extérieures et intérieures TP-Link Omada Wifi 6.');
-  const w7n = document.getElementById('pil-w7-note');
-  if (w7n) w7n.style.display = r.wifiGen==='w7' ? 'block' : 'none';
+  document.getElementById('w7-out-block').style.display = r.wifiGen==='w7' ? 'block' : 'none';
+  const w7s = document.getElementById('w7Out'); if (w7s && w7s.value !== STATE.w7Out) w7s.value = STATE.w7Out;
   document.getElementById('reset-ap-in').hidden = (STATE.apInOverride === null);
   setText('res-switches', r.nbSwitches);
   setText('res-mats', STATE.matsInclus ? (r.nbAPOut||'0') : (r.nbAPOut>0 ? 'Option' : '0'));
@@ -1944,6 +1952,7 @@ function loadProject(i) {
     STATE.apInOverride = s.apInOverride!==undefined ? s.apInOverride : null;
     STATE.spareManual = s.spareManual !== undefined ? s.spareManual : null;
     STATE.wifiGen = s.wifiGen || 'w6';
+    STATE.w7Out = s.w7Out || 'EAP772-OUT';
     ['w6','w7'].forEach(k => document.getElementById('gen-'+k).classList.toggle('active', k===STATE.wifiGen));
     // Update UI buttons
     document.querySelectorAll('.typo-btn').forEach((b,j)=>b.classList.remove('active'));
@@ -2120,7 +2129,7 @@ async function testAxonaut() {
 // ═══════════════════ DEVIS AXONAUT « PRÊT À ENVOYER » ═══════════════════
 // ID des fiches produits Axonaut (catalogue au 25/10/2026) : la ligne du devis est rattachée à la fiche,
 // ce qui reprend son prix d'achat et évite toute création de doublon.
-const AX_IDS = {"CABL-FORFAIT": 40039586, "CABL-VID": 40219296, "DEPL": 40039592, "INF-ETANCH": 40219194, "INF-MAT4M-02": 33339580, "INF-ME26812737": 33339014, "MAT-OC200": 33339076, "MAT-TL-SG2210P": 33340110, "MAT-TPLEAP215-BRIDGEKIT": 33340102, "MAT-TPLEAP610-INDOOR": 33339810, "MAT-TPLEAP625-OUTDOORHD": 33339700, "MAT-TPLEAP650D120-OUTDOOR": 33339170, "MAT-TPLES205GP": 33340044, "MAT-TPLINSIGHTS245ZI": 40270116, "MAT-TPLINSIGHTS345-4G4MM": 40270118, "MAT-TPLINSIGHTS345S4MM": 40270120, "MAT-TPLINSIGHTS345ZI": 39543702, "MAT-TPLINSIGHTS35528MM": 40270122, "MAT-TPLINSIGHTS385DPS": 40270124, "MAT-TPLINSIGHTS445S28MM": 40270126, "MAT-TPLINSIGHTS445ZI": 40270128, "MAT-TPLINSIGHTS485PI": 40270130, "MAT-TPLINSIGHTS655I": 40270132, "MAT-TPLPOE4824G": 33338804, "MAT-TPLVIGIC24028MM": 40270134, "MAT-TPLVIGIC2404MM": 40270136, "MAT-TPLVIGIC240I28MM": 40270138, "MAT-TPLVIGIC240I4MM": 40270140, "MAT-TPLVIGIC25028MM": 40270142, "MAT-TPLVIGIC2504MM": 40270144, "MAT-TPLVIGIC340-W4MM": 40270152, "MAT-TPLVIGIC34028MM": 40270146, "MAT-TPLVIGIC3404MM": 40270148, "MAT-TPLVIGIC3406MM": 40270150, "MAT-TPLVIGIC340I28MM": 40270154, "MAT-TPLVIGIC340I4MM": 40270156, "MAT-TPLVIGIC340I6MM": 40270158, "MAT-TPLVIGIC340S4MM": 40270160, "MAT-TPLVIGIC35028MM": 40270162, "MAT-TPLVIGIC3504MM": 40270164, "MAT-TPLVIGIC440-W4MM": 40270170, "MAT-TPLVIGIC44028MM": 40270166, "MAT-TPLVIGIC4404MM": 40270168, "MAT-TPLVIGIC440I28MM": 40270174, "MAT-TPLVIGIC440I4MM": 40270176, "MAT-TPLVIGIC45028MM": 40270178, "MAT-TPLVIGIC4504MM": 40270180, "MAT-TPLVIGIC48528MM": 40270182, "MAT-TPLVIGIC540-4G4MM": 33338938, "MAT-TPLVIGIC540-W4MM": 40270186, "MAT-TPLVIGIC5404MM": 40270184, "MAT-TPLVIGIC540S4MM": 40270188, "MAT-TPLVIGIC540V": 33338942, "MO-JOUR-BINOME": 40269878, "MAT-TPLSG2210MP": 33340038, "TPLBEAMBRIDGE5URKIT": 35567932, "VID-302504398": 33339184, "VID-HIK303801047": 33339134, "VID-HIK303801489": 33339148, "VID-HIK303801490": 33339150, "VID-HIK303801508": 33339138, "VID-HIK303801531": 33339144, "VID-HIK303801591": 33339130, "VID-INSIGHTS28528MM": 33338924, "VID-INSIGHTS34528MM": 33338918, "VID-INSIGHTS38528MM": 33338920, "VID-INSIGHTS45528MM": 33338978, "VID-INSIGHTS48528MM": 33338980, "VID-TPLINSIGHTS24528MM": 33338922, "VID-TPLINSIGHTS385PI": 33340152, "VID-TPLINSIGHTS44528MM": 33338976, "VID-TPLVIGINVR1004H-4P": 33339656, "VID-TPLVIGINVR1008H-8P": 33339658, "VID-TPLVIGINVR2016H-16P": 33339652, "VID-TPLVIGINVR4032H": 33339654, "VID-TPLVIGISP6020": 33339750, "VID-TPLVIGISP9030": 33339748, "VID-TPLVJB-300": 33338862, "VID-VIGINVR4064H": 33340116};
+const AX_IDS = {"CABL-FORFAIT": 40039586, "CABL-VID": 40219296, "DEPL": 40039592, "INF-ETANCH": 40219194, "INF-MAT4M-02": 33339580, "INF-ME26812737": 33339014, "MAT-OC200": 33339076, "MAT-TL-SG2210P": 33340110, "MAT-TPLEAP215-BRIDGEKIT": 33340102, "MAT-TPLEAP610-INDOOR": 33339810, "MAT-TPLEAP625-OUTDOORHD": 33339700, "MAT-TPLEAP650D120-OUTDOOR": 33339170, "MAT-TPLES205GP": 33340044, "MAT-TPLINSIGHTS245ZI": 40270116, "MAT-TPLINSIGHTS345-4G4MM": 40270118, "MAT-TPLINSIGHTS345S4MM": 40270120, "MAT-TPLINSIGHTS345ZI": 39543702, "MAT-TPLINSIGHTS35528MM": 40270122, "MAT-TPLINSIGHTS385DPS": 40270124, "MAT-TPLINSIGHTS445S28MM": 40270126, "MAT-TPLINSIGHTS445ZI": 40270128, "MAT-TPLINSIGHTS485PI": 40270130, "MAT-TPLINSIGHTS655I": 40270132, "MAT-TPLPOE4824G": 33338804, "MAT-TPLVIGIC24028MM": 40270134, "MAT-TPLVIGIC2404MM": 40270136, "MAT-TPLVIGIC240I28MM": 40270138, "MAT-TPLVIGIC240I4MM": 40270140, "MAT-TPLVIGIC25028MM": 40270142, "MAT-TPLVIGIC2504MM": 40270144, "MAT-TPLVIGIC340-W4MM": 40270152, "MAT-TPLVIGIC34028MM": 40270146, "MAT-TPLVIGIC3404MM": 40270148, "MAT-TPLVIGIC3406MM": 40270150, "MAT-TPLVIGIC340I28MM": 40270154, "MAT-TPLVIGIC340I4MM": 40270156, "MAT-TPLVIGIC340I6MM": 40270158, "MAT-TPLVIGIC340S4MM": 40270160, "MAT-TPLVIGIC35028MM": 40270162, "MAT-TPLVIGIC3504MM": 40270164, "MAT-TPLVIGIC440-W4MM": 40270170, "MAT-TPLVIGIC44028MM": 40270166, "MAT-TPLVIGIC4404MM": 40270168, "MAT-TPLVIGIC440I28MM": 40270174, "MAT-TPLVIGIC440I4MM": 40270176, "MAT-TPLVIGIC45028MM": 40270178, "MAT-TPLVIGIC4504MM": 40270180, "MAT-TPLVIGIC48528MM": 40270182, "MAT-TPLVIGIC540-4G4MM": 33338938, "MAT-TPLVIGIC540-W4MM": 40270186, "MAT-TPLVIGIC5404MM": 40270184, "MAT-TPLVIGIC540S4MM": 40270188, "MAT-TPLVIGIC540V": 33338942, "MO-JOUR-BINOME": 40269878, "MAT-TPLSG2210MP": 33340038, "MAT-TPLEAP772-OUTDOOR": 40377932, "MAT-TPLEAP725-OUTDOOR": 40378032, "MAT-TPLEAP775-WALL": 40378104, "TPLBEAMBRIDGE5URKIT": 35567932, "VID-302504398": 33339184, "VID-HIK303801047": 33339134, "VID-HIK303801489": 33339148, "VID-HIK303801490": 33339150, "VID-HIK303801508": 33339138, "VID-HIK303801531": 33339144, "VID-HIK303801591": 33339130, "VID-INSIGHTS28528MM": 33338924, "VID-INSIGHTS34528MM": 33338918, "VID-INSIGHTS38528MM": 33338920, "VID-INSIGHTS45528MM": 33338978, "VID-INSIGHTS48528MM": 33338980, "VID-TPLINSIGHTS24528MM": 33338922, "VID-TPLINSIGHTS385PI": 33340152, "VID-TPLINSIGHTS44528MM": 33338976, "VID-TPLVIGINVR1004H-4P": 33339656, "VID-TPLVIGINVR1008H-8P": 33339658, "VID-TPLVIGINVR2016H-16P": 33339652, "VID-TPLVIGINVR4032H": 33339654, "VID-TPLVIGISP6020": 33339750, "VID-TPLVIGISP9030": 33339748, "VID-TPLVJB-300": 33338862, "VID-VIGINVR4064H": 33340116};
 const r2 = n => Math.round(n * 100) / 100;
 function axLine(name, code, qty, pv, cr, chapter) {
   const o = { name: String(name || 'Article').slice(0, 250), quantity: qty, price: r2(pv), tax_rate: 20, chapter };
@@ -2367,15 +2376,21 @@ const MAT_DEFAULTS = {
   'EAP215-BRIDGE': { label:'Pont EAP215-Bridge KIT (kit)',      cr:104.94, pv:262 },
   'BEAM-BRIDGE':   { label:'Pont Beam Bridge 5 UR KIT (kit)',   cr:149.33, pv:476 },
   'CABLAGE':     { label:'Câblage forfait/borne',                cr:10,    pv:23  },
-  'EAP772-OUT':  { label:'Borne ext. Wifi 7 EAP772-Outdoor (CR estimé)', cr:235, pv:449 },
-  'EAP723':      { label:'Borne int. Wifi 7 EAP723 (CR estimé)', cr:95,    pv:215 },
+  'EAP772-OUT':  { label:'Borne ext. Wifi 7 EAP772-Outdoor (CR moyen)', cr:170, pv:448 },
+  'EAP725-OUT':  { label:'Borne ext. Wifi 7 EAP725-Outdoor (CR moyen)', cr:170, pv:431.2 },
+  'EAP775-WALL': { label:'Borne int. Wifi 7 EAP775-Wall',        cr:228.6, pv:596.5 },
   'SW10P':       { label:'Switch PoE+ TL-SG2210MP (programmé)',  cr:140.75, pv:318 },
   'SW5':         { label:'Switch 5 ports ES205GP (Spare)',       cr:32,    pv:108 },
   'POE':         { label:'Adaptateur PoE (Spare)',               cr:11.56, pv:27  },
 };
 
 function getMaterialSettings() {
-  const saved = JSON.parse(localStorage.getItem('sw_material_v16') || '{}');
+  let saved = {};
+  try {
+    const v17 = localStorage.getItem('sw_material_v17');
+    if (v17) saved = JSON.parse(v17);
+    else { saved = JSON.parse(localStorage.getItem('sw_material_v16') || '{}'); ['EAP772-OUT','EAP723'].forEach(k => delete saved[k]); }
+  } catch(e) { saved = {}; }
   const result = {};
   for (const [key, def] of Object.entries(MAT_DEFAULTS)) {
     result[key] = {
@@ -2431,7 +2446,7 @@ function saveMaterialSettings() {
     const pv = parseFloat(document.getElementById('mat-pv-'+key)?.value);
     if (!isNaN(cr) && !isNaN(pv)) saved[key] = { cr, pv };
   }
-  localStorage.setItem('sw_material_v16', JSON.stringify(saved));
+  localStorage.setItem('sw_material_v17', JSON.stringify(saved));
   // Update MAT live
   for (const [key, vals] of Object.entries(saved)) {
     if (MAT[key]) { MAT[key].cr = vals.cr; MAT[key].pv = vals.pv; }
@@ -2443,7 +2458,7 @@ function saveMaterialSettings() {
 
 function resetMaterialSettings() {
   if (!confirm('Réinitialiser tous les tarifs aux valeurs par défaut ?')) return;
-  localStorage.removeItem('sw_material_v16');
+  localStorage.removeItem('sw_material_v17'); localStorage.removeItem('sw_material_v16');
   for (const [key, def] of Object.entries(MAT_DEFAULTS)) {
     if (MAT[key]) { MAT[key].cr = def.cr; MAT[key].pv = def.pv; }
   }
