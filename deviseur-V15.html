@@ -327,9 +327,9 @@
         </div>
         <div>
           <label>Disque dur</label>
-          <select id="diskRef" onchange="calc()"></select>
+          <select id="diskRef" onchange="STATE.autoDisk=false;calc()"></select>
         </div>
-        <div><label>Qté disques</label><input type="number" id="diskQty" value="1" min="1" oninput="calc()"></div>
+        <div><label>Qté disques</label><input type="number" id="diskQty" value="1" min="1" oninput="STATE.autoDisk=false;calc()"></div>
         <div style="border-top:1px solid var(--border);margin:6px 0 2px;"></div>
         <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Calculateur de capacité (estimatif)</div>
         <div class="row">
@@ -353,8 +353,8 @@
           <div>
             <label>Mode</label>
             <select id="stoMode" onchange="updateStorageCalc()">
-              <option value="detection" selected>Détection de mouvement</option>
-              <option value="continu">Continu 24/7</option>
+              <option value="detection">Détection de mouvement</option>
+              <option value="continu" selected>Continu 24/7</option>
             </select>
           </div>
           <div><label>Rétention (jours)</label><input type="number" id="stoJours" value="15" min="1" oninput="updateStorageCalc()"></div>
@@ -975,6 +975,8 @@ let STATE = {
   matsInclus:true, vrdDisponible:true, pontOverride:null,
   zones: [ { nom:'Zone 1', ref: DEFAULT_CAM_REF, qty: 4 } ],
   accessoires: [],
+  autoVJB: true,   // 1 boîte de jonction VJB-300 par caméra, tant qu'on ne touche pas à la ligne
+  autoDisk: true,  // disque(s) préremplis selon le stockage estimé, tant qu'on ne touche pas au choix du disque
 };
 let lastResult = null;
 
@@ -1088,10 +1090,28 @@ function addAccessoire() {
   STATE.accessoires.push({ ref: DEFAULT_ACCESS_REF, qty: 1 });
   renderAccess(); calc();
 }
-function removeAccess(i) { STATE.accessoires.splice(i,1); renderAccess(); calc(); }
+function removeAccess(i) {
+  if (STATE.accessoires[i] && STATE.accessoires[i].auto) STATE.autoVJB = false;
+  STATE.accessoires.splice(i,1); renderAccess(); calc();
+}
 function updateAccess(i, field, val) {
-  STATE.accessoires[i][field] = field==='qty' ? (parseInt(val)||0) : val;
+  const a = STATE.accessoires[i];
+  if (a.auto) { a.auto = false; STATE.autoVJB = false; } // modif manuelle : on ne touche plus à cette ligne
+  a[field] = field==='qty' ? (parseInt(val)||0) : val;
   calc();
+}
+// Boîtes de jonction VJB-300 : une par caméra par défaut (pour ne pas les oublier)
+function syncAutoVJB() {
+  if (!STATE.autoVJB) return;
+  const nbCam = STATE.zones.reduce((s,z)=>s+(z.qty||0),0);
+  let a = STATE.accessoires.find(x=>x.auto);
+  if (!a) {
+    if (nbCam <= 0 || STATE.accessoires.some(x=>x.ref===DEFAULT_ACCESS_REF)) return;
+    STATE.accessoires.unshift({ ref: DEFAULT_ACCESS_REF, qty: nbCam, auto: true });
+    renderAccess();
+  } else if (a.qty !== nbCam) {
+    a.qty = nbCam; renderAccess();
+  }
 }
 
 // ═══════════════════ SELECTS STATIQUES (NVR / stockage) ═══════════════════
@@ -1205,7 +1225,7 @@ const BITRATE_TABLE = {
   '5mp': { h265: 3500, h265plus: 1750 },
   '8mp': { h265: 6000, h265plus: 3000 },
 };
-function updateStorageCalc() {
+function storageNeed() {
   const nbCam = STATE.zones.reduce((s,z)=>s+(z.qty||0),0);
   const reso = document.getElementById('stoReso').value;
   const codec = document.getElementById('stoCodec').value;
@@ -1215,7 +1235,32 @@ function updateStorageCalc() {
   const bitrate = BITRATE_TABLE[reso][codec];
   const gbPerDayPerCam = bitrate * 3600 * 24 * activityFactor / 8 / 1024 / 1024;
   const totalGB = gbPerDayPerCam * jours * nbCam;
-  const totalTO = totalGB / 1024;
+  return { nbCam, reso, codec, mode, jours, totalGB, totalTO: totalGB / 1024 };
+}
+// Disque(s) préremplis : la combinaison la moins chère (≤ 4 disques) qui couvre le stockage estimé
+function syncAutoDisk() {
+  if (!STATE.autoDisk) return;
+  const { nbCam, totalTO } = storageNeed();
+  if (nbCam <= 0) return;
+  const cap = d => { const m = d.label.match(/(\d+)\s*T[OB]/i); return m ? parseInt(m[1]) : 0; };
+  const disks = Object.values(MAT_VIDEO).filter(m=>m.cat==='stockage' && cap(m)>0);
+  let best = null;
+  disks.forEach(d => { for (let q=1; q<=4; q++) {
+    if (cap(d)*q < totalTO) continue;
+    const cost = d.pv*q;
+    if (!best || cost < best.cost) best = { d, q, cost };
+  }});
+  if (!best) { // au-delà de 4 disques : le plus gros disque, en nombre suffisant
+    const big = disks.sort((a,b)=>cap(b)-cap(a))[0];
+    best = { d: big, q: Math.ceil(totalTO / cap(big)) };
+  }
+  document.getElementById('diskRef').value = best.d.ref;
+  document.getElementById('diskQty').value = best.q;
+}
+function updateStorageCalc() {
+  const { nbCam, mode, jours, totalGB, totalTO } = storageNeed();
+  const reso = document.getElementById('stoReso').value;
+  const codec = document.getElementById('stoCodec').value;
 
   setText('sto-resultat', nbCam===0 ? '—' : (totalTO < 1 ? Math.round(totalGB)+' Go' : totalTO.toFixed(1)+' To'));
   setText('sto-detail', nbCam===0 ? 'Ajoutez des caméras' : `${nbCam} caméra${nbCam>1?'s':''} · ${jours} j · ${mode==='continu'?'continu 24/7':'détection (~35% du temps)'}`);
@@ -1247,6 +1292,8 @@ function updateStorageCalc() {
 
 // ═══════════════════ CALCUL ═══════════════════
 function calc() {
+  syncAutoVJB();
+  syncAutoDisk();
   const distKm = parseInt(document.getElementById('distanceKm').value)||0;
   const coutNuitee = parseFloat(document.getElementById('pCoutNuitee').value)||90;
   const seuilNuitee = parseFloat(document.getElementById('pSeuilNuitee').value)||200;
@@ -1754,6 +1801,8 @@ function loadProject(i) {
     STATE.pontOverride = s.pontOverride!==undefined ? s.pontOverride : null;
     STATE.zones = s.zones && s.zones.length ? s.zones : [{ nom:'Zone 1', ref: DEFAULT_CAM_REF, qty: 1 }];
     STATE.accessoires = s.accessoires || [];
+    STATE.autoVJB = s.autoVJB === true;   // anciens projets : pas de préremplissage
+    STATE.autoDisk = s.autoDisk === true;
     renderZones(); renderAccess();
     setEngagement(STATE.engagement);
     setAcompte(STATE.acomptePct);
