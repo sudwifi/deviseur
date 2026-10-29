@@ -522,7 +522,7 @@
           </div>
         </div>
         <div>
-          <label>Jours de pose (binôme · <span id="jour-prix-lbl">1 450</span> € HT/jour)</label>
+          <label>Jours de pose</label>
           <input type="number" id="nbJoursDeploiement" value="1" min="0.5" step="0.5" oninput="onJoursManualInput(this.value)">
           <div id="jours-info" style="font-size:10px;color:var(--text3);margin-top:3px;"></div>
           <div style="font-size:9px;margin-top:2px;"><a href="#" onclick="resetJoursAuto();return false;" style="color:var(--text3);text-decoration:underline;" id="reset-jours" hidden>↺ recalcul auto</a></div>
@@ -754,6 +754,17 @@
 <div id="tab-marge" class="main panel">
   <div style="flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;">
     <div style="font-size:11px;color:var(--text3);">🔒 Onglet interne : coûts de revient, marges et flux de financement. À ne pas afficher devant le client.</div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Pose et déplacement</span></div>
+      <div class="card-body">
+        <div class="leasing-block">
+          <div class="leasing-row"><span class="lbl">Jours de pose</span><span class="val" id="pil-pose" style="font-size:11px;">—</span></div>
+          <div class="leasing-row"><span class="lbl">Cadence</span><span class="val" id="pil-cadence" style="font-size:11px;font-weight:500;">—</span></div>
+          <div class="leasing-row"><span class="lbl">Déplacements</span><span class="val" id="pil-depl" style="font-size:11px;">—</span></div>
+          <div class="leasing-row"><span class="lbl">Hébergement</span><span class="val" id="pil-heberg" style="font-size:11px;">—</span></div>
+        </div>
+      </div>
+    </div>
     <div class="card">
       <div class="card-header">
         <span class="card-title">Achat comptant · prix et marge</span>
@@ -1437,7 +1448,7 @@ function calc() {
   const hebergementCR = nbNuitees * coutNuitee;
   const hebergementPV = hebergementCR * (1/0.30);
   if (nbNuitees > 0) {
-    lignes.push({ ref:'HEBERG', label:`Hébergement (${nbNuitees} nuitée${nbNuitees>1?'s':''})`, qty:1, cr:Math.round(hebergementCR), pv:Math.round(hebergementPV), kind:'pose' });
+    lignes.push({ ref:'HEBERG', label:'Forfait déplacement — hébergement de l\'équipe', qty:1, cr:Math.round(hebergementCR), pv:Math.round(hebergementPV), kind:'pose' });
   }
 
   let totalCR = 0, totalPVBrut = 0;
@@ -1506,19 +1517,21 @@ function calc() {
   const elJ = document.getElementById('nbJoursDeploiement');
   if (document.activeElement !== elJ) elJ.value = jours;
   document.getElementById('reset-jours').hidden = (STATE.joursOverride === null);
-  setText('jours-info', STATE.joursOverride === null
-    ? `Auto : ${nbUnitesMat} borne(s) avec mât ÷ ${String(cadMat).replace('.',',')} + ${nbUnitesSansMat} sans mât ÷ ${String(cadSans).replace('.',',')} → ${fmtJours(joursAuto)}`
-    : `Saisie manuelle (auto : ${fmtJours(joursAuto)})`);
-  setText('jour-prix-lbl', new Intl.NumberFormat('fr-FR').format(jourPV));
+  setText('jours-info', STATE.joursOverride === null ? 'Calcul automatique' : `Saisie manuelle (auto : ${fmtJours(joursAuto)})`);
+  // Détail interne → onglet Pilotage
+  setText('pil-pose', `${fmtJours(jours)} × ${fmt(jourPV)} HT/jour (binôme) = ${fmt(jours*jourPV)} HT · coût ${fmt(jours*jourCR)}`);
+  setText('pil-cadence', `Auto : ${nbUnitesMat} borne(s) avec mât ÷ ${String(cadMat).replace('.',',')} + ${nbUnitesSansMat} sans mât ÷ ${String(cadSans).replace('.',',')} → ${fmtJours(joursAuto)}${STATE.joursOverride !== null ? ` (saisi : ${fmtJours(jours)})` : ''}`);
+  setText('pil-depl', `${distKm} km A/R → ${fmt(deplPV)} HT (coût ${fmt(deplCR)})`);
+  setText('pil-heberg', nbNuitees > 0
+    ? `${nbNuitees} nuitée${nbNuitees>1?'s':''} (aller simple ${Math.round(distanceAllerSimple)} km > ${seuilNuitee} km) → ${fmt(hebergementPV)} HT (coût ${fmt(hebergementCR)})`
+    : `Aucune (aller simple ${Math.round(distanceAllerSimple)} km ≤ ${seuilNuitee} km)`);
   const elR = document.getElementById('recurrentMensuel');
   if (document.activeElement !== elR) elR.value = wifiMensuel;
   document.getElementById('reset-rec').hidden = (STATE.recOverride === null);
 
   const infoNuitee = document.getElementById('nuitee-info');
   if (infoNuitee) {
-    infoNuitee.textContent = distanceAllerSimple > seuilNuitee
-      ? `🏨 ${nbNuitees} nuitée${nbNuitees>1?'s':''} incluse${nbNuitees>1?'s':''} (aller simple ${Math.round(distanceAllerSimple)} km > ${seuilNuitee} km)`
-      : `Pas d'hébergement (aller simple ${Math.round(distanceAllerSimple)} km ≤ ${seuilNuitee} km)`;
+    infoNuitee.textContent = (distKm > 0 || nbNuitees > 0) ? '🚐 Forfait déplacement inclus' : '';
   }
 
   // Alertes
