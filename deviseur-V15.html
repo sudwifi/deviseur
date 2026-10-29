@@ -1910,8 +1910,13 @@ async function postQuotation(base, H, quote) {
 const NIVEAU_MSG = ['', ' (prix d\'achat non transmis : Axonaut a refusé le champ)', ' (lignes non rattachées aux fiches produits)', ' (sans sections)'];
 const fmtE = n => new Intl.NumberFormat('fr-FR', { minimumFractionDigits: (Math.round(n*100) % 100) ? 2 : 0, maximumFractionDigits: 2 }).format(n) + ' € HT';
 
+// Intitulé de la section matériel du devis Axonaut : « Solution Vidéosurveillance X caméras »
+function solutionLabel(r) {
+  const n = r.nbCamTotal || 0;
+  return n > 0 ? `Solution Vidéosurveillance ${n} caméra${n > 1 ? 's' : ''}` : 'Solution Vidéosurveillance';
+}
 function buildAxonautProducts(r) {
-  const CH = { mat:'Matériel (livré programmé)', pose:'Installation et mise en service', remise:'Offre spéciale SETT 2026' };
+  const CH = { mat:solutionLabel(r), pose:'Installation et mise en service', remise:'Offre spéciale SETT 2026' };
   return r.lignes.map(l => axLine(l.label, l.kind === 'remise' ? '' : l.ref, l.qty, l.pv, l.cr, CH[l.kind] || CH.mat))
     .filter(p => Number.isFinite(p.price) && Number.isFinite(p.quantity) && p.quantity > 0);
 }
