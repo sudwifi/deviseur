@@ -2230,8 +2230,15 @@ async function postQuotation(base, H, quote) {
 const NIVEAU_MSG = ['', ' (prix d\'achat non transmis : Axonaut a refusé le champ)', ' (lignes non rattachées aux fiches produits)', ' (sans sections)'];
 const fmtE = n => new Intl.NumberFormat('fr-FR', { minimumFractionDigits: (Math.round(n*100) % 100) ? 2 : 0, maximumFractionDigits: 2 }).format(n) + ' € HT';
 
+// Intitulé de la section matériel du devis Axonaut, selon la solution chiffrée (génération Wifi, extérieur / intérieur)
+function solutionLabel(r) {
+  const out = (WIFI_GEN[STATE.genOut] || WIFI_GEN.w6).label, inn = (WIFI_GEN[STATE.genIn] || WIFI_GEN.w6).label;
+  if (r.nbAPOut > 0 && r.nbAPIn > 0 && out !== inn) return `Solution ${out} extérieur / ${inn} intérieur clé en main`;
+  if (r.nbAPOut > 0) return `Solution ${out} extérieur clé en main`;
+  return `Solution ${inn} intérieur clé en main`;
+}
 function buildAxonautProducts(r) {
-  const CH = { mat:'Matériel (livré programmé)', pose:'Installation et mise en service', spare:'Kit de secours laissé sur site', remise:'Offre spéciale SETT 2026' };
+  const CH = { mat:solutionLabel(r), pose:'Installation et mise en service', spare:'Kit de secours laissé sur site', remise:'Offre spéciale SETT 2026' };
   const prods = r.lignes.map(l => axLine(l.label, l.kind === 'remise' ? '' : l.ref, l.qty, l.pv, l.cr, CH[l.kind] || CH.mat));
   prods.push(axLine(`Portail de connexion Adipsys HM SaaS Expert ${r.adp.cnxTier} connexions – ${STATE.adipsysDuree} mois`,
     `ADIPSYS-${r.adp.cnxTier}-${STATE.adipsysDuree}M-EXP`, 1, r.adipsysPV, r.adipsysCR, 'Portail de connexion'));
