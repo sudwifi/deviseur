@@ -788,6 +788,7 @@
           <div class="leasing-row"><span class="lbl">Premier versement location (<span id="leas-acp-pct">30</span>%)</span><span class="val" id="leas-acompte">—</span></div>
           <div class="leasing-row"><span class="lbl">Base financée leasing</span><span class="val" id="leas-base">—</span></div>
           <div class="leasing-row" id="row-rec-cap" style="display:none;"><span class="lbl">Récurrent capitalisé (<span id="leas-rec-mois">—</span> mois)</span><span class="val" id="leas-rec-cap">—</span></div>
+          <div class="leasing-row" id="row-loyer-split" style="display:none;"><span class="lbl" style="font-size:11px;color:var(--text3);" id="leas-loyer-split">—</span><span></span></div>
           <div class="leasing-row" id="row-base-totale" style="display:none;"><span class="lbl">Base totale financée</span><span class="val" id="leas-total-base">—</span></div>
           <div class="leasing-row separator big"><span class="lbl" id="leas-loyer-label">Loyer client</span><span class="val" id="leas-loyer">—</span></div>
           <div class="leasing-row green-row"><span class="lbl">↳ Sud Wifi reçoit du leaser à livraison</span><span class="val" id="leas-livraison">—</span></div>
@@ -1572,7 +1573,9 @@ function updateUI(r) {
     : STATE.recurrentMode==='annuel' ? `soit ${fmt(r.echeance)} payable d'avance` : `soit ${fmt(r.echeance)}/mois`;
   let info = `<strong>Wifi ${r.gammeLabel} · site ${r.taille.label}</strong> : ${fmt(r.wifiMensuel)}/mois`
     + (r.wifiMensuel !== r.wifiGrille ? ` <span style="color:var(--yellow-ink)">(grille ${fmt(r.wifiGrille)})</span>` : '');
-  info += `<br>Total ${fmt(r.caRecAnnuel)}/an, ${factLbl}`;
+  info += r.isIntegre && r.loc
+    ? `<br><span style="color:var(--blue-dark)">✓ Compris dans le loyer de location : rien à facturer en plus.</span><br>Facturé à part uniquement en achat comptant : ${fmt(r.caRecAnnuel)}/an, ${factLibelle(r)}.`
+    : `<br>Total ${fmt(r.caRecAnnuel)}/an, ${factLbl}`;
   document.getElementById('rec-info').innerHTML = info;
 
   // Leasing
@@ -1583,6 +1586,11 @@ function updateUI(r) {
   setText('leas-rec-cap', fmt((r.recCapEff||0)*STATE.engagement));
   setText('leas-total-base', fmt(r.baseTotale));
   setText('leas-loyer', r.loc ? fmt(r.loyerTotal)+'/mois' : 'Non finançable');
+  const split = document.getElementById('row-loyer-split');
+  if (split) {
+    split.style.display = r.isIntegre && r.loc ? 'flex' : 'none';
+    if (r.isIntegre && r.loc) setText('leas-loyer-split', `Dont installation ${fmt(r.loyerCAPEXSeul)} + services ${fmt(r.loyerTotal - r.loyerCAPEXSeul)} (contrat ${fmt(r.recMensuel)}/mois financé sur ${STATE.engagement} mois : le surcoût est le coût du financement). Le contrat n'est compté qu'une fois.`);
+  }
   setText('leas-livraison', fmt(r.baseLeasee));
   setText('leas-trimestriel', r.receveTrimestriel>0?fmt(r.receveTrimestriel):'—');
   setText('leas-total-enc', fmt(r.receveTotalFin));
@@ -1632,7 +1640,7 @@ function renderComparatif(r) {
   const ach = `<div class="cmp-col achat">
     <div><div class="cmp-head">② Achat comptant</div><div class="cmp-tag">Vous êtes propriétaire de l'installation</div></div>
     <div class="cmp-step"><div class="cmp-lbl">Prix d'achat</div><div class="cmp-big">${fmt(r.capexPV)}</div><div class="cmp-sub">Réglé en 3 fois : ${fmt(r.capexPV*0.4)} à la commande · ${fmt(r.capexPV*0.3)} à la livraison · ${fmt(r.capexPV*0.3)} à la mise en service. Portail Wifi ${STATE.adipsysDuree} mois inclus.</div></div>
-    <div class="cmp-step"><div class="cmp-lbl">Puis ${services}</div><div class="cmp-mid">${fmt(r.recMensuel)}<span style="font-size:12px;font-weight:600;color:var(--text3);"> /mois</span></div><div class="cmp-sub">Soit ${fmt(r.caRecAnnuel)} par an, ${factLibelle(r)} · engagement 12 mois, renouvelable${r.maintOfferte ? ' · <strong>6 premiers mois offerts</strong>' : ''}.</div></div>
+    <div class="cmp-step"><div class="cmp-lbl">Puis ${services} · achat comptant seulement</div><div class="cmp-mid">${fmt(r.recMensuel)}<span style="font-size:12px;font-weight:600;color:var(--text3);"> /mois</span></div><div class="cmp-sub">Soit ${fmt(r.caRecAnnuel)} par an, ${factLibelle(r)} · engagement 12 mois, renouvelable${r.maintOfferte ? ' · <strong>6 premiers mois offerts</strong>' : ''}.</div></div>
   </div>`;
   el.innerHTML = loc + ach;
   const b = document.getElementById('cmp-remise-badge');
@@ -1756,7 +1764,7 @@ function updateClientView(r) {
     </div>
 
     <div class="cv-pack">
-      <div class="cv-pack-header">✦ Contrat de services ${r.gammeLabel} · engagement 12 mois</div>
+      <div class="cv-pack-header">✦ Contrat de services ${r.gammeLabel}${r.loc && STATE.leasingMode==='integre' ? ' · compris dans la location · 12 mois renouvelables en achat comptant' : ' · engagement 12 mois'}</div>
       ${contenu}
     </div>
 
