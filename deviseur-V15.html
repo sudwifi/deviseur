@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sud Wifi — Deviseur Vidéo V6</title>
+<title>Sud Wifi — Deviseur Vidéo V7</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700;800&family=Quicksand:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -212,6 +212,38 @@
   .header-logo { height: 50px; width: auto; display: block; }
   .header { padding-top: 6px; padding-bottom: 6px; }
   .cv-logo-img { height: 64px; width: auto; display: block; }
+
+  /* ═══ V7 : comparatif Location / Achat ═══ */
+  .cmp-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .cmp-col { border:1.5px solid var(--border2); border-radius:8px; padding:14px; display:flex; flex-direction:column; gap:10px; background:#fff; }
+  .cmp-col.loc { border-color:#bfdbfe; background:#f5f9ff; }
+  .cmp-col.achat { border-color:#bbf7d0; background:#f5fdf8; }
+  .cmp-head { font-family:var(--display); font-weight:800; font-size:14px; color:var(--text); display:flex; align-items:center; gap:8px; }
+  .cmp-tag { font-family:var(--title); font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.8px; }
+  .cmp-step { border-top:1px dashed var(--border2); padding-top:8px; }
+  .cmp-step:first-of-type { border-top:none; padding-top:0; }
+  .cmp-lbl { font-family:var(--title); font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.8px; }
+  .cmp-big { font-family:var(--display); font-weight:800; font-size:24px; line-height:1.15; }
+  .cmp-col.loc .cmp-big { color:var(--blue-dark); }
+  .cmp-col.achat .cmp-big { color:var(--green); }
+  .cmp-mid { font-family:var(--display); font-weight:700; font-size:17px; color:var(--text); }
+  .cmp-sub { font-size:11px; color:var(--text3); line-height:1.45; }
+  .cmp-sub strong { color:var(--text2); }
+  .cv-cmp { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+  .cv-col { border-radius:8px; padding:14px; border:1.5px solid #e5e7eb; display:flex; flex-direction:column; gap:10px; break-inside:avoid; page-break-inside:avoid; }
+  .cv-col.loc { background:#f5f9ff; border-color:#bfdbfe; }
+  .cv-col.achat { background:#f3fdf6; border-color:#bbf7d0; }
+  .cv-col-head { font-family:'Montserrat',sans-serif; font-weight:800; font-size:14px; color:#1a2535; }
+  .cv-col-tag { font-size:10px; color:#6b7280; margin-top:2px; }
+  .cv-step { border-top:1px dashed #d1d5db; padding-top:8px; }
+  .cv-step:first-of-type { border-top:none; padding-top:0; }
+  .cv-lbl { font-size:10px; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; font-family:'Fira Sans',sans-serif; font-weight:600; }
+  .cv-big { font-family:'Montserrat',sans-serif; font-weight:800; font-size:22px; }
+  .cv-col.loc .cv-big { color:#007eb1; }
+  .cv-col.achat .cv-big { color:#16a34a; }
+  .cv-mid { font-family:'Montserrat',sans-serif; font-weight:700; font-size:16px; color:#1a2535; }
+  .cv-small { font-size:11px; color:#6b7280; line-height:1.45; }
+  @media (max-width: 900px) { .cmp-grid, .cv-cmp { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -226,7 +258,7 @@
     </div>
   </div>
   <div class="header-right">
-    <div class="version-badge">V6 · SETT 2026</div>
+    <div class="version-badge">V7 · SETT 2026</div>
     <div class="header-actions">
       <button class="hbtn secondary" onclick="openTab('projets')">📁 Projets</button>
       <button class="hbtn secondary" onclick="importJSON()">⬆ Importer</button>
@@ -238,12 +270,12 @@
 </div>
 
 <div class="tabs">
-  <div class="tab active" onclick="openTab('chiffrage')">⚡ Chiffrage</div>
-  <div class="tab" onclick="openTab('marge')">📊 Analyse marge</div>
-  <div class="tab" onclick="openTab('materiel')">📦 Liste matériel</div>
-  <div class="tab" onclick="openTab('client')">📄 Vue client</div>
-  <div class="tab" onclick="openTab('projets')">📁 Projets</div>
-  <div class="tab" onclick="openTab('settings')">⚙ Paramètres</div>
+  <div class="tab active" data-tab="chiffrage" onclick="openTab('chiffrage')">⚡ Chiffrage</div>
+  <div class="tab" data-tab="marge" onclick="openTab('marge')" title="Usage interne : marges, coûts, financement">🎛 Pilotage</div>
+  <div class="tab" data-tab="materiel" onclick="openTab('materiel')">📦 Liste matériel</div>
+  <div class="tab" data-tab="client" onclick="openTab('client')">📄 Vue client</div>
+  <div class="tab" data-tab="projets" onclick="openTab('projets')">📁 Projets</div>
+  <div class="tab" data-tab="settings" onclick="openTab('settings')">⚙ Paramètres</div>
 </div>
 
 <!-- ═══════════════════ CHIFFRAGE ═══════════════════ -->
@@ -417,7 +449,7 @@
     <div class="card">
       <div class="card-header"><span class="card-title">Contrat de services Vidéo (gammes)</span></div>
       <div class="card-body">
-        <div style="font-size:10px;color:var(--text3);line-height:1.4;">Engagement 12 mois · jusqu'à 8 caméras, puis +3 € HT/caméra/mois · facturé indépendamment du financement du matériel.</div>
+        <div style="font-size:10px;color:var(--text3);line-height:1.4;">Engagement 12 mois · jusqu'à 8 caméras, puis +3 € HT/caméra/mois. En location « services inclus », il est fondu dans le loyer ; en achat comptant, il est facturé à part.</div>
         <div>
           <label>Gamme</label>
           <div class="toggle-group">
@@ -443,15 +475,15 @@
     </div>
 
     <div class="card">
-      <div class="card-header"><span class="card-title">Financement leasing</span></div>
+      <div class="card-header"><span class="card-title">Location longue durée</span></div>
       <div class="card-body">
         <div>
           <label>Mode</label>
           <div class="toggle-group">
-            <div class="toggle-btn active" id="leas-mode-sec" onclick="setLeasingMode('sec')">Sec (Capex)</div>
-            <div class="toggle-btn" id="leas-mode-integre" onclick="setLeasingMode('integre')">Avec services intégrés</div>
+            <div class="toggle-btn active" id="leas-mode-integre" onclick="setLeasingMode('integre')">Services inclus dans le loyer</div>
+            <div class="toggle-btn" id="leas-mode-sec" onclick="setLeasingMode('sec')">Services facturés à part</div>
           </div>
-          <div style="font-size:10px;color:var(--text3);margin-top:4px;">Sec : le loyer ne couvre que le Capex. Intégré : le loyer inclut le pack maintenance.</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px;">Inclus : un seul loyer tout compris (matériel + installation + contrat de services choisi). À part : le loyer ne couvre que l'installation, le contrat de services est facturé par Sud Wifi.</div>
         </div>
         <div>
           <label>Durée</label>
@@ -460,15 +492,9 @@
             <div class="toggle-btn" id="eng-48" onclick="setEngagement(48)">48 mois</div>
             <div class="toggle-btn active" id="eng-60" onclick="setEngagement(60)">60 mois</div>
           </div>
-          <div id="leas-coef-info" style="font-size:10px;color:var(--text3);margin-top:4px;"></div>
-        </div>
-        <div id="leasing-rec-input-block" style="display:none;">
-          <label>Récurrent capitalisé (€/mois)</label>
-          <input type="number" id="recCapitalise" value="0" min="0" oninput="calc()">
-          <div id="alert-15pct" class="alert-msg" style="display:none;margin-top:6px;"></div>
         </div>
         <div>
-          <label>Premier versement (location)</label>
+          <label>Versement à la commande (location)</label>
           <div class="toggle-group">
             <div class="toggle-btn" id="acp-0" onclick="setAcompte(0)">0%</div>
             <div class="toggle-btn active" id="acp-30" onclick="setAcompte(30)">30%</div>
@@ -499,45 +525,10 @@
     </div>
 
     <div class="card">
-      <div class="card-header">
-        <span class="card-title">CAPEX chantier</span>
-        <span class="badge green" id="badge-marge-capex">—%</span>
-      </div>
+      <div class="card-header"><span class="card-title">Ce que paie le client</span><span class="badge yellow" id="cmp-remise-badge" style="display:none;"></span></div>
       <div class="card-body">
-        <div class="metrics-grid" style="grid-template-columns:repeat(3,1fr)">
-          <div class="metric highlight"><div class="metric-label">CAPEX PV HT</div><div class="metric-value accent" id="res-capex-pv">—</div></div>
-          <div class="metric"><div class="metric-label">Coût de revient</div><div class="metric-value" id="res-capex-cr">—</div></div>
-          <div class="metric green"><div class="metric-label">Marge chantier</div><div class="metric-value green" id="res-marge-euro">—</div></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header"><span class="card-title">Structure financement</span></div>
-      <div class="card-body">
-        <div class="leasing-block">
-          <div class="leasing-row"><span class="lbl">CAPEX chantier HT</span><span class="val" id="leas-capex">—</span></div>
-          <div class="leasing-row"><span class="lbl">Premier versement location (<span id="leas-acp-pct">30</span>%)</span><span class="val" id="leas-acompte">—</span></div>
-          <div class="leasing-row"><span class="lbl">Base financée leasing</span><span class="val" id="leas-base">—</span></div>
-          <div class="leasing-row" id="row-rec-cap" style="display:none;"><span class="lbl">Récurrent capitalisé (<span id="leas-rec-mois">—</span> mois)</span><span class="val" id="leas-rec-cap">—</span></div>
-          <div class="leasing-row" id="row-base-totale" style="display:none;"><span class="lbl">Base totale financée</span><span class="val" id="leas-total-base">—</span></div>
-          <div class="leasing-row separator big"><span class="lbl" id="leas-loyer-label">Loyer client (Capex uniquement)</span><span class="val" id="leas-loyer">—</span></div>
-          <div class="leasing-row green-row"><span class="lbl">↳ Sud Wifi reçoit du leaser à livraison</span><span class="val" id="leas-livraison">—</span></div>
-          <div class="leasing-row yellow-row" id="row-trimestriel" style="display:none;"><span class="lbl">↳ Sud Wifi reçoit / trimestre (récurrent)</span><span class="val" id="leas-trimestriel">—</span></div>
-          <div class="leasing-row" id="row-pack-note"><span class="lbl" style="color:var(--text3);font-size:11px;">Pack maintenance facturé à part par Sud Wifi</span><span class="val" id="leas-pack-note" style="font-size:11px;color:var(--text3);">—</span></div>
-          <div class="leasing-row"><span class="lbl">Total encaissé Sud Wifi · <span id="leas-duree">60</span> mois</span><span class="val" id="leas-total-enc">—</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header"><span class="card-title">Maintenance affichée client</span></div>
-      <div class="card-body">
-        <div class="metrics-grid">
-          <div class="metric"><div class="metric-label">Contrat de services</div><div class="metric-value" id="res-pack">—</div><div class="metric-sub" id="res-pack-mode">—</div></div>
-          <div class="metric highlight"><div class="metric-label">CA récurrent/an</div><div class="metric-value accent" id="res-ca-rec">—</div></div>
-          <div class="metric green"><div class="metric-label">Marge récurrente/an</div><div class="metric-value green" id="res-marge-rec">—</div></div>
-        </div>
+        <div class="cmp-grid" id="cmp-grid"></div>
+        <div id="cmp-note" style="font-size:10px;color:var(--text3);line-height:1.45;"></div>
       </div>
     </div>
 
@@ -547,6 +538,52 @@
 <!-- ═══════════════════ MARGE ═══════════════════ -->
 <div id="tab-marge" class="main panel">
   <div style="flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;">
+    <div style="font-size:11px;color:var(--text3);">🔒 Onglet interne : coûts de revient, marges et flux de financement. À ne pas afficher devant le client.</div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Achat comptant · prix et marge</span>
+        <span class="badge green" id="badge-marge-capex">—%</span>
+      </div>
+      <div class="card-body">
+        <div class="metrics-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="metric highlight"><div class="metric-label">Prix de vente HT</div><div class="metric-value accent" id="res-capex-pv">—</div></div>
+          <div class="metric"><div class="metric-label">Coût de revient</div><div class="metric-value" id="res-capex-cr">—</div></div>
+          <div class="metric green"><div class="metric-label">Marge chantier</div><div class="metric-value green" id="res-marge-euro">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Location longue durée · mécanique de financement</span></div>
+      <div class="card-body">
+        <div class="leasing-block">
+          <div class="leasing-row"><span class="lbl" style="color:var(--text3);font-size:11px;" id="leas-coef-info">—</span><span></span></div>
+          <div id="alert-15pct" class="alert-msg" style="display:none;"></div>
+          <div class="leasing-row"><span class="lbl">Prix de vente HT (matériel + pose)</span><span class="val" id="leas-capex">—</span></div>
+          <div class="leasing-row"><span class="lbl">Premier versement location (<span id="leas-acp-pct">30</span>%)</span><span class="val" id="leas-acompte">—</span></div>
+          <div class="leasing-row"><span class="lbl">Base financée leasing</span><span class="val" id="leas-base">—</span></div>
+          <div class="leasing-row" id="row-rec-cap" style="display:none;"><span class="lbl">Récurrent capitalisé (<span id="leas-rec-mois">—</span> mois)</span><span class="val" id="leas-rec-cap">—</span></div>
+          <div class="leasing-row" id="row-base-totale" style="display:none;"><span class="lbl">Base totale financée</span><span class="val" id="leas-total-base">—</span></div>
+          <div class="leasing-row separator big"><span class="lbl" id="leas-loyer-label">Loyer client</span><span class="val" id="leas-loyer">—</span></div>
+          <div class="leasing-row green-row"><span class="lbl">↳ Sud Wifi reçoit du leaser à livraison</span><span class="val" id="leas-livraison">—</span></div>
+          <div class="leasing-row yellow-row" id="row-trimestriel" style="display:none;"><span class="lbl">↳ Sud Wifi reçoit / trimestre (récurrent)</span><span class="val" id="leas-trimestriel">—</span></div>
+          <div class="leasing-row" id="row-pack-note"><span class="lbl" style="color:var(--text3);font-size:11px;">Contrat de services facturé à part par Sud Wifi</span><span class="val" id="leas-pack-note" style="font-size:11px;color:var(--text3);">—</span></div>
+          <div class="leasing-row"><span class="lbl">Total encaissé Sud Wifi · <span id="leas-duree">60</span> mois</span><span class="val" id="leas-total-enc">—</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Contrat de services</span></div>
+      <div class="card-body">
+        <div class="metrics-grid">
+          <div class="metric"><div class="metric-label">Contrat de services</div><div class="metric-value" id="res-pack">—</div><div class="metric-sub" id="res-pack-mode">—</div></div>
+          <div class="metric highlight"><div class="metric-label">CA récurrent/an</div><div class="metric-value accent" id="res-ca-rec">—</div></div>
+          <div class="metric green"><div class="metric-label">Marge récurrente/an</div><div class="metric-value green" id="res-marge-rec">—</div></div>
+        </div>
+      </div>
+    </div>
+
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div class="card">
         <div class="card-header"><span class="card-title">Détail marge par poste</span></div>
@@ -601,9 +638,9 @@
       </div>
       <div class="card-body" style="padding:0;">
         <table class="data-table">
-          <thead><tr><th>Référence</th><th>Désignation</th><th class="right">Qté</th><th class="right">CR unit.</th><th class="right">PV unit.</th><th class="right">CR total</th><th class="right">PV total</th><th class="right">Marge</th></tr></thead>
+          <thead><tr><th>Référence</th><th>Désignation</th><th class="right">Qté</th><th class="right">PV unit. HT</th><th class="right">Total HT</th></tr></thead>
           <tbody id="tbl-materiel"></tbody>
-          <tfoot><tr class="total-row"><td colspan="5">TOTAL</td><td class="right cr" id="mat-cr-total">—</td><td class="right pv" id="mat-pv-total">—</td><td class="right marge-cell" id="mat-marge-total">—</td></tr></tfoot>
+          <tfoot><tr class="total-row"><td colspan="4">TOTAL HT</td><td class="right pv" id="mat-pv-total">—</td></tr></tfoot>
         </table>
       </div>
     </div>
@@ -888,7 +925,7 @@ const CAT_LABELS = { camera:'Caméras', nvr:'Enregistreurs (NVR)', stockage:'Sto
 
 // ═══════════════════ STATE ═══════════════════
 let STATE = {
-  recurrentMode:'mensuel', engagement:60, acomptePct:30, leasingMode:'sec',
+  recurrentMode:'mensuel', engagement:60, acomptePct:30, leasingMode:'integre', // V7 : par défaut, le contrat de services est fondu dans le loyer
   gamme:'pro', remisePct:0, maintOfferte:false, joursOverride:null, recOverride:null,
   matsInclus:true, vrdDisponible:true, pontOverride:null,
   zones: [ { nom:'Zone 1', ref: DEFAULT_CAM_REF, qty: 4 } ],
@@ -961,16 +998,7 @@ function openTab(name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
-  document.querySelectorAll('.tab').forEach(t => {
-    if ((name==='chiffrage' && t.textContent.includes('Chiffrage')) ||
-        (name==='marge' && t.textContent.includes('marge')) ||
-        (name==='materiel' && t.textContent.includes('mat')) ||
-        (name==='client' && t.textContent.includes('client')) ||
-        (name==='projets' && t.textContent.includes('Projets')) ||
-        (name==='settings' && t.textContent.includes('Param'))) {
-      t.classList.add('active');
-    }
-  });
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   if (name === 'projets') renderProjects();
   if (name === 'settings') renderMaterialParams();
 }
@@ -1098,7 +1126,7 @@ function setAcompte(pct) {
   STATE.acomptePct = pct;
   [0,30,50].forEach(k => document.getElementById('acp-'+k).classList.remove('active'));
   document.getElementById('acp-'+pct).classList.add('active');
-  document.getElementById('leas-acp-pct').textContent = pct;
+  setText('leas-acp-pct', pct);
   calc();
 }
 function setLeasingMode(mode) {
@@ -1110,8 +1138,6 @@ function setLeasingMode(mode) {
   document.getElementById('row-base-totale').style.display = showIntegre ? 'flex' : 'none';
   document.getElementById('row-trimestriel').style.display = showIntegre ? 'flex' : 'none';
   document.getElementById('row-pack-note').style.display = showIntegre ? 'none' : 'flex';
-  document.getElementById('leasing-rec-input-block').style.display = showIntegre ? 'block' : 'none';
-  document.getElementById('leas-loyer-label').textContent = showIntegre ? 'Loyer client all-inclusive' : 'Loyer client (Capex uniquement)';
   if (!showIntegre) document.getElementById('alert-15pct').style.display = 'none';
   calc();
 }
@@ -1168,7 +1194,6 @@ function calc() {
   const distKm = parseInt(document.getElementById('distanceKm').value)||0;
   const coutNuitee = parseFloat(document.getElementById('pCoutNuitee').value)||90;
   const seuilNuitee = parseFloat(document.getElementById('pSeuilNuitee').value)||200;
-  const recCap = parseFloat(document.getElementById('recCapitalise').value)||0;
   const jourPV  = parseFloat(document.getElementById('pJourPV').value)||1450;
   const jourCR  = parseFloat(document.getElementById('pJourCR').value)||508.56;
   const cadMat  = parseFloat(document.getElementById('pCadenceMat').value)||4.5;
@@ -1276,6 +1301,8 @@ function calc() {
 
   // ── Leasing (barème Locam)
   const isIntegre = STATE.leasingMode === 'integre';
+  // Services inclus : on capitalise exactement le contrat choisi (gamme, prix négocié éventuel)
+  const recCap = recMensuel;
   const recCapEff = isIntegre ? recCap : 0;
   const acompteMontant = capexPV * STATE.acomptePct/100;
   const baseLeasee = capexPV - acompteMontant;
@@ -1296,7 +1323,7 @@ function calc() {
     nbPonts, pontAuto, nbMats: nbMatsInput, nbSwitchesZone, nbInjecteurs,
     jours, joursAuto, jourPV,
     lignes, totalCR, totalPV, totalPVBrut, remiseMontant, remisePct: STATE.remisePct, capexCR, capexPV,
-    loyerCAPEXSeul, min15pct, alerteMin, recCap, recCapEff, loc,
+    loyerCAPEXSeul, min15pct, alerteMin, recCap, recCapEff, loc, isIntegre,
     baseTotale, loyerTotal, acompteMontant, baseLeasee,
     receveTrimestriel, receveTotalFin,
     gamme: STATE.gamme, gammeLabel: G.label, recGrille,
@@ -1316,13 +1343,6 @@ function calc() {
   const elR = document.getElementById('recurrentMensuel');
   if (document.activeElement !== elR) elR.value = recMensuel;
   document.getElementById('reset-rec').hidden = (STATE.recOverride === null);
-
-  if (isIntegre) {
-    document.getElementById('alert-15pct').style.display = alerteMin ? 'block' : 'none';
-    document.getElementById('alert-15pct').textContent = alerteMin ? `⚠ Minimum requis : ${fmt(min15pct)}/mois` : '';
-  } else {
-    document.getElementById('alert-15pct').style.display = 'none';
-  }
 
   updateUI(lastResult);
   updateStorageCalc();
@@ -1361,9 +1381,7 @@ function updateUI(r) {
   setText('badge-marge-capex', mpct+'%');
   document.getElementById('badge-marge-capex').className = 'badge '+(mpct>=55?'green':mpct>=40?'blue':'yellow');
 
-  setText('remise-info', r.remiseMontant > 0
-    ? `−${fmt(r.remiseMontant)} HT · marge chantier après remise : ${mpct} % (coef ${r.capexCR>0?(r.capexPV/r.capexCR).toFixed(2).replace('.',','):'—'})`
-    : 'Aucune remise appliquée.');
+  setText('remise-info', r.remiseMontant > 0 ? `−${fmt(r.remiseMontant)} HT déjà déduits.` : 'Aucune remise appliquée.');
   setText('maint-offerte-info', r.maintOfferte ? `Valeur offerte : ${fmt(r.valeurOfferte)} HT (6 × ${fmt(r.recMensuel)}) · facturation à partir du 7ᵉ mois` : '');
   document.getElementById('rec-info').innerHTML =
     `<strong>Vidéo ${r.gammeLabel}</strong> · ${r.nbCamTotal} caméra${r.nbCamTotal>1?'s':''} : ${fmt(r.recMensuel)}/mois`
@@ -1386,7 +1404,10 @@ function updateUI(r) {
     ? `Barème Locam ${STATE.engagement} mois · tranche ${r.loc.tranche} : ${r.loc.coef.toFixed(3).replace('.',',')} %/mois`
     : 'Montant financé < 300 € : pas de location financière.');
   const loyerLabelEl = document.getElementById('leas-loyer-label');
-  if (loyerLabelEl) loyerLabelEl.textContent = STATE.leasingMode==='integre' ? 'Loyer client all-inclusive' : 'Loyer client (Capex uniquement)';
+  if (loyerLabelEl) loyerLabelEl.textContent = STATE.leasingMode==='integre' ? 'Loyer client tout compris (services inclus)' : 'Loyer client (installation seule)';
+  const a15 = document.getElementById('alert-15pct');
+  if (a15) { a15.style.display = r.alerteMin ? 'block' : 'none'; a15.textContent = r.alerteMin ? `⚠ Services capitalisés sous le minimum leaser (15 % du loyer installation) : ${fmt(r.min15pct)}/mois` : ''; }
+  renderComparatif(r);
 
   setText('res-pack', fmt(r.recMensuel)+'/mois');
   setText('res-pack-mode', `${r.gammeLabel} · ${STATE.recurrentMode==='annuel'?'facturé à l\'année':'12 mensualités'}`);
@@ -1396,6 +1417,39 @@ function updateUI(r) {
   updateMarge(r);
   updateMateriel(r);
   updateClientView(r);
+}
+
+function factLibelle(r) {
+  return STATE.recurrentMode==='annuel' ? `réglés en une fois` : `réglés en 12 mensualités`;
+}
+function renderComparatif(r) {
+  const el = document.getElementById('cmp-grid'); if (!el) return;
+  const services = `Contrat de services Vidéo ${r.gammeLabel}`;
+  let loc;
+  if (!r.loc) {
+    loc = `<div class="cmp-col loc"><div class="cmp-head">① Location longue durée</div><div class="cmp-sub">Montant trop faible pour une location financière (minimum 300 € financés).</div></div>`;
+  } else {
+    const mensuel = r.isIntegre ? r.loyerTotal : r.loyerTotal + r.recMensuel;
+    const detail = r.isIntegre
+      ? `Matériel, installation et <strong>${services}</strong> compris.`
+      : `Dont installation ${fmt(r.loyerTotal)} + ${services.toLowerCase()} ${fmt(r.recMensuel)} (moyenne mensuelle, facturé par Sud Wifi).`;
+    loc = `<div class="cmp-col loc">
+      <div><div class="cmp-head">① Location longue durée</div><div class="cmp-tag">${STATE.engagement} mois · location financière</div></div>
+      <div class="cmp-step"><div class="cmp-lbl">À la commande</div><div class="cmp-mid">${r.acompteMontant>0 ? fmt(r.acompteMontant) : 'Rien'}</div><div class="cmp-sub">${r.acompteMontant>0 ? `Versement initial (${STATE.acomptePct} %)` : 'Aucun versement initial'}</div></div>
+      <div class="cmp-step"><div class="cmp-lbl">Puis chaque mois · tout compris</div><div class="cmp-big">${fmt(mensuel)}<span style="font-size:12px;font-weight:600;color:var(--text3);"> /mois</span></div><div class="cmp-sub">${detail}</div></div>
+      <div class="cmp-step"><div class="cmp-sub">Pendant ${STATE.engagement} mois · sous réserve d'acceptation du dossier par l'organisme de financement.</div></div>
+    </div>`;
+  }
+  const ach = `<div class="cmp-col achat">
+    <div><div class="cmp-head">② Achat comptant</div><div class="cmp-tag">Vous êtes propriétaire de l'installation</div></div>
+    <div class="cmp-step"><div class="cmp-lbl">Prix d'achat</div><div class="cmp-big">${fmt(r.capexPV)}</div><div class="cmp-sub">Réglé en 3 fois : ${fmt(r.capexPV*0.4)} à la commande · ${fmt(r.capexPV*0.3)} à la livraison · ${fmt(r.capexPV*0.3)} à la mise en service.</div></div>
+    <div class="cmp-step"><div class="cmp-lbl">Puis ${services}</div><div class="cmp-mid">${fmt(r.recMensuel)}<span style="font-size:12px;font-weight:600;color:var(--text3);"> /mois</span></div><div class="cmp-sub">Soit ${fmt(r.caRecAnnuel)} par an, ${factLibelle(r)} · engagement 12 mois, renouvelable${r.maintOfferte ? ' · <strong>6 premiers mois offerts</strong>' : ''}.</div></div>
+  </div>`;
+  el.innerHTML = loc + ach;
+  const b = document.getElementById('cmp-remise-badge');
+  b.style.display = r.remiseMontant > 0 ? '' : 'none';
+  b.textContent = r.remiseMontant > 0 ? `Remise Salon −${r.remisePct} % déduite` : '';
+  setText('cmp-note', `Prix HT · ${r.nbCamTotal} caméra${r.nbCamTotal>1?'s':''} · installation ${fmtJours(r.jours)}.`);
 }
 
 function updateMarge(r) {
@@ -1429,14 +1483,14 @@ function updateMarge(r) {
 
 function updateMateriel(r) {
   const tbody=document.getElementById('tbl-materiel');
-  let html='',crT=0,pvT=0;
+  let html='',pvT=0;
   r.lignes.forEach(l=>{
-    const cT=l.cr*l.qty,pT=l.pv*l.qty;
-    crT+=cT;pvT+=pT;
-    html+=`<tr><td class="ref">${l.ref}</td><td>${l.label}</td><td class="right qty">${String(l.qty).replace('.',',')}</td><td class="right cr">${fmt(l.cr)}</td><td class="right pv">${fmt(l.pv)}</td><td class="right cr">${fmt(cT)}</td><td class="right pv">${fmt(pT)}</td><td class="right marge-cell">${fmt(pT-cT)}</td></tr>`;
+    const pT=l.pv*l.qty;
+    pvT+=pT;
+    html+=`<tr><td class="ref">${l.kind==='remise'?'':l.ref}</td><td>${l.label}</td><td class="right qty">${String(l.qty).replace('.',',')}</td><td class="right pv">${fmt(l.pv)}</td><td class="right pv">${fmt(pT)}</td></tr>`;
   });
   tbody.innerHTML=html;
-  setText('mat-cr-total',fmt(crT));setText('mat-pv-total',fmt(pvT));setText('mat-marge-total',fmt(pvT-crT));
+  setText('mat-pv-total',fmt(pvT));
 }
 
 function updateClientView(r) {
@@ -1454,13 +1508,10 @@ function updateClientView(r) {
   let coutMensuelPrincipal, coutMensuelDetail;
   if (STATE.leasingMode === 'integre') {
     coutMensuelPrincipal = r.loyerTotal;
-    coutMensuelDetail = `Tout inclus · pendant ${STATE.engagement} mois`;
-  } else if (annuel) {
-    coutMensuelPrincipal = r.loyerTotal;
-    coutMensuelDetail = `Installation sur ${STATE.engagement} mois · contrat de services ${fmt(r.caRecAnnuel)}/an en sus`;
+    coutMensuelDetail = `Matériel, installation et contrat de services Vidéo ${r.gammeLabel} inclus, pendant ${STATE.engagement} mois`;
   } else {
     coutMensuelPrincipal = r.loyerTotal + r.recMensuel;
-    coutMensuelDetail = `${fmt(r.loyerTotal)} installation sur ${STATE.engagement} mois + ${fmt(r.recMensuel)} contrat de services`;
+    coutMensuelDetail = `${fmt(r.loyerTotal)} d'installation + ${fmt(r.recMensuel)} de contrat de services Vidéo ${r.gammeLabel} (moyenne mensuelle, ${factLibelle(r)})`;
   }
 
   // Échelonnement aligné sur les conditions de règlement Axonaut (40 / 30 / 30)
@@ -1519,35 +1570,21 @@ function updateClientView(r) {
       Parlez-en à votre assureur : un système de vidéoprotection peut être pris en compte dans l'évaluation de votre contrat.
     </div>
 
-    ${r.loc ? `
-    <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;margin-bottom:6px;">Option 1 — Location financière ${STATE.engagement} mois</div>
-    <div class="cv-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:6px;">
-      <div class="cv-metric blue">
-        <div class="cm-label">Coût initial</div>
-        <div class="cm-value">${fmt(r.acompteMontant)}</div>
-        <div class="cm-sub">${r.acompteMontant > 0 ? 'Premier versement avant mise en location' : 'Aucun premier versement'}</div>
-      </div>
-      <div class="cv-metric sun">
-        <div class="cm-label">Coût mensuel</div>
-        <div class="cm-value">${fmt(coutMensuelPrincipal)}</div>
-        <div class="cm-sub">${coutMensuelDetail}</div>
-      </div>
-    </div>
-    <div style="font-size:10px;color:#6b7280;margin-bottom:14px;">Loyers HT, terme à échoir, sous réserve d'acceptation du dossier par l'organisme de financement.</div>` : ''}
-
-    <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;margin-bottom:6px;">Option ${r.loc?'2':'1'} — Achat comptant</div>
-    <div class="cv-pack" style="margin-bottom:10px;">
-      <div class="cv-pack-header" style="background:#16a34a;">Échelonnement du règlement</div>
-      <div class="cv-pack-row"><span>À la commande (40 %)</span><span style="font-weight:700;">${fmt(ech1)}</span></div>
-      <div class="cv-pack-row"><span>À la livraison du matériel / ouverture du chantier (30 %)</span><span style="font-weight:700;">${fmt(ech2)}</span></div>
-      <div class="cv-pack-row"><span>À la mise en service (30 %)</span><span style="font-weight:700;">${fmt(ech3)}</span></div>
-      <div class="cv-pack-row" style="background:#f8fafc;"><span style="font-weight:700;">Total investissement${r.remiseMontant>0?' (remise Salon déduite)':''}</span><span style="font-weight:700;">${fmt(r.capexPV)}</span></div>
-    </div>
-    <div class="cv-grid" style="grid-template-columns:1fr;margin-bottom:10px;">
-      <div class="cv-metric green">
-        <div class="cm-label">Contrat de services Vidéo ${r.gammeLabel}</div>
-        <div class="cm-value">${fmt(r.recMensuel)}<span style="font-size:12px;font-weight:500;color:#6b7280;">/mois</span></div>
-        <div class="cm-sub">Engagement 12 mois · ${annuel ? `réglé à l'année (${fmt(r.caRecAnnuel)})` : '12 mensualités'}${r.maintOfferte ? ' · 6 premiers mois offerts' : ''}</div>
+    <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;margin-bottom:8px;">Deux façons de vous équiper${r.remiseMontant>0?' · remise Salon déduite':''}</div>
+    <div class="cv-cmp">
+      ${r.loc ? `<div class="cv-col loc">
+        <div><div class="cv-col-head">① Location longue durée</div><div class="cv-col-tag">${STATE.engagement} mois · tout compris</div></div>
+        <div class="cv-step"><div class="cv-lbl">À la commande</div><div class="cv-mid">${r.acompteMontant>0 ? fmt(r.acompteMontant) : 'Aucun versement'}</div></div>
+        <div class="cv-step"><div class="cv-lbl">Puis chaque mois</div><div class="cv-big">${fmt(coutMensuelPrincipal)}<span style="font-size:12px;font-weight:500;color:#6b7280;"> /mois</span></div>
+          <div class="cv-small">${coutMensuelDetail}</div></div>
+        <div class="cv-step cv-small">Loyers HT, terme à échoir, sous réserve d'acceptation du dossier par l'organisme de financement.</div>
+      </div>` : ''}
+      <div class="cv-col achat">
+        <div><div class="cv-col-head">${r.loc?'②':'①'} Achat comptant</div><div class="cv-col-tag">Vous êtes propriétaire de l'installation</div></div>
+        <div class="cv-step"><div class="cv-lbl">Prix d'achat</div><div class="cv-big">${fmt(r.capexPV)}</div>
+          <div class="cv-small">${fmt(ech1)} à la commande · ${fmt(ech2)} à la livraison du matériel · ${fmt(ech3)} à la mise en service</div></div>
+        <div class="cv-step"><div class="cv-lbl">Puis contrat de services Vidéo ${r.gammeLabel}</div><div class="cv-mid">${fmt(r.recMensuel)}<span style="font-size:12px;font-weight:500;color:#6b7280;"> /mois</span></div>
+          <div class="cv-small">Soit ${fmt(r.caRecAnnuel)} par an, ${factLibelle(r)} · engagement 12 mois${r.maintOfferte ? ' · 6 premiers mois offerts' : ''}</div></div>
       </div>
     </div>
     <div style="font-size:11px;color:#166534;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:9px 12px;margin-bottom:14px;line-height:1.5;">
@@ -1574,7 +1611,6 @@ function buildProjectData() {
       distanceKm: document.getElementById('distanceKm').value,
       nbJoursDeploiement: document.getElementById('nbJoursDeploiement').value,
       recurrentMensuel: document.getElementById('recurrentMensuel').value,
-      recCapitalise: document.getElementById('recCapitalise').value,
       nvrRef: document.getElementById('nvrRef').value,
       nvrQty: document.getElementById('nvrQty').value,
       diskRef: document.getElementById('diskRef').value,
@@ -1617,7 +1653,7 @@ function renderProjects() {
     <div class="project-item">
       <div>
         <div class="pi-name">${p.nom}</div>
-        <div class="pi-meta">${p.result?.nbCamTotal||'?'} caméras · CAPEX ${p.result ? fmt(p.result.capexPV) : '—'} · ${p.date||''}</div>
+        <div class="pi-meta">${p.result?.nbCamTotal||'?'} caméras · achat ${p.result ? fmt(p.result.capexPV) : '—'} · ${p.date||''}</div>
       </div>
       <div class="pi-actions">
         <button class="pi-btn load" onclick="loadProject(${i})">📂 Charger</button>
@@ -1633,7 +1669,6 @@ function loadProject(i) {
   const inp = p.inputs;
   document.getElementById('nomClient').value = inp.nomClient||'';
   document.getElementById('distanceKm').value = inp.distanceKm||60;
-  document.getElementById('recCapitalise').value = inp.recCapitalise||0;
   document.getElementById('nvrQty').value = inp.nvrQty||1;
   document.getElementById('diskQty').value = inp.diskQty||1;
   document.getElementById('nbMats').value = inp.nbMats||0;
@@ -1818,7 +1853,7 @@ function buildAxonautComments(r) {
   L.push(`Solution de vidéosurveillance – ${r.nomClient}`);
   L.push(`${r.nbCamTotal} caméra${r.nbCamTotal>1?'s':''} TP-Link VIGI livrée${r.nbCamTotal>1?'s':''} programmée${r.nbCamTotal>1?'s':''}, posée${r.nbCamTotal>1?'s':''} et mise${r.nbCamTotal>1?'s':''} en service par nos techniciens, avec enregistrement local et application VIGI. Durée d'installation estimée : ${fmtJours(r.jours)}.`);
   if (r.remiseMontant > 0) L.push(`Offre spéciale SETT 2026 : remise Salon de −${r.remisePct} % sur le matériel et l'installation, déjà déduite (−${fmtE(r.remiseMontant)}).`);
-  let serv = `Contrat de services Vidéo ${r.gammeLabel} : ${fmtE(r.recMensuel)}/mois, engagement 12 mois, ${STATE.recurrentMode==='annuel' ? `réglé à l'année (${fmtE(r.caRecAnnuel)})` : 'réglé en 12 mensualités'}, facturé séparément de ce devis.`;
+  let serv = `Contrat de services Vidéo ${r.gammeLabel} : ${fmtE(r.recMensuel)}/mois, soit ${fmtE(r.caRecAnnuel)} par an, ${factLibelle(r)}, engagement 12 mois. En achat comptant, il est facturé séparément de ce devis.`;
   if (r.maintOfferte) serv += ` Offre SETT 2026 : les 6 premiers mois sont offerts (valeur ${fmtE(r.valeurOfferte)}).`;
   L.push(serv);
   if (r.loc) L.push(`Option location financière : ${fmtE(Math.round(r.loyerTotal))}/mois sur ${STATE.engagement} mois${STATE.leasingMode==='integre' ? ', contrat de services inclus' : ''}${r.acompteMontant>0 ? `, après un premier versement de ${fmtE(Math.round(r.acompteMontant))}` : ''}, sous réserve d'acceptation du dossier par l'organisme de financement.`);
@@ -1826,10 +1861,10 @@ function buildAxonautComments(r) {
 }
 // Note interne (opportunité Axonaut)
 function buildAxonautInternal(r) {
-  return `Deviseur Vidéo V6 – ${r.date} – ${r.nbCamTotal} caméras\n` +
-    `Pose : ${String(r.jours).replace('.',',')} j binôme · CAPEX ${Math.round(r.capexPV)} € HT · coût de revient ${Math.round(r.capexCR)} € · coef ${(r.capexPV/r.capexCR).toFixed(2)}\n` +
+  return `Deviseur Vidéo V7 – ${r.date} – ${r.nbCamTotal} caméras\n` +
+    `Pose : ${String(r.jours).replace('.',',')} j binôme · achat ${Math.round(r.capexPV)} € HT · coût de revient ${Math.round(r.capexCR)} € · coef ${(r.capexPV/r.capexCR).toFixed(2)}\n` +
     (r.remiseMontant>0 ? `Remise Salon −${r.remisePct} % (−${Math.round(r.remiseMontant)} €)\n` : '') +
-    (r.loc ? `Leasing ${STATE.leasingMode} ${STATE.engagement} mois, barème Locam ${r.loc.coef} % → ${Math.round(r.loyerTotal)} €/mois\n` : '') +
+    (r.loc ? `Location ${STATE.leasingMode==='integre'?'services inclus':'services à part'} ${STATE.engagement} mois, barème Locam ${r.loc.coef} % → ${Math.round(r.loyerTotal)} €/mois\n` : '') +
     `Contrat Vidéo ${r.gammeLabel} ${r.recMensuel} €/mois` + (r.maintOfferte ? ` – 6 mois offerts (${Math.round(r.valeurOfferte)} €)` : '');
 }
 async function pushToAxonaut() {
@@ -2030,6 +2065,7 @@ renderAccess();
 setVRD(true);
 setMatsInclus(true);
 renderLocam();
+setLeasingMode(STATE.leasingMode);
 setRecurrent('mensuel');
 calc();
 renderMaterialParams();
