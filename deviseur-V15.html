@@ -1964,6 +1964,49 @@ async function postQuotation(base, H, quote) {
 }
 // Thème de devis Axonaut par défaut de Sud Wifi (sinon l'API applique un thème avec une colonne « Versement initial client »)
 const AX_THEME_DEVIS = 57885;
+// ═══════════ DEVIS LEASING (thème 290734), créé juste après le devis comptant ═══════════
+const AX_THEME_LEASING = 290734;
+const AX_PACK_LEASING = 33339232;   // PACK-leasing-allin « Financement en location »
+const AX_PACK_PROD = 33339588;      // PACK-PROD (ex INST-CONFWIFI) « Frais de mise en production »
+const fmt2 = n => new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n) + ' €';
+function buildLeasingQuote(r, comptant) {
+  const CH_FIN = 'Financement de votre solution';
+  const leaser = (typeof LEASERS !== 'undefined' && LEASERS[STATE.leaser]) || 'l\'organisme de financement';
+  // 1) Lignes de la solution : mêmes quantités, prix à zéro, sans coût de revient ni remise Salon
+  const prods = comptant.products
+    .filter(p => p.price >= 0 && p.quantity > 0)
+    .map(p => { const o = { ...p, price: 0 }; delete o.unit_job_costing; delete o.discount_percent; return o; });
+  // 2a) Loyer : ligne PACK-leasing-allin, quantité 0 (« inclus »), prix = loyer
+  const loyer = Math.round(r.loyerTotal);
+  const desc = `<p><strong>Location financière sur ${STATE.engagement} mois${r.isIntegre ? ', contrat de services ' + r.gammeLabel + ' inclus' : ''}</strong></p>`
+    + `<p>Financement complet de la solution décrite ci-dessus : matériel, installation et mise en service.`
+    + (r.isIntegre ? `<br>Contrat de services ${r.gammeLabel} inclus pendant toute la durée du contrat.` : '') + `</p>`
+    + `<p><strong>Loyer mensuel à partir de ${fmt2(loyer)} HT</strong>, sous réserve d'acceptation du dossier par ${leaser}.</p>`
+    + (r.acompteMontant > 0 ? `<p><strong>Versement initial exigible à la commande : ${fmt2(Math.round(r.acompteMontant))} HT</strong></p>` : '')
+    + `<p><strong>Pourquoi choisir la location ?</strong></p><ul>`
+    + `<li><strong>Trésorerie préservée</strong> : vous financez l'usage, sans immobiliser votre capital.</li>`
+    + `<li><strong>Équipements toujours à jour</strong> : votre infrastructure évolue au rythme de votre activité.</li>`
+    + `<li><strong>Gestion simplifiée</strong> : location, maintenance et services réunis dans un seul contrat, avec un seul interlocuteur.</li>`
+    + `<li><strong>Fiscalité optimisée</strong> : les loyers sont déductibles de vos charges d'exploitation.</li></ul>`;
+  prods.push({ id: AX_PACK_LEASING, product_code: 'PACK-leasing-allin', name: 'Financement en location', description: desc,
+    quantity: 0, price: loyer, tax_rate: 20, chapter: CH_FIN });
+  // 2b) Services facturés à part : forfait choisi, quantité 1
+  if (!r.isIntegre) {
+    const f = forfaitAxonaut(r);
+    prods.push({ ...(f.id ? { id: f.id } : {}), product_code: f.code, name: f.name, quantity: 1, price: r2(r.recMensuel), tax_rate: 20, chapter: CH_FIN });
+  }
+  // 2c) Frais de mise en production : quantité 1 et prix = versement initial, ou quantité 0 si aucun versement
+  const v = Math.round(r.acompteMontant || 0);
+  prods.push({ id: AX_PACK_PROD, product_code: 'PACK-PROD', name: 'Frais de mise en production', quantity: v > 0 ? 1 : 0, price: v, tax_rate: 20, chapter: CH_FIN });
+  const q = { ...comptant, theme_id: AX_THEME_LEASING, products: prods };
+  return q;
+}
+function forfaitAxonaut(r) {
+  const IDS = { ESS:40269672, PRO:40269676, P360:40269680 };
+  const k = GAMMES[r.gamme].code;
+  return { id: IDS[k], code: `GAM-VID-${k}`, name: `Contrat de services Vidéo ${r.gammeLabel} – mensuel` };
+}
+
 const NIVEAU_MSG = ['', ' (prix d\'achat non transmis : Axonaut a refusé le champ)', ' (lignes non rattachées aux fiches produits)', ' (sans sections)'];
 const fmtE = n => new Intl.NumberFormat('fr-FR', { minimumFractionDigits: (Math.round(n*100) % 100) ? 2 : 0, maximumFractionDigits: 2 }).format(n) + ' € HT';
 
@@ -2076,6 +2119,16 @@ async function pushToAxonaut() {
     try { idMap[nameKey] = company.id; localStorage.setItem('sw_axonaut_ids', JSON.stringify(idMap)); } catch(e) {}
     if (L) { L.companyId = company.id; if (oppId) L.oppId = oppId; }
     toast(`✅ Devis ${q.number || q.id || ''} créé dans Axonaut — ${oppNote}`, 'success');
+    // Devis leasing en parallèle (thème 290734) : n'affecte ni le devis comptant ni l'opportunité
+    if (r.loc) {
+      try {
+        const ql = await postQuotation(base, H, buildLeasingQuote(r, quote));
+        toast(`✅ Devis comptant ${q.number || q.id || ''} + devis leasing ${ql.q.number || ql.q.id || ''} créés dans Axonaut — ${oppNote}`, 'success');
+      } catch (e2) {
+        console.error('Axonaut devis leasing', e2);
+        toast(`⚠ Devis comptant ${q.number || q.id || ''} créé, mais le devis leasing a échoué : ${e2.message}`, 'error');
+      }
+    }
   } catch(e) {
     const net = e instanceof TypeError ? ' (blocage CORS : renseignez l\'URL du relais dans Paramètres)' : '';
     toast(`❌ Axonaut — étape ${stage} : ${e.message}${net}`, 'error');
