@@ -1705,7 +1705,7 @@ function updateClientView(r) {
     </div>
 
     <div class="cv-footer">
-      Proposition commerciale valable 30 jours · Prix indiqués HT · TVA 20% applicable<br>
+      Proposition commerciale valable 7 jours · Prix indiqués HT · TVA 20% applicable<br>
       <strong>${raison}</strong> · ${adresse} · ${email} · ${site}<br>
       <span style="color:#374151;">Votre contact : <strong>${contact}</strong> · ${emailDirect} · ${telDirect}</span>
     </div>
@@ -2059,7 +2059,7 @@ async function pushToAxonaut() {
     stage = 'devis';
     const iso = d => d.toISOString().slice(0, 10) + 'T00:00:00+00:00';
     const today = new Date();
-    const quote = { company_id: company.id, date: iso(today), expiry_date: iso(new Date(today.getTime() + 30 * 86400000)),
+    const quote = { company_id: company.id, date: iso(today), expiry_date: iso(new Date(today.getTime() + 7 * 86400000)),
       business_manager: manager, comments: buildAxonautComments(r), products: buildAxonautProducts(r) };
     if (oppId) quote.opportunity_id = oppId;
     const { q, niveau } = await postQuotation(base, H, quote);
