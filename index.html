@@ -2225,8 +2225,16 @@ async function postQuotation(base, H, quote) {
     last = await axonautError(rq);
     console.warn('Axonaut devis, variante', i, 'refusée :', last);
   }
+  if (quote.theme_id) {
+    const { theme_id, ...sansTheme } = quote;
+    console.warn('Axonaut : nouvel essai sans thème');
+    const r = await postQuotation(base, H, sansTheme);
+    return { ...r, niveau: r.niveau };
+  }
   throw new Error('Devis : ' + last);
 }
+// Thème de devis Axonaut par défaut de Sud Wifi (sinon l'API applique un thème avec une colonne « Versement initial client »)
+const AX_THEME_DEVIS = 57885;
 const NIVEAU_MSG = ['', ' (prix d\'achat non transmis : Axonaut a refusé le champ)', ' (lignes non rattachées aux fiches produits)', ' (sans sections)'];
 const fmtE = n => new Intl.NumberFormat('fr-FR', { minimumFractionDigits: (Math.round(n*100) % 100) ? 2 : 0, maximumFractionDigits: 2 }).format(n) + ' € HT';
 
@@ -2405,6 +2413,7 @@ async function pushToAxonaut() {
       products: buildAxonautProducts(r),
     };
     if (oppId) quote.opportunity_id = oppId;
+    quote.theme_id = AX_THEME_DEVIS; // thème « Devis - Projet au comptant » (sans colonne « Versement initial client »)
     const { q, niveau } = await postQuotation(base, H, quote);
     oppNote += NIVEAU_MSG[niveau];
     try { idMap[nameKey] = company.id; localStorage.setItem('sw_axonaut_ids', JSON.stringify(idMap)); } catch(e) {}
