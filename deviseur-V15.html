@@ -1971,12 +1971,13 @@ const AX_PACK_PROD = 33339588;      // PACK-PROD (ex INST-CONFWIFI) « Frais de 
 const fmt2 = n => new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n) + ' €';
 function buildLeasingQuote(r, comptant) {
   const CH_FIN = 'Financement de votre solution';
+  const CH_DEMARRAGE = 'Pour lancer votre projet';
   const leaser = (typeof LEASERS !== 'undefined' && LEASERS[STATE.leaser]) || 'l\'organisme de financement';
   // 1) Lignes de la solution : mêmes quantités, prix à zéro, sans coût de revient ni remise Salon
   const prods = comptant.products
     .filter(p => p.price >= 0 && p.quantity > 0)
     .map(p => { const o = { ...p, price: 0 }; delete o.unit_job_costing; delete o.discount_percent; return o; });
-  // 2a) Loyer : ligne PACK-leasing-allin, quantité 0 (« inclus »), prix = loyer
+  // 2a) Loyer : ligne PACK-leasing-allin, quantité 1, prix = loyer → total du devis = loyer mensuel
   const loyer = Math.round(r.loyerTotal);
   const desc = `<p><strong>Location financière sur ${STATE.engagement} mois${r.isIntegre ? ', contrat de services ' + r.gammeLabel + ' inclus' : ''}</strong></p>`
     + `<p>Financement complet de la solution décrite ci-dessus : matériel, installation et mise en service.`
@@ -1989,15 +1990,16 @@ function buildLeasingQuote(r, comptant) {
     + `<li><strong>Gestion simplifiée</strong> : location, maintenance et services réunis dans un seul contrat, avec un seul interlocuteur.</li>`
     + `<li><strong>Fiscalité optimisée</strong> : les loyers sont déductibles de vos charges d'exploitation.</li></ul>`;
   prods.push({ id: AX_PACK_LEASING, product_code: 'PACK-leasing-allin', name: 'Financement en location', description: desc,
-    quantity: 0, price: loyer, tax_rate: 20, chapter: CH_FIN });
+    quantity: 1, price: loyer, tax_rate: 20, chapter: CH_FIN });
   // 2b) Services facturés à part : forfait choisi, quantité 1
   if (!r.isIntegre) {
     const f = forfaitAxonaut(r);
     prods.push({ ...(f.id ? { id: f.id } : {}), product_code: f.code, name: f.name, quantity: 1, price: r2(r.recMensuel), tax_rate: 20, chapter: CH_FIN });
   }
-  // 2c) Frais de mise en production : quantité 1 et prix = versement initial, ou quantité 0 si aucun versement
+  // 3) Frais de mise en production dans une rubrique à part. Dans Axonaut, cocher sur cette rubrique
+  //    « Ignorer cette section du montant total » (option non disponible par l'API) pour que le total = loyer.
   const v = Math.round(r.acompteMontant || 0);
-  prods.push({ id: AX_PACK_PROD, product_code: 'PACK-PROD', name: 'Frais de mise en production', quantity: v > 0 ? 1 : 0, price: v, tax_rate: 20, chapter: CH_FIN });
+  prods.push({ id: AX_PACK_PROD, product_code: 'PACK-PROD', name: 'Frais de mise en production', quantity: v > 0 ? 1 : 0, price: v, tax_rate: 20, chapter: CH_DEMARRAGE });
   const q = { ...comptant, theme_id: AX_THEME_LEASING, products: prods };
   return q;
 }
